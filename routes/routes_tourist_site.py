@@ -48,7 +48,7 @@ def get_tourist_site_id(id_tourist_site):
         return jsonify ({'message' : 'Tourist site not found'}), 404
     return jsonify(tourist_site.serialize()), 200
 
-@tourist_site.route('/api/tourist_sites/<int: id_tourist_site>', methods = ['DELETE'])
+@tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['DELETE'])
 
 def delete_tourist_site(id_tourist_site):
     tourist_site = TouristSite.query.get(id_tourist_site)
