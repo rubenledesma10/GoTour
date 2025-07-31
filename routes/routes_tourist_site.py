@@ -70,7 +70,7 @@ def delete_tourist_site(id_tourist_site):
 def add_tourist_site():
     data = request.get_json()
 
-    required_fields = ['name','description','address','phone','category','url','average','id_user','id_district']
+    required_fields = ['name','description','address','phone','category','url','average']#,'id_user','id_district']
 
     if not data or not all (key in data for key in required_fields):
         return jsonify ({'error':'Required data is missing'}), 400
@@ -92,8 +92,8 @@ def add_tourist_site():
             data['category'],
             data['url'],
             data['average'],
-            data['id_user'],
-            data['id_district'],
+            #data['id_user'],
+            #data['id_district'],
         )
         
         db.session.add(new_tourist_site)
@@ -117,7 +117,7 @@ def add_tourist_site():
                 return jsonify({'error': 'The address is already registered.'}), 409
             elif 'tourist_site_category_key' in error_msg_lower: 
                 return jsonify({'error': 'The category is already used by another site.'}), 409
-        elif 'foreign key constraint' in error_msg_lower: #Mejoramos el manejo de Foreign Key's
+        #elif 'foreign key constraint' in error_msg_lower: #Mejoramos el manejo de Foreign Key's
             # Esto captura errores si id_user o id_district no existen en sus tablas respectivas
             print(f"Foreign Key error: {error_msg_lower}")
         return jsonify({'error': 'Referenced user or district does not exist.'}), 404 #Not found
@@ -132,7 +132,7 @@ def edit_tourist_site(id_tourist_site):
     data = request.get_json()
     tourist_site = TouristSite.query.get(id_tourist_site)
 
-    required_fields = ['name','description','address','phone','category','url','id_user','id_district']
+    required_fields = ['name','description','address','phone','category','url'] #,'id_user','id_district
 
     if not data: 
         return jsonify({'error':'No data received'}), 400
@@ -176,7 +176,7 @@ def edit_tourist_site(id_tourist_site):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
     
-@tourist_site.route('/<int:id_tourist_site>', methods = ['PATCH'])
+@tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PATCH'])
 
 def update_tourist_site(id_tourist_site):
     data = request.get_json()
@@ -186,7 +186,7 @@ def update_tourist_site(id_tourist_site):
 
     tourist_site_to_update = TouristSite.query.get(id_tourist_site)  
     if not tourist_site_to_update:
-        return jsonify({'message': 'client not found'}), 404
+        return jsonify({'message': 'Tourist Site not found'}), 404
 
     updated = False  # Variable para rastrear si se realizó alguna actualización
 
