@@ -71,3 +71,106 @@ def add_user():
         db.session.rollback()
         print(f"Unexpected error: {e}")
         return jsonify({'error':'Error adding user'}),500
+    
+@user_bp.route('/delete/<string:id_user>', methods=['DELETE'])
+def delete_user(id_user):
+    user=User.query.get(id_user)
+    if not user:
+        return jsonify({'message':'User not found'}),404
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'message':'User delete successfuly'}),200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error':str(e)}),500
+    
+@user_bp('/edit/<string:<id_user>',methods='PUT')
+def edit_user(id_user):
+    data=request.get_json()
+    if not data:
+        return jsonify({'error':'No data received'}),400
+    user=User.query.get(id_user)
+    if not user:
+        return jsonify({'error':'User not found'}),404
+    required_fields=['first_name','last_name','email','password','username','rol','dni','birthdate','age','phone','nationality','province']
+    for field in required_fields:
+        if not str(data.get(field, '')).strip():  
+            return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
+    try:
+        if 'first_name' in data:
+            user.first_name=data['first_name']
+        if 'last_name' in data:
+            user.last_name=data['last_name']
+        if 'email' in data:
+            user.email=data['email']
+        if 'password' in data:
+            user.password=data['password']
+        if 'username' in data:
+            user.username=data['username']
+        if 'rol' in data:
+            user.rol=data['rol']
+        if 'dni' in data:
+            user.dni=data['dni']
+        if 'birthdate' in data:
+            user.birthdate=data['birthdate']
+        if 'age' in data:
+            user.age=int(data['age'])
+        if 'phone' in data:
+            user.phone=data['phone']
+        if 'nationality' in data:
+            user.nationality=data['nationality']
+        if 'province' in data:
+            user.province=data['province']
+        db.session.commit()
+        return jsonify({'message':'User edited correctly','user':user.serialize()}),200
+    except IntegrityError as e:
+        db.session.rollback()
+        print(f"IntegrityError: {e}")
+        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+        
+@user_bp.route('/uptdate/<string:<id_user>',methods='PATCH')
+def update_user(id_user):
+    data=request.get_json()
+    if not data:
+        return jsonify({'error':'No data received'}),400
+    user=User.query.get(id_user)
+    if not user:
+        return jsonify({'error':'User not found'}),404
+    try:
+        if 'first_name' in data:
+            user.first_name=data['first_name']
+        if 'last_name' in data:
+            user.last_name=data['last_name']
+        if 'email' in data:
+            user.email=data['email']
+        if 'password' in data:
+            user.password=data['password']
+        if 'username' in data:
+            user.username=data['username']
+        if 'rol' in data:
+            user.rol=data['rol']
+        if 'dni' in data:
+            user.dni=data['dni']
+        if 'birthdate' in data:
+            user.birthdate=data['birthdate']
+        if 'age' in data:
+            user.age=int(data['age'])
+        if 'phone' in data:
+            user.phone=data['phone']
+        if 'nationality' in data:
+            user.nationality=data['nationality']
+        if 'province' in data:
+            user.province=data['province']
+        db.session.commit()
+        return jsonify({'message':'User edited correctly','user':user.serialize()}),200
+    except IntegrityError as e:
+        db.session.rollback()
+        print(f"IntegrityError: {e}")
+        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
