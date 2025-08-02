@@ -4,7 +4,7 @@ from models.db import db
 from models.user import User
 from datetime import datetime
 
-user_bp = Blueprint('user_bp', __name__, url_prefix='api/user')
+user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
 
 @user_bp.route('/get')
 def get_users():
@@ -60,9 +60,10 @@ def add_user():
         )
 
         db.session.commit()
+        db.session.add(new_user)
         return jsonify({
             'message':'User successfully created',
-            'user':new_user.serialize
+            'user':new_user.serialize()
         }),201
     except ValueError:
         db.session.rollback()
@@ -85,7 +86,7 @@ def delete_user(id_user):
         db.session.rollback()
         return jsonify({'error':str(e)}),500
     
-@user_bp('/edit/<string:<id_user>',methods='PUT')
+@user_bp.route('/edit/<string:id_user>',methods=['PUT'])
 def edit_user(id_user):
     data=request.get_json()
     if not data:
@@ -132,7 +133,7 @@ def edit_user(id_user):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
         
-@user_bp.route('/uptdate/<string:<id_user>',methods='PATCH')
+@user_bp.route('/update/<string:id_user>', methods=['PATCH'])
 def update_user(id_user):
     data=request.get_json()
     if not data:
