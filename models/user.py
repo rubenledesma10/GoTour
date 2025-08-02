@@ -12,12 +12,13 @@ class User (db.Model):
     rol = db.Column(db.String(50), nullable=False)
     dni = db.Column(db.String(20), nullable=False)
     birthdate= db.Column(db.Date, nullable=False)
-    age=db.Column(db.Integer, nullable=False)
+    photo=db.Column(db.String(250), nullable=True)
     phone=db.Column(db.String(50), nullable=False)
     nationality=db.Column(db.String(50), nullable=False)
     province=db.Column(db.String(50), nullable=False)
+    is_activate=db.Column(db.Boolean, default=True, nullable=False) 
 
-    def __init__(self, first_name, last_name, email, password, username, rol, dni, birthdate, age, phone, nationality, province):
+    def __init__(self, first_name, last_name, email, password, username, rol, dni, birthdate, photo, phone, nationality, province,is_activate):
         self.first_name=first_name
         self.last_name=last_name
         self.email=email
@@ -26,10 +27,11 @@ class User (db.Model):
         self.rol=rol
         self.dni=dni
         self.birthdate=birthdate
-        self.age=age
+        self.photo=photo
         self.phone=phone
         self.nationality=nationality
         self.province=province
+        self.is_activate=is_activate
 
     def serialize(self):
         return{
@@ -41,8 +43,9 @@ class User (db.Model):
             'username':self.username,
             'rol':self.rol,
             'birthdate':self.birthdate,
-            'age':self.age,
+            'photo':self.photo,
             'phone':self.phone,
             'nationality':self.nationality,
-            'province':self.province
+            'province':self.province,
+            'is_activate':self.is_activate
         }

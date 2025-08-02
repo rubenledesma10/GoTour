@@ -23,7 +23,7 @@ def get_user_id(id_user):
 @user_bp.route('/add', methods=['POST'])
 def add_user():
     data=request.get_json()
-    required_fields=['first_name','last_name','email','password','username','rol','dni','birthdate','age','phone','nationality','province']
+    required_fields=['first_name','last_name','email','password','username','rol','dni','birthdate','age','phone','nationality','province','is_activate']
     if not data or not all(key in data for key in required_fields):
         return jsonify({'error':'Required data is missing'}),400
     for field in required_fields:
@@ -43,6 +43,7 @@ def add_user():
         phone=data['phone']
         nationality=data['nationality']
         province=data['province']
+        is_activate=data['is_activate']
 
         new_user=User(
             first_name=first_name,
@@ -56,7 +57,8 @@ def add_user():
             age=age,
             phone=phone,
             nationality=nationality,
-            province=province
+            province=province,
+            is_activate=is_activate
         )
 
         db.session.commit()
@@ -94,7 +96,7 @@ def edit_user(id_user):
     user=User.query.get(id_user)
     if not user:
         return jsonify({'error':'User not found'}),404
-    required_fields=['first_name','last_name','email','password','username','rol','dni','birthdate','age','phone','nationality','province']
+    required_fields=['first_name','last_name','email','password','username','rol','dni','birthdate','age','phone','nationality','province','is_activate']
     for field in required_fields:
         if not str(data.get(field, '')).strip():  
             return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
@@ -123,6 +125,8 @@ def edit_user(id_user):
             user.nationality=data['nationality']
         if 'province' in data:
             user.province=data['province']
+        if 'is_activate' in data:
+            user.is_activate=data['is_activate']
         db.session.commit()
         return jsonify({'message':'User edited correctly','user':user.serialize()}),200
     except IntegrityError as e:
@@ -166,6 +170,8 @@ def update_user(id_user):
             user.nationality=data['nationality']
         if 'province' in data:
             user.province=data['province']
+        if 'is_activate' in data:
+            user.is_activate=data['is_activate']
         db.session.commit()
         return jsonify({'message':'User edited correctly','user':user.serialize()}),200
     except IntegrityError as e:
