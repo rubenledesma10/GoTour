@@ -2,7 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, jsonify, request
 from models.db import db
 from models.user import User
-from datetime import datetime
+from datetime import datetime, date
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
 
@@ -20,6 +20,12 @@ def get_user_id(id_user):
         return jsonify({'message':'User not found'}),404
     return jsonify(user.serialize()),200
 
+def calculate_age(date_birth_str): #funcion para calcular la edad a traves de la fecha de nacimiento
+    date_birth = datetime.strptime(date_birth_str, "%Y-%m-%d").date()
+    today = date.today()
+    age = today.year - date_birth.year - ((today.month, today.day) < (date_birth.month, date_birth.day))
+    return age
+
 @user_bp.route('/add', methods=['POST'])
 def add_user():
     data=request.get_json()
@@ -31,6 +37,7 @@ def add_user():
             return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
     try:
         print(f"Data received: {data}")
+        age_calculate = calculate_age(data['birthdate'])
         first_name=data['first_name']
         last_name=data['last_name']
         email=data['email']
