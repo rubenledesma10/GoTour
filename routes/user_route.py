@@ -47,6 +47,7 @@ def add_user():
         dni=data['dni']
         birthdate=data['birthdate']
         age=int(data['age'])
+        photo=data['photo']
         phone=data['phone']
         nationality=data['nationality']
         province=data['province']
@@ -62,6 +63,7 @@ def add_user():
             dni=dni,
             birthdate=birthdate,
             age=age,
+            photo=photo,
             phone=phone,
             nationality=nationality,
             province=province,

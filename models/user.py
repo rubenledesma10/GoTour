@@ -1,16 +1,19 @@
 import uuid
 from models.db import db
+from enums.roles_enums import RoleEnum
+from sqlalchemy import Enum as SqlEnum
+from werkzeug.security import generate_password_hash, check_password_hash #generate hashea la contraseña, check compara contraseña escrita en el hash guardado
 
 class User (db.Model):
     __tablename__='user'
     id_user=db.Column(db.String(50), primary_key=True,unique=True, default=lambda: str(uuid.uuid4()))
     first_name=db.Column(db.String(50),nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
-    email=db.Column(db.String(50), nullable=False)
-    password=db.Column(db.String(50), nullable=False)
-    username=db.Column(db.String(50), nullable=False)
-    rol = db.Column(db.String(50), nullable=False)
-    dni = db.Column(db.String(20), nullable=False)
+    email=db.Column(db.String(50), nullable=False, unique=True)
+    password_hash=db.Column(db.String(128), nullable=False)
+    username=db.Column(db.String(50), nullable=False, unique=True)
+    rol = db.Column(SqlEnum(RoleEnum), nullable=False) #SqlEnum nos permite guardar solamente valores que este en roles_enums y nos convierte el enum en texto
+    dni = db.Column(db.String(20), nullable=False, unique=True)
     birthdate= db.Column(db.Date, nullable=False)
     photo=db.Column(db.String(250), nullable=True)
     phone=db.Column(db.String(50), nullable=False)
@@ -18,11 +21,18 @@ class User (db.Model):
     province=db.Column(db.String(50), nullable=False)
     is_activate=db.Column(db.Boolean, default=True, nullable=False) 
 
+
+    def set_password(self, password): #con esta funcion hasheamos y guardamos la contraseña 
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password): #con esta funcion validamos la contraseña ingresada
+        return check_password_hash(self.password_hash, password)
+
     def __init__(self, first_name, last_name, email, password, username, rol, dni, birthdate, photo, phone, nationality, province,is_activate):
         self.first_name=first_name
         self.last_name=last_name
         self.email=email
-        self.password=password
+        self.set_password(password)
         self.username=username
         self.rol=rol
         self.dni=dni
@@ -39,9 +49,9 @@ class User (db.Model):
             'first_name':self.first_name,
             'last_name':self.last_name,
             'email':self.email,
-            'password':self.password,
+            #'password':self.password,
             'username':self.username,
-            'rol':self.rol,
+            'rol':self.rol.value,
             'birthdate':self.birthdate,
             'photo':self.photo,
             'phone':self.phone,
