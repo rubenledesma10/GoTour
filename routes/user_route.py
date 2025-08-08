@@ -11,10 +11,10 @@ user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
 
 @user_bp.route('/register', methods=['POST'])
 def register():
-    data=request.get_json()
+    data=request.get_json() #obtenemos el body del json
     userDTO= UserRegisterDTO()
     try:
-        validated_data=userDTO.load(data)
+        validated_data=userDTO.load(data) #valida y convierte tipos. si falla, devuelve 400 con los errores.
     except ValidationError as err:
         return jsonify(err.messages), 400
     
@@ -24,7 +24,7 @@ def register():
         email=validated_data['email'],
         password=validated_data['password'],
         username=validated_data['username'],
-        rol=RoleEnum(validated_data['rol']),
+        rol=RoleEnum(validated_data['rol']), #convertimos la cadena en una instancia del rolesEnum
         dni=validated_data['dni'],
         birthdate=validated_data['birthdate'],
         photo=validated_data.get('photo', None),
@@ -34,8 +34,19 @@ def register():
         is_activate=validated_data.get('is_activate',True)
     )
 
-    db.session.add(user)
-    db.session.commit()
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except IntegrityError as e:
+        db.session.rollback() 
+        if "email" in str(e.orig):
+            return jsonify({"error": "Email is already registered"}), 400
+        elif "dni" in str(e.orig):
+            return jsonify({"error": "DNI is already registered"}), 400
+        elif "username" in str(e.orig):
+            return jsonify({"error": "Username is already taken"}), 400
+        else:
+            return jsonify({"error": "A record with these details already exists"}), 400
     return jsonify(user.serialize()), 201
 
 

@@ -14,7 +14,7 @@ class User (db.Model):
     username=db.Column(db.String(50), nullable=False, unique=True)
     rol = db.Column(SqlEnum(RoleEnum), nullable=False) #SqlEnum nos permite guardar solamente valores que este en roles_enums y nos convierte el enum en texto
     dni = db.Column(db.String(20), nullable=False, unique=True)
-    birthdate= db.Column(db.Date, nullable=False)
+    birthdate= db.Column(db.Date, nullable=False) #Marshmallow puede convertir strings "YYYY-MM-DD"
     photo=db.Column(db.String(250), nullable=True)
     phone=db.Column(db.String(50), nullable=False)
     nationality=db.Column(db.String(50), nullable=False)
@@ -31,7 +31,7 @@ class User (db.Model):
     def __init__(self, first_name, last_name, email, password, username, rol, dni, birthdate, photo, phone, nationality, province,is_activate):
         self.first_name=first_name
         self.last_name=last_name
-        self.email=email
+        self.email=email.lower()
         self.set_password(password)
         self.username=username
         self.rol=rol
