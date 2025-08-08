@@ -10,7 +10,7 @@ class User (db.Model):
     first_name=db.Column(db.String(50),nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email=db.Column(db.String(50), nullable=False, unique=True)
-    password_hash=db.Column(db.String(128), nullable=False)
+    password_hash=db.Column(db.Text, nullable=False)
     username=db.Column(db.String(50), nullable=False, unique=True)
     rol = db.Column(SqlEnum(RoleEnum), nullable=False) #SqlEnum nos permite guardar solamente valores que este en roles_enums y nos convierte el enum en texto
     dni = db.Column(db.String(20), nullable=False, unique=True)

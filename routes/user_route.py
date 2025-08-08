@@ -3,8 +3,41 @@ from flask import Blueprint, jsonify, request
 from models.db import db
 from models.user import User
 from datetime import datetime, date
+from enums.roles_enums import RoleEnum
+from dtos.user_dto import UserRegisterDTO
+from marshmallow import Schema, fields, ValidationError
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
+
+@user_bp.route('/register', methods=['POST'])
+def register():
+    data=request.get_json()
+    userDTO= UserRegisterDTO()
+    try:
+        validated_data=userDTO.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+    
+    user = User( #aca registramos el nuevo usuario
+        first_name=validated_data['first_name'],
+        last_name=validated_data['last_name'],
+        email=validated_data['email'],
+        password=validated_data['password'],
+        username=validated_data['username'],
+        rol=RoleEnum(validated_data['rol']),
+        dni=validated_data['dni'],
+        birthdate=validated_data['birthdate'],
+        photo=validated_data.get('photo', None),
+        phone=validated_data['phone'],
+        nationality=validated_data['nationality'],
+        province=validated_data['province'],
+        is_activate=validated_data.get('is_activate',True)
+    )
+
+    db.session.add(user)
+    db.session.commit()
+    return jsonify(user.serialize()), 201
+
 
 @user_bp.route('/get')
 def get_users():
