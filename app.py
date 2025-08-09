@@ -2,8 +2,11 @@ from flask import Flask
 from config.config import DATABASE_CONNECTION_URI
 from models.db import db
 from routes.user_route import user_bp
+from flask_jwt_extended import JWTManager
 
 app=Flask(__name__)
+app.config['JWT_SECRET_KEY']='tu_clave_secreta'
+jwt=JWTManager(app)
 app.register_blueprint(user_bp)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_CONNECTION_URI

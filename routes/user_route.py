@@ -5,16 +5,18 @@ from models.user import User
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
 from dtos.user_dto import UserRegisterDTO
+from dtos.user_login_dto import UserLoginDTO
 from marshmallow import Schema, fields, ValidationError
+from flask_jwt_extended import create_access_token
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
 
 @user_bp.route('/register', methods=['POST'])
 def register():
     data=request.get_json() #obtenemos el body del json
-    userDTO= UserRegisterDTO()
+    user_register_dto= UserRegisterDTO()
     try:
-        validated_data=userDTO.load(data) #valida y convierte tipos. si falla, devuelve 400 con los errores.
+        validated_data=user_register_dto.load(data) #valida y convierte tipos. si falla, devuelve 400 con los errores.
     except ValidationError as err:
         return jsonify(err.messages), 400
     
@@ -49,6 +51,26 @@ def register():
             return jsonify({"error": "A record with these details already exists"}), 400
     return jsonify(user.serialize()), 201
 
+@user_bp.route('/login', methods=['POST'])
+def login_user():
+    data=request.get_json()
+    user_login_dto=UserLoginDTO()
+    try:
+        validated_data=user_login_dto.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages),400
+    
+    user = User.query.filter_by(email=validated_data['email'].lower()).first()
+    
+    if not user or not user.check_password(validated_data['password']):
+        return jsonify({'error':'Invalid email or password'}), 401
+    
+    if not user.is_activate:
+        return jsonify({'error':'User account is deactivated'}),403
+    
+    access_token=create_access_token(identity=user.id_user)
+
+    return jsonify({'access_token':access_token}),200
 
 @user_bp.route('/get')
 def get_users():
