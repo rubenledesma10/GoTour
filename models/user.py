@@ -3,6 +3,7 @@ from models.db import db
 from enums.roles_enums import RoleEnum
 from sqlalchemy import Enum as SqlEnum
 from werkzeug.security import generate_password_hash, check_password_hash #generate hashea la contraseña, check compara contraseña escrita en el hash guardado
+from datetime import date
 
 class User (db.Model):
     __tablename__='user'
@@ -44,6 +45,9 @@ class User (db.Model):
         self.is_activate=is_activate
 
     def serialize(self):
+        today = date.today()
+        birthdate = self.birthdate
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
         return{
             'id_user':self.id_user,
             'first_name':self.first_name,
@@ -53,6 +57,7 @@ class User (db.Model):
             'username':self.username,
             'rol':self.rol.value,
             'birthdate':self.birthdate,
+            'age': age,
             'photo':self.photo,
             'phone':self.phone,
             'nationality':self.nationality,
