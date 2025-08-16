@@ -28,7 +28,7 @@ def calculate_age(date_birth_str): #funcion para calcular la edad a traves de la
 @admnin_bp.route('/get')
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
-def get_tourists():
+def get_users_all():
     users=User.query.all()
     if not users:
         return jsonify({'message':'There are not users registered'}),404
@@ -37,7 +37,7 @@ def get_tourists():
 @admnin_bp.route('/get/<string:id_user>', methods=['GET'])
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
-def get_tourist_id(id_user):
+def get_user_id(id_user):
     user = User.query.get(id_user)
     if not user:
         return jsonify({'message':'User not found'}),404
