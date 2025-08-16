@@ -186,7 +186,7 @@ def get_tourists():
 @admnin_bp.route('/get/tourists/activate')
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
-def get_tourists():
+def get_tourists_activate():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=True).all()
     if not tourists:
         return jsonify({'message':'There are not tourists activates'}),404
@@ -195,7 +195,7 @@ def get_tourists():
 @admnin_bp.route('/get/tourists/deactivated')
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
-def get_tourists():
+def get_tourists_deactivated():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=False).all()
     if not tourists:
         return jsonify({'message':'There are not tourists deactivated'}),404

@@ -69,6 +69,9 @@ def login_user():
         return jsonify({'error':'User account is deactivated'}),403
     
     #aca creamos el token
-    access_token=create_access_token(identity={"id_user":user.id_user, "role":user.rol}) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
+    access_token = create_access_token(
+        identity=str(user.id_user),
+        additional_claims={"role": user.rol.value}
+    ) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
 
     return jsonify({'access_token':access_token}),200
