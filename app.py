@@ -2,6 +2,8 @@ from flask import Flask
 from config.config import DATABASE_CONNECTION_URI
 from models.db import db
 from routes.user_route import user_bp
+from routes.admin_route import admnin_bp
+from routes.tourist_route import tourist_bp
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 
@@ -10,6 +12,8 @@ app.config['JWT_SECRET_KEY']='tu_clave_secreta' #definimos clave secreta para fi
 app.config["JWT_ACCESS_TOKEN_EXPIRES"]=timedelta(hours=1)
 jwt=JWTManager(app) #inicializamos jwt en la aplicacion 
 app.register_blueprint(user_bp)
+app.register_blueprint(admnin_bp)
+app.register_blueprint(tourist_bp)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_CONNECTION_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
