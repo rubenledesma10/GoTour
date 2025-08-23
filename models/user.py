@@ -56,6 +56,7 @@ class User (db.Model):
             #'password':self.password,
             'username':self.username,
             'rol':self.rol.value,
+            'dni':self.dni,
             'birthdate':self.birthdate,
             'age': age,
             'photo':self.photo,

@@ -43,6 +43,14 @@ def get_user_id(id_user):
         return jsonify({'message':'User not found'}),404
     return jsonify(user.serialize()),200
 
+@admnin_bp.route('/get/dni/<string:dni>', methods=['GET'])
+@jwt_required()
+@role_required(RoleEnum.ADMIN.value)
+def get_user_dni(dni):
+    user = User.query.filter_by(dni=dni).first()
+    if not user:
+        return jsonify({'message':'User not found'}),404
+    return jsonify(user.serialize()),200
 
 @admnin_bp.route('/add', methods=['POST'])
 @jwt_required()

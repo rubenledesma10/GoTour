@@ -17,3 +17,78 @@ tourist_bp = Blueprint('tourist_bp', __name__, url_prefix='/api/tourist')
 @role_required(RoleEnum.TOURIST.value)
 def test_turist():
     return jsonify({"message":"Endpoint for tourist "})
+
+@tourist_bp.route("/my_data", methods=['GET'])
+@jwt_required()
+@role_required(RoleEnum.TOURIST.value)
+def my_data():
+    id_user=get_jwt_identity() #obtenemos el token de la persona que se logueo
+    user=User.query.get(id_user) #traemos al usuario logueado
+    if not user:
+        return jsonify({"error":"User not found"}),404
+    return jsonify(user.serialize()),200
+
+@tourist_bp.route("/my_data/edit", methods=['PUT'])
+@jwt_required()
+@role_required(RoleEnum.TOURIST.value)
+def edit_my_data():
+    id_user=get_jwt_identity()
+    user=User.query.get(id_user)
+    if not user:
+        return jsonify({"error":"User not found"}),404
+    data=request.get_json()
+    if not data:
+        return jsonify({'error':'No data received'}),400
+    user_dto=UserRegisterDTO(partial=True)
+    try:
+        validated_data=user_dto.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages),400
+    try:
+        if 'first_name' in validated_data:
+            user.first_name = validated_data['first_name']
+
+        if 'last_name' in validated_data:
+            user.last_name = validated_data['last_name']
+
+        if 'email' in validated_data:
+            user.email = validated_data['email'].lower()
+
+        if 'username' in validated_data:
+            user.username = validated_data['username']
+
+        if 'rol' in validated_data:
+            user.rol = validated_data['rol']
+
+        if 'dni' in validated_data:
+            user.dni = validated_data['dni']
+
+        if 'birthdate' in validated_data:
+            user.birthdate = validated_data['birthdate']
+
+        if 'photo' in validated_data:
+            user.photo = validated_data['photo']
+
+        if 'phone' in validated_data:
+            user.phone = validated_data['phone']
+
+        if 'nationality' in validated_data:
+            user.nationality = validated_data['nationality']
+
+        if 'province' in validated_data:
+            user.province = validated_data['province']
+
+        if 'is_activate' in validated_data:
+            user.is_activate = validated_data['is_activate']
+
+        if 'password' in validated_data:
+            user.set_password(validated_data['password'])
+
+        db.session.commit()
+        return jsonify({'message': 'User edited correctly', 'user': user.serialize()}), 200
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
