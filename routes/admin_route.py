@@ -4,8 +4,7 @@ from models.db import db
 from models.user import User
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
-from dtos.user_register_dto import UserRegisterDTO
-from dtos.user_login_dto import UserLoginDTO
+from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required
 from utils.decorators import role_required
@@ -19,11 +18,6 @@ admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
 def test_admin():
     return jsonify({"message":"Endpoint for admin "})
 
-def calculate_age(date_birth_str): #funcion para calcular la edad a traves de la fecha de nacimiento
-    date_birth = datetime.strptime(date_birth_str, "%Y-%m-%d").date()
-    today = date.today()
-    age = today.year - date_birth.year - ((today.month, today.day) < (date_birth.month, date_birth.day))
-    return age
 
 @admnin_bp.route('/get')
 @jwt_required()
@@ -32,7 +26,7 @@ def get_users_all():
     users=User.query.all()
     if not users:
         return jsonify({'message':'There are not users registered'}),404
-    return jsonify([user.serialize() for user in users])
+    return jsonify(users_schema.dump(users))
 
 @admnin_bp.route('/get/<string:id_user>', methods=['GET'])
 @jwt_required()
@@ -41,7 +35,7 @@ def get_user_id(id_user):
     user = User.query.get(id_user)
     if not user:
         return jsonify({'message':'User not found'}),404
-    return jsonify(user.serialize()),200
+    return jsonify(user_schema.dump(user)),200
 
 @admnin_bp.route('/get/dni/<string:dni>', methods=['GET'])
 @jwt_required()
@@ -50,17 +44,17 @@ def get_user_dni(dni):
     user = User.query.filter_by(dni=dni).first()
     if not user:
         return jsonify({'message':'User not found'}),404
-    return jsonify(user.serialize()),200
+    return jsonify(user_schema.dump(user)),200
 
 @admnin_bp.route('/add', methods=['POST'])
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
 def add_user():
     data = request.get_json()
-    user_dto = UserRegisterDTO()
+
 
     try:
-        validated_data = user_dto.load(data)
+        validated_data = user_schema.load(data)
     except ValidationError as err:
         return jsonify(err.messages), 400
     try:
@@ -83,8 +77,7 @@ def add_user():
         db.session.commit()
         return jsonify({
             'message':'User successfully created',
-            'user':new_user.serialize()
-        }),201
+            'user':user_schema.dump(new_user)}), 201
     except ValueError:
         db.session.rollback()
         return jsonify({'error':'Invalid data type'},400)
@@ -96,22 +89,7 @@ def add_user():
         print(f"Unexpected error: {e}")
         return jsonify({'error':'Error adding user'}),500
     
-@admnin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
-@jwt_required()
-@role_required(RoleEnum.ADMIN.value)
-def delete_user(id_user):
-    user=User.query.get(id_user)
-    if not user:
-        return jsonify({'message':'User not found'}),404
-    try:
-        user.is_activate=False #no lo elimnamos de la bd, hacemos un eliminado logico
-        #db.session.delete(user)
-        db.session.commit()
-        return jsonify({'message':'User delete successfuly'}),200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error':str(e)}),500
-    
+
 @admnin_bp.route('/edit/<string:id_user>',methods=['PUT'])
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
@@ -124,10 +102,8 @@ def edit_user(id_user):
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    user_dto = UserRegisterDTO(partial=True) #partial permite campos opcionales
-
     try:
-        validated_data = user_dto.load(data)
+        validated_data = user_schema.load(data, partial=True)
     except ValidationError as err:
         return jsonify(err.messages), 400
 
@@ -173,7 +149,7 @@ def edit_user(id_user):
 
         db.session.commit()
 
-        return jsonify({'message': 'User edited correctly', 'user': user.serialize()}), 200
+        return jsonify({'message': 'User edited correctly', 'user': user_schema.dump(user)}),200
 
     except IntegrityError as e:
         db.session.rollback()
@@ -182,6 +158,24 @@ def edit_user(id_user):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
     
+    
+@admnin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
+@jwt_required()
+@role_required(RoleEnum.ADMIN.value)
+def delete_user(id_user):
+    user=User.query.get(id_user)
+    if not user:
+        return jsonify({'message':'User not found'}),404
+    try:
+        user.is_activate=False #no lo elimnamos de la bd, hacemos un eliminado logico
+        #db.session.delete(user)
+        db.session.commit()
+        return jsonify({'message':'User delete successfuly'}),200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error':str(e)}),500
+    
+
 @admnin_bp.route('/get/tourists')
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
@@ -189,7 +183,7 @@ def get_tourists():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST).all()
     if not tourists:
         return jsonify({'message':'There are not tourists registered'}),404
-    return jsonify([tourist.serialize() for tourist in tourists])
+    return jsonify (users_schema.dump(tourists)),200
 
 @admnin_bp.route('/get/tourists/activate')
 @jwt_required()
@@ -198,7 +192,7 @@ def get_tourists_activate():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=True).all()
     if not tourists:
         return jsonify({'message':'There are not tourists activates'}),404
-    return jsonify([tourist.serialize() for tourist in tourists])
+    return jsonify (users_schema.dump(tourists)),200
 
 @admnin_bp.route('/get/tourists/deactivated')
 @jwt_required()
@@ -207,4 +201,4 @@ def get_tourists_deactivated():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=False).all()
     if not tourists:
         return jsonify({'message':'There are not tourists deactivated'}),404
-    return jsonify([tourist.serialize() for tourist in tourists])
+    return jsonify (users_schema.dump(tourists)),200

@@ -4,8 +4,8 @@ from models.db import db
 from models.user import User
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
-from dtos.user_register_dto import UserRegisterDTO
-from dtos.user_login_dto import UserLoginDTO
+from schemas.user_register_schema import user_schema #aca traemos la instancia que declaramos anteriomente
+from schemas.user_login_schema import user_login_schema
 from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token
 
@@ -14,9 +14,8 @@ user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
 @user_bp.route('/register', methods=['POST'])
 def register():
     data=request.get_json() #obtenemos el body del json
-    user_register_dto= UserRegisterDTO()
     try:
-        validated_data=user_register_dto.load(data) #valida y convierte tipos. si falla, devuelve 400 con los errores.
+        validated_data=user_schema.load(data) 
     except ValidationError as err:
         return jsonify(err.messages), 400
     
@@ -49,14 +48,20 @@ def register():
             return jsonify({"error": "Username is already taken"}), 400
         else:
             return jsonify({"error": "A record with these details already exists"}), 400
-    return jsonify(user.serialize()), 201
+    
+    access_token = create_access_token(
+        identity=str(user.id_user),
+        additional_claims={"role": user.rol.value}
+    )
+
+    #aca serializamos el objeto con Marshmallow para la repuesta
+    return jsonify({"user": user_schema.dump(user),"access_token": access_token}), 201
 
 @user_bp.route('/login', methods=['POST'])
 def login_user():
     data=request.get_json()
-    user_login_dto=UserLoginDTO()
     try:
-        validated_data=user_login_dto.load(data)
+        validated_data=user_login_schema.load(data)
     except ValidationError as err:
         return jsonify(err.messages),400 #si falta un atributo o no cumple con algunas de las validaciones devuelve un 400
     

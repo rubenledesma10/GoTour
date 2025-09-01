@@ -4,18 +4,18 @@ from models.db import db
 from models.user import User
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
-from dtos.user_register_dto import UserRegisterDTO
-from dtos.user_login_dto import UserLoginDTO
+from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
+
 
 tourist_bp = Blueprint('tourist_bp', __name__, url_prefix='/api/tourist')
 
 @tourist_bp.route("/welcome", methods=["GET"])
 @jwt_required()
 @role_required(RoleEnum.TOURIST.value)
-def test_turist():
+def test_tourist():
     return jsonify({"message":"Endpoint for tourist "})
 
 @tourist_bp.route("/my_data", methods=['GET'])
@@ -26,7 +26,7 @@ def my_data():
     user=User.query.get(id_user) #traemos al usuario logueado
     if not user:
         return jsonify({"error":"User not found"}),404
-    return jsonify(user.serialize()),200
+    return user_schema.jsonify(user),200
 
 @tourist_bp.route("/my_data/edit", methods=['PUT'])
 @jwt_required()
@@ -39,9 +39,8 @@ def edit_my_data():
     data=request.get_json()
     if not data:
         return jsonify({'error':'No data received'}),400
-    user_dto=UserRegisterDTO(partial=True)
     try:
-        validated_data=user_dto.load(data)
+        validated_data=user_schema.load(data, partial=True)
     except ValidationError as err:
         return jsonify(err.messages),400
     try:
@@ -85,7 +84,7 @@ def edit_my_data():
             user.set_password(validated_data['password'])
 
         db.session.commit()
-        return jsonify({'message': 'User edited correctly', 'user': user.serialize()}), 200
+        return jsonify({'message': 'User edited correctly', 'user':  user_schema.dump(user)}), 200
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
