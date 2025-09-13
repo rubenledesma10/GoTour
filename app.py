@@ -6,11 +6,13 @@ from routes.admin_route import admnin_bp
 from routes.tourist_route import tourist_bp
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+from config.email_config import init_mail
 
 app=Flask(__name__)
 app.config['JWT_SECRET_KEY']='tu_clave_secreta' #definimos clave secreta para firmar los tokens
 app.config["JWT_ACCESS_TOKEN_EXPIRES"]=timedelta(hours=1)
 jwt=JWTManager(app) #inicializamos jwt en la aplicacion 
+init_mail(app) #inicializamos correo
 app.register_blueprint(user_bp)
 app.register_blueprint(admnin_bp)
 app.register_blueprint(tourist_bp)

@@ -8,6 +8,9 @@ from schemas.user_register_schema import user_schema #aca traemos la instancia q
 from schemas.user_login_schema import user_login_schema
 from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token
+from utils.email_service import send_welcome_email, send_reset_password_email
+import random, string
+
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
 
@@ -49,13 +52,15 @@ def register():
         else:
             return jsonify({"error": "A record with these details already exists"}), 400
     
-    access_token = create_access_token(
-        identity=str(user.id_user),
-        additional_claims={"role": user.rol.value}
-    )
+    send_welcome_email(user.email, user.username)
+
+    # access_token = create_access_token(
+    #     identity=str(user.id_user),
+    #     additional_claims={"role": user.rol.value}
+    # )
 
     #aca serializamos el objeto con Marshmallow para la repuesta
-    return jsonify({"user": user_schema.dump(user),"access_token": access_token}), 201
+    return jsonify({"user": user_schema.dump(user)}), 201
 
 @user_bp.route('/login', methods=['POST'])
 def login_user():
@@ -80,3 +85,24 @@ def login_user():
     ) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
 
     return jsonify({'access_token':access_token}),200
+
+
+@user_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "No user found with that email"}), 404
+
+    new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) #generar contraseña aleatoria
+
+    
+    user.set_password(new_password) #actualizar contraseña en DB (hasheada con tu método de User)
+    db.session.commit()
+
+    
+    send_reset_password_email(user.email, new_password) #enviar correo con la nueva contraseña
+
+    return jsonify({"message": "An email with the new password has been sent"}), 200
