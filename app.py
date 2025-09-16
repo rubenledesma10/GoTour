@@ -7,6 +7,8 @@ from routes.tourist_route import tourist_bp
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from config.email_config import init_mail
+# importa todos tus modelos aquí
+
 
 app=Flask(__name__)
 app.config['JWT_SECRET_KEY']='tu_clave_secreta' #definimos clave secreta para firmar los tokens
@@ -25,6 +27,7 @@ db.init_app(app)
 
 with app.app_context():
     from models.user import User
+    from models.feedBack import feedBack
     db.create_all()
 
 if __name__=='__main__':
