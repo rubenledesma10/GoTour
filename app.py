@@ -27,7 +27,8 @@ db.init_app(app)
 
 with app.app_context():
     from models.user import User
-    from models.feedBack import feedBack
+    from models.feedBack import FeedBack   
+    from models.turist import Turist
     db.create_all()
 
 if __name__=='__main__':
