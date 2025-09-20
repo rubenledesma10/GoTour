@@ -4,6 +4,7 @@ from models.db import db
 from routes.user_route import user_bp
 from routes.admin_route import admnin_bp
 from routes.tourist_route import tourist_bp
+from routes.receptionist_route import recepcionist_bp
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from config.email_config import init_mail
@@ -16,6 +17,7 @@ init_mail(app) #inicializamos correo
 app.register_blueprint(user_bp)
 app.register_blueprint(admnin_bp)
 app.register_blueprint(tourist_bp)
+app.register_blueprint(recepcionist_bp)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_CONNECTION_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
