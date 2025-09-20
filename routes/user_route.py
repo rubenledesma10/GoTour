@@ -94,9 +94,12 @@ def login_user():
 
     return jsonify({'access_token':access_token}),200
 
+@user_bp.route('/forgot-password')
+def forgot_password():
+    return render_template("auth/forgot_password.html")
 
 @user_bp.route('/forgot-password', methods=['POST'])
-def forgot_password():
+def forgot_password_new_password():
     data = request.get_json()
     email = data.get("email")
 
