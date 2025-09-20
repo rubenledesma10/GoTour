@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from config.config import DATABASE_CONNECTION_URI
 from models.db import db
 from routes.user_route import user_bp
@@ -28,6 +28,10 @@ db.init_app(app)
 with app.app_context():
     from models.user import User
     db.create_all()
+
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 if __name__=='__main__':
     print("Ejecutando GoTour...")

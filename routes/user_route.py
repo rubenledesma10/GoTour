@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from models.db import db
 from models.user import User
 from datetime import datetime, date
@@ -12,7 +12,7 @@ from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
 
 
-user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
+user_bp = Blueprint('user_bp', __name__, url_prefix='/api/gotour')
 
 @user_bp.route('/register', methods=['POST'])
 def register():
