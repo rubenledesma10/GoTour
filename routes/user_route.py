@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from models.db import db
 from models.user import User
 from datetime import datetime, date
@@ -12,10 +12,18 @@ from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
 
 
-user_bp = Blueprint('user_bp', __name__, url_prefix='/api/user')
+user_bp = Blueprint('user_bp', __name__, url_prefix='/api/gotour')
+
+@user_bp.route("/login")
+def login():
+    return render_template("auth/auth.html")
+
+@user_bp.route("/register")
+def register():
+    return render_template("user/register.html")
 
 @user_bp.route('/register', methods=['POST'])
-def register():
+def register_user():
     data=request.get_json() #obtenemos el body del json
     try:
         validated_data=user_schema.load(data) 

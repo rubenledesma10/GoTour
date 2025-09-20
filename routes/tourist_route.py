@@ -26,7 +26,7 @@ def my_data():
     user=User.query.get(id_user) #traemos al usuario logueado
     if not user:
         return jsonify({"error":"User not found"}),404
-    return user_schema.jsonify(user),200
+    return jsonify(user_schema.dump(user)),200
 
 @tourist_bp.route("/my_data/edit", methods=['PUT'])
 @jwt_required()
