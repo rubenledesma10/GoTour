@@ -9,7 +9,7 @@ class FeedBack(db.Model):
     comment = db.Column(db.String(250), nullable=True)
     qualification = db.Column(db.Integer, nullable=False)
 
-  
+
     id_user = db.Column(db.String(50), db.ForeignKey("user.id_user"), nullable=False)
     id_turist = db.Column(db.Integer, db.ForeignKey("turist.id_turist"), nullable=False)
 

@@ -1,12 +1,12 @@
 from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity 
 from models.db import db
-from enums.roles_enums import RoleEnum
 from models.touristinfo import TouristInfo
-from flask_jwt_extended import create_access_token, jwt_required
-from utils.decorators import role_required
-touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristinfo')
+from enums.roles_enums import RoleEnum
+from utils.decorators import role_required 
 
+touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristinfo')
 
 
 @touristinfo_bp.route("/", methods=["GET"])
@@ -14,6 +14,9 @@ touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristi
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def get_all_tourists():
     tourists = TouristInfo.query.all()
+    if not tourists:
+        return jsonify({"message": "No tourists found"}), 200
+    
     return jsonify([t.serialize() for t in tourists]), 200
 
 
@@ -24,33 +27,47 @@ def get_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
         return jsonify({"error": "Tourist not found"}), 404
+        
     return jsonify(tourist.serialize()), 200
+
 
 @touristinfo_bp.route("/", methods=["POST"])
 @jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def create_tourist():
     data = request.get_json()
-
     required_fields = ["nationality", "province", "quantity", "person_with_disability", "mobility"]
-    if not all(field in data for field in required_fields):
+    if not data or any(field not in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
 
     if data["person_with_disability"] > data["quantity"]:
         return jsonify({"error": "People with disability cannot exceed total quantity"}), 400
 
-    new_tourist = TouristInfo(
-        nationality=data["nationality"],
-        province=data["province"],
-        quantity=data["quantity"],
-        person_with_disability=data["person_with_disability"],
-        mobility=data["mobility"]
-    )
+    try:
+        current_user_id = get_jwt_identity()
 
-    db.session.add(new_tourist)
-    db.session.commit()
+        new_tourist = TouristInfo(
+            nationality=data["nationality"],
+            province=data["province"],
+            quantity=data["quantity"],
+            person_with_disability=data["person_with_disability"],
+            mobility=data["mobility"],
+            # Asigna el ID del usuario al campo id_user
+            id_user=current_user_id
+        )
 
-    return jsonify(new_tourist.serialize()), 201
+        db.session.add(new_tourist)
+        db.session.commit()
+
+        return jsonify(new_tourist.serialize()), 201
+    
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Database integrity error. The provided id_user may not exist."}), 409  # Maneja errores de integridad de la base de datos 
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500 # Maneja cualquier otro error inesperado
+
 
 @touristinfo_bp.route("/<int:id>", methods=["PUT"])
 @jwt_required()
@@ -61,6 +78,8 @@ def update_tourist(id):
         return jsonify({"error": "Tourist not found"}), 404
 
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid data"}), 400
 
     tourist.nationality = data.get("nationality", tourist.nationality)
     tourist.province = data.get("province", tourist.province)
@@ -71,8 +90,13 @@ def update_tourist(id):
     if tourist.person_with_disability > tourist.quantity:
         return jsonify({"error": "People with disability cannot exceed total quantity"}), 400
 
-    db.session.commit()
-    return jsonify(tourist.serialize()), 200
+    try:
+        db.session.commit()
+        return jsonify(tourist.serialize()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 @touristinfo_bp.route("/<int:id>", methods=["DELETE"])
 @jwt_required()
@@ -85,6 +109,3 @@ def delete_tourist(id):
     db.session.delete(tourist)
     db.session.commit()
     return jsonify({"message": "Tourist deleted"}), 200
-
-
-
