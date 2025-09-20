@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from flask_migrate import Migrate
 from config.config import DATABASE_CONNECTION_URI
 from models.db import db
 from routes.user_route import user_bp
@@ -22,6 +23,7 @@ app.register_blueprint(recepcionist_bp)
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_CONNECTION_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
+migrate = Migrate(app, db)
 
 
 
