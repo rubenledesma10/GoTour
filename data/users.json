@@ -1,0 +1,62 @@
+[
+  {
+    "first_name": "Ruben",
+    "last_name": "Ledesma",
+    "email": "rubenledesma89@gmail.com",
+    "password": "admin123",  
+    "username": "ruben_admin",
+    "rol": "ADMIN",
+    "dni": "30123456",
+    "birthdate": "1989-05-14",
+    "photo": "https://example.com/photos/ruben.jpg",
+    "phone": "+54 9 261 1234567",
+    "nationality": "Argentina",
+    "province": "Mendoza",
+    "is_activate": true
+  },
+  {
+    "first_name": "Santiago",
+    "last_name": "Romano",
+    "email": "santiago.tourist@example.com",
+    "password": "tourist123",
+    "username": "santiago_tourist",
+    "rol": "TOURIST",
+    "dni": "40234567",
+    "birthdate": "1995-11-20",
+    "photo": "https://example.com/photos/maria.jpg",
+    "phone": "+54 9 11 7654321",
+    "nationality": "Argentina",
+    "province": "Buenos Aires",
+    "is_activate": true
+  },
+  {
+    "first_name": "Santiago",
+    "last_name": "Puebla",
+    "email": "santiago.recep@example.com",
+    "password": "recep123",
+    "username": "santiago_recep",
+    "rol": "RECEPCIONIST",
+    "dni": "35222333",
+    "birthdate": "1990-03-08",
+    "photo": "https://example.com/photos/carlos.jpg",
+    "phone": "+54 9 381 2233445",
+    "nationality": "Argentina",
+    "province": "Tucumán",
+    "is_activate": true
+  },
+  {
+    "first_name": "Rodrigo",
+    "last_name": "Espinosa",
+    "email": "rodri.tourist@example.com",
+    "password": "tourist123",
+    "username": "rodri_tourist",
+    "rol": "TOURIST",
+    "dni": "40236560",
+    "birthdate": "1995-11-20",
+    "photo": "https://example.com/photos/maria.jpg",
+    "phone": "+54 9 12 7654321",
+    "nationality": "Argentina",
+    "province": "Buenos Aires",
+    "is_activate": true
+  }
+]
