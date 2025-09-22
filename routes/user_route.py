@@ -92,7 +92,11 @@ def login_user():
         additional_claims={"role": user.rol.value}
     ) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
 
-    return jsonify({'access_token':access_token}),200
+    return jsonify({
+    'access_token': access_token,
+    'role': user.rol.value,
+    'username': user.username
+}), 200
 
 @user_bp.route('/forgot-password')
 def forgot_password():
