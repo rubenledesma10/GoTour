@@ -198,7 +198,7 @@ def update_tourist_site(id_tourist_site):
     if not tourist_site_to_update:
         return jsonify({'message': 'Tourist Site not found'}), 404
 
-    updated = False  # Variable para rastrear si se realizó alguna actualización
+    updated = False  # Variable para rastrear si se realizó alguna actualización.
 
     try:
         if 'name' in data:
