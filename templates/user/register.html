@@ -88,6 +88,16 @@
                 <input type="text" class="form-control" id="province" name="province" placeholder="Ingrese su provincia"
                     required>
             </div>
+            <div class="mb-3">
+            <label for="gender" class="form-label">Seleccione su género</label>
+            <select class="form-select" id="gender" name="gender" required>
+                <option value="" disabled selected>Seleccione una opción</option>
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+                <option value="prefiero no decirlo">Prefiero no decirlo</option>
+            </select>
+             </div>
+
             <button type="submit" class="btn btn-primary">Registrar</button>
             <a href="{{ url_for('user_bp.login') }}" class="btn btn-secondary ms-2">Cancelar</a>
         </form>

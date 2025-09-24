@@ -19,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 phone: form.phone.value,
                 nationality: form.nationality.value,
                 province: form.province.value,
-                is_activate: true
+                is_activate: true,
+                gender:form.gender.value
             };
 
             try {
