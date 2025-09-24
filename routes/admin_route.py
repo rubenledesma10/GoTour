@@ -71,7 +71,8 @@ def add_user():
             phone=validated_data['phone'],
             nationality=validated_data['nationality'],
             province=validated_data['province'],
-            is_activate=validated_data.get('is_activate', True)
+            is_activate=validated_data.get('is_activate', True),
+            gender=validated_data['gender']
         )
         db.session.add(new_user)
         db.session.commit()
@@ -146,6 +147,9 @@ def edit_user(id_user):
 
         if 'password' in validated_data:
             user.set_password(validated_data['password'])
+
+        if 'gender' in validated_data:
+            user.gender = validated_data['gender']
 
         db.session.commit()
 

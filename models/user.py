@@ -21,6 +21,7 @@ class User (db.Model):
     nationality=db.Column(db.String(50), nullable=False)
     province=db.Column(db.String(50), nullable=False)
     is_activate=db.Column(db.Boolean, default=True, nullable=False) 
+    gender=db.Column(db.String(50), nullable=False)
 
 
     def set_password(self, password): #con esta funcion hasheamos y guardamos la contraseña 
@@ -29,7 +30,7 @@ class User (db.Model):
     def check_password(self, password): #con esta funcion validamos la contraseña ingresada
         return check_password_hash(self.password_hash, password)
 
-    def __init__(self, first_name, last_name, email, password, username, rol, dni, birthdate, photo, phone, nationality, province,is_activate):
+    def __init__(self, first_name, last_name, email, password, username, rol, dni, birthdate, photo, phone, nationality, province,is_activate, gender):
         self.first_name=first_name
         self.last_name=last_name
         self.email=email.lower()
@@ -43,6 +44,7 @@ class User (db.Model):
         self.nationality=nationality
         self.province=province
         self.is_activate=is_activate
+        self.gender=gender
 
     # def serialize(self):
     #     today = date.today()

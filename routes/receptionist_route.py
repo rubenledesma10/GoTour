@@ -70,8 +70,8 @@ def edit_my_data():
         if 'is_activate' in validated_data:
             user.is_activate = validated_data['is_activate']
 
-        if 'password' in validated_data:
-            user.set_password(validated_data['password'])
+        if 'gender' in validated_data:
+            user.gender = validated_data['gender']
 
         db.session.commit()
         return jsonify({'message': 'User edited correctly', 'user':  user_schema.dump(user)}), 200

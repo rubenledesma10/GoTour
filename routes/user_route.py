@@ -43,7 +43,8 @@ def register_user():
         phone=validated_data['phone'],
         nationality=validated_data['nationality'],
         province=validated_data['province'],
-        is_activate=validated_data.get('is_activate',True)
+        is_activate=validated_data.get('is_activate',True),
+        gender=validated_data['gender']
     )
 
     try:

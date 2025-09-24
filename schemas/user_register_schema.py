@@ -17,7 +17,7 @@ class UserRegisterSchema(Schema):
     nationality = fields.Str(required=True)
     province = fields.Str(required=True)
     is_activate = fields.Bool(required=False)
-
+    gender=fields.Str(required=True)
     age = fields.Method("get_age", dump_only=True) #calcular la edad. Method permite crear un campo calculado que no existe en la bd
 
     def get_age(self, obj):
