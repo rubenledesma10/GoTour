@@ -1,9 +1,9 @@
 from models.db import db 
-
+import uuid
 class TouristSite (db.Model):
     __tablename__ = "tourist_site"
 
-    id_tourist_site = db.Column (db.Integer,unique = True, primary_key = True)
+    id_tourist_site = db.Column(db.String(50), primary_key=True,unique=True, default=lambda: str(uuid.uuid4()))
     name = db.Column (db.String(50),unique = True, nullable = False)
     description = db.Column (db.String(250), nullable = False)
     address = db.Column(db.String(50), unique = True, nullable = False)
@@ -11,29 +11,28 @@ class TouristSite (db.Model):
     category = db.Column (db.String(50),nullable = False)
     url = db.Column (db.String(250), unique = True, nullable = False)
     average = db.Column (db.Float, nullable = True)
-    ###id_district = db.Column(db.Integer,db.ForeignKey('district.id_district'), nullable = False) 
-    #id_district indica que cada TouristSite tendra un id_district que apunta a un distrito especifico
-    #Nullable = False, ya que siempre un sitio turistico pertenece a un distrito.
-    #id_district es la FK que apunta a la PK id_district en nuestra tabla 'district'
-    ###district = db.relationship('District', backref = 'tourist_site', lazy = True)
-    # `lazy=True`: Los datos del District se cargarán desde la DB 
-    # solo cuando se acceda a `mi_sitio.district`.
-    ###id_user = db.Column (db.Integer, db.ForeignKey('user.id_user'), nullable = False)
-    #nullable = False, ya que cada TouristSite debe tener asociado un usuario, ya sea 
-    #turista o administrador.
-    ###user = db.relationship('User', backref = 'tourist_site', lazy = True)
+    opening_hours = db.Column(db.Time, nullable=True) #Utilizamos Time para guardar horas, minutos y segundos
+    closing_hours = db.Column(db.Time, nullable=True) 
+    id_user = db.Column (db.Integer, db.ForeignKey('user.id_user'), nullable = False) #Con este implementamos la relacion muchos a uno con User.
+    #nullable = False, ya que cada TouristSite debe tener asociado un usuario(rol), ya sea 
+    #turista, administrador, o recepcionista.
+    user = db.relationship('User', backref = 'tourist_sites', lazy = True) #Con esto podemos acceder al usuario asociado a un sitio turistico.
+    is_activate=db.Column(db.Boolean, default=True, nullable=False) 
 
-    def __init__ (self, name,description,address,phone,category,url,average): #,id_user,id_district
+def __init__(self, name, description, address, phone, category, url, id_user, average=None, is_activate=True): 
+        
         self.name = name
         self.description = description
         self.address = address
         self.phone = phone 
         self.category = category
         self.url = url
-        self.average = average 
-        #self.id_district = id_district
-        #self.id_user = id_user
-    def serialize(self): 
+        self.average = average
+        #Estableci None por defecto a average para luego sacar un promedio de las visitas y calificaciones del lugar. 
+        self.id_user = id_user
+        self.is_activate = is_activate
+    
+def serialize(self): 
         return {
             'id_tourist_site': self.id_tourist_site,
             'name': self.name,
@@ -43,5 +42,6 @@ class TouristSite (db.Model):
             'category': self.category,
             'url': self.url,
             'average': self.average,
-            #'id_district': self.id_district
+            'id_user': self.id_user,
+            'is_activate': self.is_activate
         }
