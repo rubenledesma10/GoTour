@@ -36,7 +36,7 @@ def register_user():
         email=validated_data['email'],
         password=validated_data['password'],
         username=validated_data['username'],
-        rol=RoleEnum(validated_data['rol']), #convertimos la cadena en una instancia del rolesEnum
+        role=RoleEnum(validated_data['role']), #convertimos la cadena en una instancia del rolesEnum
         dni=validated_data['dni'],
         birthdate=validated_data['birthdate'],
         photo=validated_data.get('photo', None),
@@ -95,7 +95,7 @@ def login_user():
 
     return jsonify({
     'access_token': access_token,
-    'role': user.rol.value,
+    'role': user.role.value,
     'username': user.username
 }), 200
 

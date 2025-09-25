@@ -56,8 +56,8 @@ def edit_my_data():
         if 'username' in validated_data:
             user.username = validated_data['username']
 
-        if 'rol' in validated_data:
-            user.rol = validated_data['rol']
+        if 'role' in validated_data:
+            user.rol = validated_data['role']
 
         if 'dni' in validated_data:
             user.dni = validated_data['dni']

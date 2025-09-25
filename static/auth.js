@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 email: form.email.value,
                 password: form.password.value,
                 username: form.username.value,
-                rol: form.rol.value,
+                role: form.role.value,
                 dni: form.dni.value,
                 birthdate: form.birthdate.value,
                 photo: null, // aún no subimos archivos
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (res.ok) {
                     alert("Login successful! Welcome.");
                     localStorage.setItem("access_token", result.access_token);
-                    localStorage.setItem("role", result.role);
+                    localStorage.setItem("rol", result.rol);
                     localStorage.setItem("username", result.username);
                     window.location.href = "/";
                 } else {

@@ -39,14 +39,15 @@ def populate_users(data):
             email=email,
             password=item.get('password'),  # se hashea con set_password
             username=username,
-            rol=RoleEnum[item.get('rol')],  # ADMIN / TOURIST / RECEPTIONIST
+            role=RoleEnum[item.get('role')],  # ADMIN / TOURIST / RECEPTIONIST
             dni=item.get('dni'),
             birthdate=birthdate,
             photo=item.get('photo'),
             phone=item.get('phone'),
             nationality=item.get('nationality'),
             province=item.get('province'),
-            is_activate=item.get('is_activate', True)
+            is_activate=item.get('is_activate', True),
+            gender=item.get('gender')
         )
 
         db.session.add(user)

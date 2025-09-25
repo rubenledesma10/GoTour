@@ -64,7 +64,7 @@ def add_user():
             email=validated_data['email'],
             password=validated_data['password'],
             username=validated_data['username'],
-            rol=validated_data['rol'],
+            role=validated_data['rol'],
             dni=validated_data['dni'],
             birthdate=validated_data['birthdate'],
             photo=validated_data.get('photo'),
@@ -121,8 +121,8 @@ def edit_user(id_user):
         if 'username' in validated_data:
             user.username = validated_data['username']
 
-        if 'rol' in validated_data:
-            user.rol = validated_data['rol']
+        if 'role' in validated_data:
+            user.role = validated_data['role']
 
         if 'dni' in validated_data:
             user.dni = validated_data['dni']
