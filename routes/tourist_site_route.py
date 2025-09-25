@@ -16,7 +16,7 @@ tourist_site = Blueprint('tourist_site', __name__)
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @jwt_required()
-@role_required([RoleEnum.ADMIN, RoleEnum.RECEPTIONIST, RoleEnum.TOURIST])
+@role_required([RoleEnum.ADMIN or RoleEnum.RECEPCIONIST or RoleEnum.TOURIST])
 def get_tourist_sites():
     tourist_sites = TouristSite.query.all()
 
@@ -32,7 +32,7 @@ def get_tourist_sites():
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['GET'])
 @jwt_required()
-@role_required([RoleEnum.ADMIN, RoleEnum.RECEPTIONIST, RoleEnum.TOURIST])
+@role_required([RoleEnum.ADMIN or RoleEnum.RECEPTIONIST or RoleEnum.TOURIST])
 def get_tourist_site_id(id_tourist_site):
     tourist_site = TouristSite.query.get(id_tourist_site)
     if not tourist_site:
