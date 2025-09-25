@@ -1,5 +1,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
+
+
     //formulario de registro
     const registerForm = document.getElementById("registerForm");
     if (registerForm) {
@@ -66,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (res.ok) {
                     alert("Login successful! Welcome.");
                     localStorage.setItem("access_token", result.access_token);
-                    localStorage.setItem("rol", result.rol);
+                    localStorage.setItem("role", result.role);
                     localStorage.setItem("username", result.username);
                     window.location.href = "/";
                 } else {

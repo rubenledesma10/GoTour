@@ -90,7 +90,7 @@ def login_user():
     #aca creamos el token
     access_token = create_access_token(
         identity=str(user.id_user),
-        additional_claims={"role": user.rol.value}
+        additional_claims={"role": user.role.value}
     ) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
 
     return jsonify({
