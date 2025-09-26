@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg bg-light" id="navbarRol">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="/">
                 <img src="{{ url_for('static', filename='images/logo_2.png') }}"
                  alt="GoTour" width="80" height="50">
             </a>
@@ -10,13 +10,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-link active" href="#">Inicio</a>
+                    <!--enlaces publicos-->
+                    <a class="nav-link active" href="/">Inicio</a>
                     <a class="nav-link active" href="#">CIT</a>
-                    <a class="nav-link active" href="#">Informacio turistas</a>
+                    <a class="nav-link active d-none" href="#" >Comentarios</a>
                     <a class="nav-link active" href="#">Sitios turisticos</a>
                     <a class="nav-link active" href="#">Acerca de GoTour</a>
+                    <!--privados-->
                     <a class="nav-link active d-none" href="#" data-role="admin">Usuarios</a>
-                    <a class="nav-link active d-none" href="#" data-role="admin">Comentarios</a>
+                    <a class="nav-link active d-none" href="#" data-role="admin">Informacio turistas</a>
+                    
                 
                 </div>
                 <span class="navbar-text ms-auto">

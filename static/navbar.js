@@ -1,22 +1,26 @@
 
 const authButton = document.getElementById("authButton"); //accedemos al boton
-const adminLinks = document.querySelectorAll('[data-role="admin"]'); //accedemos al permiso
+const roleLinks = document.querySelectorAll('[data-role]'); //accedemos al permiso
 
 
 const userRole = localStorage.getItem("role"); //obtenemos el rol del usario
 const username = localStorage.getItem("username"); //obtenemos el username del rol
 
 
-if (userRole && username) { //si tenemos el rol y el username del rol 
-    if (userRole == "admin") { //si el usuario es igual a administrador
-        adminLinks.forEach(link => {
-            link.classList.remove("d-none"); // eliminamos el atributo d-none de la botonera para mostrar los botones
-        });
-    }
+if (userRole && username) { //verifica si hay un usuario logueado, y que rol y username tienen
+    roleLinks.forEach(link => { //recorremos todos los data-role
+        const allowedRoles = link.dataset.role.split(","); //aca nos devuelve lo que pusimos en data role y con el split lo convierte en un array
+        if (allowedRoles.includes(userRole)) { //comprobamos si el rol esta dentro de allowedRoles y nos devuelve un true
+            link.classList.remove("d-none"); //si el rol coincide eliminamos el d-none
+        } else {
+            link.classList.add("d-none"); //si no cooincide lo agrega
+        }
+    });
     
     authButton.textContent = `Cerrar Sesión (${username})`; //cambiamos el texto a Cerrar sesion
     authButton.href = "#"; // le decimos que se quede aca hasta que nosotros le indiquemos 
-
+    authButton.style.backgroundColor = "red"; //le agregamos el color rojo
+    authButton.style.color = "white"; //letra blanca
   
     authButton.addEventListener("click", (e) => {
         e.preventDefault();
@@ -31,7 +35,7 @@ if (userRole && username) { //si tenemos el rol y el username del rol
 
 } else {
    
-    adminLinks.forEach(link => {
+    roleLinks.forEach(link => {
         link.classList.add("d-none");
     });
     
