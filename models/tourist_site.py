@@ -13,7 +13,8 @@ class TouristSite (db.Model):
     average = db.Column (db.Float, nullable = True)
     opening_hours = db.Column(db.Time, nullable=True) #Utilizamos Time para guardar horas, minutos y segundos
     closing_hours = db.Column(db.Time, nullable=True) 
-    id_user = db.Column (db.Integer, db.ForeignKey('user.id_user'), nullable = False) #Con este implementamos la relacion muchos a uno con User.
+    id_user = db.Column(db.String(50), db.ForeignKey('user.id_user'), nullable=False)
+    #Con este implementamos la relacion muchos a uno con User.
     #nullable = False, ya que cada TouristSite debe tener asociado un usuario(rol), ya sea 
     #turista, administrador, o recepcionista.
     user = db.relationship('User', backref = 'tourist_sites', lazy = True) #Con esto podemos acceder al usuario asociado a un sitio turistico.
