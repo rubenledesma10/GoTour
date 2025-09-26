@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 email: form.email.value,
                 password: form.password.value,
                 username: form.username.value,
-                role: form.role.value,
+                role: "tourist", //aca lo definimos nosotros ya que siempre se van a registrar como turistias desde el front, o al menos que lo haga el admin
                 dni: form.dni.value,
                 birthdate: form.birthdate.value,
                 photo: null, // aún no subimos archivos
