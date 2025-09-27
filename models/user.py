@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash #gener
 from datetime import date
 
 class User (db.Model):
-    _tablename_='user'
+    _tablename_='__user__'
     id_user=db.Column(db.String(50), primary_key=True,unique=True, default=lambda: str(uuid.uuid4()))
     first_name=db.Column(db.String(50),nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
@@ -30,7 +30,7 @@ class User (db.Model):
     def check_password(self, password): #con esta funcion validamos la contraseña ingresada
         return check_password_hash(self.password_hash, password)
 
-    def _init_(self, first_name, last_name, email, password, username, role, dni, birthdate, photo, phone, nationality, province,is_activate, gender):
+    def __init__(self, first_name, last_name, email, password, username, role, dni, birthdate, photo, phone, nationality, province,is_activate, gender):
         self.first_name=first_name
         self.last_name=last_name
         self.email=email.lower()

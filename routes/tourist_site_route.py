@@ -16,10 +16,48 @@ tourist_site = Blueprint('tourist_site', __name__)
 # Definimos la ruta para obtener todos los sitios turísticos
 # Estos son los dos endpoint al cual tienen acceso todos los roles.
 
-@tourist_site.route('/tourist_sites/view', methods=['GET'])
+@tourist_site.route('/tourist_sites/view', methods=['GET','POST'])
 def tourist_sites_view():
-    sitios = TouristSite.query.all()
-    return render_template('tourist_site/tourist_sites.html', sitios=sitios)
+    #POST para agregar un nuevo sitio turístico desde el formulario
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        address = request.form.get('address')
+        phone = request.form.get('phone')
+        category = request.form.get('category')
+        url_site = request.form.get('url')
+        average = request.form.get('average')
+        opening_hours = request.form.get('opening_hours')
+        closing_hours = request.form.get('closing_hours')
+
+        new_site = TouristSite(
+            name=name,
+            description=description,
+            address=address,
+            phone=phone,
+            category=category,
+            url=url_site,
+            average=float(average) if average else 0,
+            id_user="1",   
+            is_activate=True,
+            opening_hours=opening_hours,
+            closing_hours=closing_hours
+        )
+
+        try:
+            db.session.add(new_site)
+            db.session.commit()
+            flash("Sitio turístico agregado correctamente", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error al agregar el sitio: {e}", "danger")
+
+        return redirect(url_for('tourist_site.tourist_sites_view'))
+
+    # GET para mostrar los sitios turísticos
+    sites = TouristSite.query.all()
+    return render_template('tourist_site/tourist_sites.html', sites=sites)
+
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @jwt_required()
