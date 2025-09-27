@@ -17,7 +17,7 @@ class User (db.Model):
     dni = db.Column(db.String(20), nullable=False, unique=True)
     birthdate= db.Column(db.Date, nullable=False) #Marshmallow puede convertir strings "YYYY-MM-DD"
     photo=db.Column(db.String(250), nullable=True)
-    phone=db.Column(db.String(50), nullable=False)
+    phone=db.Column(db.String(50), nullable=False, unique=True)
     nationality=db.Column(db.String(50), nullable=False)
     province=db.Column(db.String(50), nullable=False)
     is_activate=db.Column(db.Boolean, default=True, nullable=False) 

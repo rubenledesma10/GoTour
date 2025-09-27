@@ -69,6 +69,8 @@ def register_user():
             return jsonify({"error": "DNI ya registrado"}), 400
         elif "username" in str(e.orig):
             return jsonify({"error": "Nombre de usuario ya usado"}), 400
+        elif "phone" in str(e.orig):
+            return jsonify({"error": "Número de telefono ya usado"}), 400
         else:
             return jsonify({"error": "Ya existe un registro con estos datos"}), 400
 
