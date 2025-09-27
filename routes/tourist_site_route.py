@@ -8,11 +8,18 @@ from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
+from flask import render_template
 
 tourist_site = Blueprint('tourist_site', __name__)
 
 # Definimos la ruta para obtener todos los sitios turísticos
 # Estos son los dos endpoint al cual tienen acceso todos los roles.
+
+@tourist_site.route('/tourist_sites/view', methods=['GET'])
+#@jwt_required()
+#@role_required([RoleEnum.ADMIN or RoleEnum.RECEPCIONIST or RoleEnum.TOURIST])
+def tourist_sites_view():
+    return render_template('tourist_site/add_tourist_sites.html')
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @jwt_required()

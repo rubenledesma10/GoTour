@@ -56,8 +56,8 @@ def edit_my_data():
         if 'username' in validated_data:
             user.username = validated_data['username']
 
-        if 'rol' in validated_data:
-            user.rol = validated_data['rol']
+        if 'role' in validated_data:
+            user.rol = validated_data['role']
 
         if 'dni' in validated_data:
             user.dni = validated_data['dni']
@@ -82,6 +82,9 @@ def edit_my_data():
 
         if 'password' in validated_data:
             user.set_password(validated_data['password'])
+
+        if 'gender' in validated_data:
+            user.gender = validated_data['gender']
 
         db.session.commit()
         return jsonify({'message': 'User edited correctly', 'user':  user_schema.dump(user)}), 200

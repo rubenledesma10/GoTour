@@ -1,5 +1,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
+
+
     //formulario de registro
     const registerForm = document.getElementById("registerForm");
     if (registerForm) {
@@ -12,14 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 email: form.email.value,
                 password: form.password.value,
                 username: form.username.value,
-                rol: form.rol.value,
+                role: form.role.value,
                 dni: form.dni.value,
                 birthdate: form.birthdate.value,
                 photo: null, // aún no subimos archivos
                 phone: form.phone.value,
                 nationality: form.nationality.value,
                 province: form.province.value,
-                is_activate: true
+                is_activate: true,
+                gender:form.gender.value
             };
 
             try {

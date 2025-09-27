@@ -9,7 +9,7 @@ class UserRegisterSchema(Schema):
     email = fields.Email(required=True)
     password = fields.Str(load_only=True, required=True, validate=validate.Length(min=6)) #load_only es solamente para recibir, nunca se devuelve
     username = fields.Str(required=True, validate=validate.Length(min=3))
-    rol = fields.Str(required=True, validate=validate.OneOf([role.value for role in RoleEnum]))
+    role = fields.Str(required=True, validate=validate.OneOf([role.value for role in RoleEnum]))
     dni = fields.Str(required=True, validate=validate.Length(min=7, max=20))
     birthdate = fields.Date(required=True)  # "YYYY-MM-DD"
     photo = fields.Str(required=False, allow_none=True)
@@ -17,7 +17,7 @@ class UserRegisterSchema(Schema):
     nationality = fields.Str(required=True)
     province = fields.Str(required=True)
     is_activate = fields.Bool(required=False)
-
+    gender=fields.Str(required=True)
     age = fields.Method("get_age", dump_only=True) #calcular la edad. Method permite crear un campo calculado que no existe en la bd
 
     def get_age(self, obj):

@@ -36,14 +36,15 @@ def register_user():
         email=validated_data['email'],
         password=validated_data['password'],
         username=validated_data['username'],
-        rol=RoleEnum(validated_data['rol']), #convertimos la cadena en una instancia del rolesEnum
+        role=RoleEnum(validated_data['role']), #convertimos la cadena en una instancia del rolesEnum
         dni=validated_data['dni'],
         birthdate=validated_data['birthdate'],
         photo=validated_data.get('photo', None),
         phone=validated_data['phone'],
         nationality=validated_data['nationality'],
         province=validated_data['province'],
-        is_activate=validated_data.get('is_activate',True)
+        is_activate=validated_data.get('is_activate',True),
+        gender=validated_data['gender']
     )
 
     try:
@@ -89,12 +90,12 @@ def login_user():
     #aca creamos el token
     access_token = create_access_token(
         identity=str(user.id_user),
-        additional_claims={"role": user.rol.value}
+        additional_claims={"role": user.role.value}
     ) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
 
     return jsonify({
     'access_token': access_token,
-    'role': user.rol.value,
+    'role': user.role.value,
     'username': user.username
 }), 200
 
