@@ -1,32 +1,18 @@
-
 document.addEventListener("DOMContentLoaded", () => {
+
+
     //formulario de registro
     const registerForm = document.getElementById("registerForm");
     if (registerForm) {
         registerForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const form = e.target;
-            const data = {
-                first_name: form.first_name.value,
-                last_name: form.last_name.value,
-                email: form.email.value,
-                password: form.password.value,
-                username: form.username.value,
-                rol: form.rol.value,
-                dni: form.dni.value,
-                birthdate: form.birthdate.value,
-                photo: null, // aún no subimos archivos
-                phone: form.phone.value,
-                nationality: form.nationality.value,
-                province: form.province.value,
-                is_activate: true
-            };
+            const formData = new FormData(registerForm); //convierte los datos del formulario en un objeto que se puede enviar con fetch
+            formData.set("role", "tourist"); //de esta forma hacemos que si o si sea turista el que se registre por aca
 
             try {
                 const res = await fetch('/api/gotour/register', {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
                 const result = await res.json();
@@ -109,4 +95,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
-

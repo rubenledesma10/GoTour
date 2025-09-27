@@ -6,21 +6,22 @@ from werkzeug.security import generate_password_hash, check_password_hash #gener
 from datetime import date
 
 class User (db.Model):
-    __tablename__='user'
+    _tablename_='user'
     id_user=db.Column(db.String(50), primary_key=True,unique=True, default=lambda: str(uuid.uuid4()))
     first_name=db.Column(db.String(50),nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email=db.Column(db.String(50), nullable=False, unique=True)
     password_hash=db.Column(db.Text, nullable=False)
     username=db.Column(db.String(50), nullable=False, unique=True)
-    rol = db.Column(SqlEnum(RoleEnum), nullable=False) #SqlEnum nos permite guardar solamente valores que este en roles_enums y nos convierte el enum en texto
+    role = db.Column(SqlEnum(RoleEnum), nullable=False) #SqlEnum nos permite guardar solamente valores que este en roles_enums y nos convierte el enum en texto
     dni = db.Column(db.String(20), nullable=False, unique=True)
     birthdate= db.Column(db.Date, nullable=False) #Marshmallow puede convertir strings "YYYY-MM-DD"
     photo=db.Column(db.String(250), nullable=True)
-    phone=db.Column(db.String(50), nullable=False)
+    phone=db.Column(db.String(50), nullable=False, unique=True)
     nationality=db.Column(db.String(50), nullable=False)
     province=db.Column(db.String(50), nullable=False)
     is_activate=db.Column(db.Boolean, default=True, nullable=False) 
+    gender=db.Column(db.String(50), nullable=False)
 
 
     def set_password(self, password): #con esta funcion hasheamos y guardamos la contraseña 
@@ -29,13 +30,13 @@ class User (db.Model):
     def check_password(self, password): #con esta funcion validamos la contraseña ingresada
         return check_password_hash(self.password_hash, password)
 
-    def __init__(self, first_name, last_name, email, password, username, rol, dni, birthdate, photo, phone, nationality, province,is_activate):
+    def _init_(self, first_name, last_name, email, password, username, role, dni, birthdate, photo, phone, nationality, province,is_activate, gender):
         self.first_name=first_name
         self.last_name=last_name
         self.email=email.lower()
         self.set_password(password)
         self.username=username
-        self.rol=rol
+        self.role=role
         self.dni=dni
         self.birthdate=birthdate
         self.photo=photo
@@ -43,6 +44,7 @@ class User (db.Model):
         self.nationality=nationality
         self.province=province
         self.is_activate=is_activate
+        self.gender=gender
 
     # def serialize(self):
     #     today = date.today()
