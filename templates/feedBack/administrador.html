@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoTour - Administrador Feedback</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="{{ url_for('static', filename='images/logo_2.png') }}" alt="GoTour" width="80" height="50">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link active" href="/">Inicio</a>
+                    <a class="nav-link" href="#">Usuarios</a>
+                    <a class="nav-link" href="#">CIT</a>
+                    <a class="nav-link" href="#">Información turistas</a>
+                    <a class="nav-link" href="#">Sitios turísticos</a>
+                    <a class="nav-link active" aria-current="page" href="/admin/feedback">Comentarios (Admin)</a>
+                </div>
+                <span class="navbar-text ms-auto">
+                    <button type="button" class="btn" style="background-color: orange; color: white;">
+                        Registrarse / Iniciar Sesión
+                    </button>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido -->
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Gestión de Feedbacks</h1>
+
+        <!-- Tabla de feedbacks -->
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Comentario</th>
+                    <th>Calificación</th>
+                    <th>Sitio</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="feedbackTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal para editar feedback -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Feedback</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editForm">
+              <input type="hidden" id="editId">
+              <div class="mb-3">
+                <label for="editComment" class="form-label">Comentario</label>
+                <textarea id="editComment" class="form-control"></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editQualification" class="form-label">Calificación</label>
+                <input type="number" id="editQualification" class="form-control" min="1" max="5">
+              </div>
+              <div class="mb-3">
+                <label for="editTourSite" class="form-label">Sitio</label>
+                <input type="text" id="editTourSite" class="form-control">
+              </div>
+              <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script de lógica -->
+    <script>
+        const token = "PON_ACA_TU_TOKEN_JWT"; // 
+        const API_URL = "/api/feedback/";
+
+        // Cargar feedbacks
+        async function loadFeedbacks() {
+            const res = await fetch(API_URL, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const data = await res.json();
+
+            const tbody = document.getElementById("feedbackTableBody");
+            tbody.innerHTML = "";
+
+            data.forEach((f, index) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${f.comment}</td>
+                    <td>${f.qualification}</td>
+                    <td>${f.tour_site}</td>
+                    <td>${f.user_name}</td>
+                    <td>${new Date(f.date_hour).toLocaleString("es-AR")}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success me-2" onclick="openEditModal(${f.id}, '${f.comment}', ${f.qualification}, '${f.tour_site}')">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteFeedback(${f.id})">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Abrir modal de edición
+        function openEditModal(id, comment, qualification, tour_site) {
+            document.getElementById("editId").value = id;
+            document.getElementById("editComment").value = comment;
+            document.getElementById("editQualification").value = qualification;
+            document.getElementById("editTourSite").value = tour_site;
+
+            const modal = new bootstrap.Modal(document.getElementById("editModal"));
+            modal.show();
+        }
+
+        // Guardar cambios en feedback
+        document.getElementById("editForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("editId").value;
+            const updatedFeedback = {
+                comment: document.getElementById("editComment").value,
+                qualification: parseInt(document.getElementById("editQualification").value),
+                id_tourist_site: document.getElementById("editTourSite").value
+            };
+
+            await fetch(API_URL + id, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(updatedFeedback)
+            });
+
+            loadFeedbacks();
+            bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+        });
+
+        // Eliminar feedback
+        async function deleteFeedback(id) {
+            if (!confirm("¿Seguro que deseas eliminar este feedback?")) return;
+
+            await fetch(API_URL + id, {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            loadFeedbacks();
+        }
+
+        loadFeedbacks();
+    </script>
+</body>
+</html>
