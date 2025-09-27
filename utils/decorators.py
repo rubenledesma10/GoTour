@@ -8,8 +8,10 @@ def role_required(required_role):
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            if claims.get("role") != required_role:
+            user_role = claims.get("role", "").lower()
+            if user_role != required_role.lower():
                 return jsonify({"error": "Access forbidden: role not authorized"}), 403
             return fn(*args, **kwargs)
         return decorator
     return wrapper
+

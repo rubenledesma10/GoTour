@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-
+from datetime import timedelta
 load_dotenv()
 
 class Config:
@@ -16,7 +16,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     #configuracion para JWT
-    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_EXPIRES_HOURS", 1))  # default: 1h
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=int(os.getenv("JWT_EXPIRES_HOURS", 1)))  # default: 1h
 
     #configuracion para email
     MAIL_SERVER = "smtp.gmail.com"
