@@ -6,14 +6,14 @@ from werkzeug.security import generate_password_hash, check_password_hash #gener
 from datetime import date
 
 class User (db.Model):
-    _tablename_='__user__'
+    __tablename__='user'
     id_user=db.Column(db.String(50), primary_key=True,unique=True, default=lambda: str(uuid.uuid4()))
     first_name=db.Column(db.String(50),nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email=db.Column(db.String(50), nullable=False, unique=True)
     password_hash=db.Column(db.Text, nullable=False)
     username=db.Column(db.String(50), nullable=False, unique=True)
-    role = db.Column(SqlEnum(RoleEnum), nullable=False) #SqlEnum nos permite guardar solamente valores que este en roles_enums y nos convierte el enum en texto
+    role = db.Column(db.String(20), nullable=False)  
     dni = db.Column(db.String(20), nullable=False, unique=True)
     birthdate= db.Column(db.Date, nullable=False) #Marshmallow puede convertir strings "YYYY-MM-DD"
     photo=db.Column(db.String(250), nullable=True)
@@ -36,7 +36,7 @@ class User (db.Model):
         self.email=email.lower()
         self.set_password(password)
         self.username=username
-        self.role=role
+        self.role = role.lower()
         self.dni=dni
         self.birthdate=birthdate
         self.photo=photo

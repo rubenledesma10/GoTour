@@ -14,13 +14,13 @@ tourist_bp = Blueprint('tourist_bp', __name__, url_prefix='/api/tourist')
 
 @tourist_bp.route("/welcome", methods=["GET"])
 @jwt_required()
-@role_required(RoleEnum.TOURIST.value)
+@role_required("tourist")
 def test_tourist():
     return jsonify({"message":"Endpoint for tourist "})
 
 @tourist_bp.route("/my_data", methods=['GET'])
 @jwt_required()
-@role_required(RoleEnum.TOURIST.value)
+@role_required("tourist")
 def my_data():
     id_user=get_jwt_identity() #obtenemos el token de la persona que se logueo
     user=User.query.get(id_user) #traemos al usuario logueado
@@ -30,7 +30,7 @@ def my_data():
 
 @tourist_bp.route("/my_data/edit", methods=['PUT'])
 @jwt_required()
-@role_required(RoleEnum.TOURIST.value)
+@role_required("tourist")
 def edit_my_data():
     id_user=get_jwt_identity()
     user=User.query.get(id_user)
