@@ -10,9 +10,9 @@ from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token
 from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
+import os, uuid
 
-
-user_bp = Blueprint('user_bp', __name__, url_prefix='/api/gotour')
+user_bp = Blueprint('user_bp', _name_, url_prefix='/api/gotour')
 
 @user_bp.route("/login")
 def login():
@@ -24,50 +24,57 @@ def register():
 
 @user_bp.route('/register', methods=['POST'])
 def register_user():
-    data=request.get_json() #obtenemos el body del json
+    #todos los campos de texto vienen en request.form y no en get_json
+    data = request.form.to_dict() #convierte los datos enviados  en un diccionario
+    file = request.files.get("photo")  #obtenemos la foto si se subio un archivo
+
+    #aca guardamos la foto en el servidir (nuestro proyecto)
+    photo_filename = None
+    if file:
+        filename = f"{uuid.uuid4()}_{file.filename}" #generamos el nombre unico del archivo
+        upload_path = os.path.join("static/uploads", filename) #indicamos donde guardamos las imagenes
+        file.save(upload_path)
+        photo_filename = filename
+
     try:
-        validated_data=user_schema.load(data) 
+        validated_data = user_schema.load(data) #valida que los datos tengan el formato correcto
     except ValidationError as err:
         return jsonify(err.messages), 400
-    
-    user = User( #aca registramos el nuevo usuario
+
+    user = User(
         first_name=validated_data['first_name'],
         last_name=validated_data['last_name'],
         email=validated_data['email'],
         password=validated_data['password'],
         username=validated_data['username'],
-        rol=RoleEnum(validated_data['rol']), #convertimos la cadena en una instancia del rolesEnum
+        role=RoleEnum(validated_data['role']),
         dni=validated_data['dni'],
         birthdate=validated_data['birthdate'],
-        photo=validated_data.get('photo', None),
+        photo=photo_filename,
         phone=validated_data['phone'],
         nationality=validated_data['nationality'],
         province=validated_data['province'],
-        is_activate=validated_data.get('is_activate',True)
+        is_activate=validated_data.get('is_activate', True),
+        gender=validated_data['gender']
     )
 
     try:
         db.session.add(user)
         db.session.commit()
     except IntegrityError as e:
-        db.session.rollback() 
+        db.session.rollback()
         if "email" in str(e.orig):
-            return jsonify({"error": "Email is already registered"}), 400
+            return jsonify({"error": "Email ya registrado"}), 400
         elif "dni" in str(e.orig):
-            return jsonify({"error": "DNI is already registered"}), 400
+            return jsonify({"error": "DNI ya registrado"}), 400
         elif "username" in str(e.orig):
-            return jsonify({"error": "Username is already taken"}), 400
+            return jsonify({"error": "Nombre de usuario ya usado"}), 400
+        elif "phone" in str(e.orig):
+            return jsonify({"error": "Número de telefono ya usado"}), 400
         else:
-            return jsonify({"error": "A record with these details already exists"}), 400
-    
+            return jsonify({"error": "Ya existe un registro con estos datos"}), 400
+
     send_welcome_email(user.email, user.username)
-
-    # access_token = create_access_token(
-    #     identity=str(user.id_user),
-    #     additional_claims={"role": user.rol.value}
-    # )
-
-    #aca serializamos el objeto con Marshmallow para la repuesta
     return jsonify({"user": user_schema.dump(user)}), 201
 
 @user_bp.route('/login', methods=['POST'])
@@ -89,14 +96,21 @@ def login_user():
     #aca creamos el token
     access_token = create_access_token(
         identity=str(user.id_user),
-        additional_claims={"role": user.rol.value}
+        additional_claims={"role": user.role.value}
     ) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
 
-    return jsonify({'access_token':access_token}),200
+    return jsonify({
+    'access_token': access_token,
+    'role': user.role.value,
+    'username': user.username
+}), 200
 
+@user_bp.route('/forgot-password')
+def forgot_password():
+    return render_template("auth/forgot_password.html")
 
 @user_bp.route('/forgot-password', methods=['POST'])
-def forgot_password():
+def forgot_password_new_password():
     data = request.get_json()
     email = data.get("email")
 

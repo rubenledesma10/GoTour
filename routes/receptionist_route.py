@@ -9,7 +9,7 @@ from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
 
-recepcionist_bp=Blueprint('recepcionist_bp', __name__, url_prefix='/api/recepcionist')
+recepcionist_bp=Blueprint('recepcionist_bp', _name_, url_prefix='/api/recepcionist')
 
 @recepcionist_bp.route("/welcome", methods=["GET"])
 @jwt_required()
@@ -46,8 +46,8 @@ def edit_my_data():
         if 'username' in validated_data:
             user.username = validated_data['username']
 
-        if 'rol' in validated_data:
-            user.rol = validated_data['rol']
+        if 'role' in validated_data:
+            user.rol = validated_data['role']
 
         if 'dni' in validated_data:
             user.dni = validated_data['dni']
@@ -70,8 +70,8 @@ def edit_my_data():
         if 'is_activate' in validated_data:
             user.is_activate = validated_data['is_activate']
 
-        if 'password' in validated_data:
-            user.set_password(validated_data['password'])
+        if 'gender' in validated_data:
+            user.gender = validated_data['gender']
 
         db.session.commit()
         return jsonify({'message': 'User edited correctly', 'user':  user_schema.dump(user)}), 200

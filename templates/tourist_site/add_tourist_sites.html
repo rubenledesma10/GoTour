@@ -1,0 +1,71 @@
+{% include "head.html" %}
+    {% include "partials/navbar.html" %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Agregar sitio turistico</h2>
+        <form id="addTouristSiteForm">
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="name" name="name"
+                    placeholder="Nombre del sitio" required minlength="2" maxlength="50" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Descripcion</label>
+                <input type="text" class="form-control" id="description" name="description"
+                    placeholder="Descripcion del sitio" required minlength="2" maxlength="200" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">Direccion</label>
+                <input type="address" class="form-control" id="address" name="address" placeholder="Direccion del sitio turistico"
+                    required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="phone" class="form-label">Contacto/s</label>
+                <input type="phone" class="form-control" id="phone" name="phone" placeholder="Ingrese el/los numero/s de contacto del lugar"
+                    required>
+            </div>
+
+            <div class="mb-3">
+                <label for="category" class="form-label">Categoria</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">Seleccione una categoria</option>
+                    <option value="winery">Bodegas</option>
+                    <option value="olive trees">Olivicolas</option>
+                    <option value="accommodation/hotels">Alojamiento/Hoteleria</option>
+                    <option value="gastronomy">Gastronomia</option>
+                    <option value="tourist services">Servicios Turisticos</option>
+                    <option value="rural tourism">Turismo Rural</option>
+                </select>
+            
+            </div>
+
+            <div class="mb-3">
+                <label for="url" class="form-label">Pagina Web</label>
+                <input type="url" class="form-control" id="url" name="url"
+                    placeholder="Ingrese la URL" required minlength="2" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="average" class="form-label">Promedio de visitas</label>
+                <input type="number" class="form-control" id="average" name="average"
+                    placeholder="Ingrese el promedio de visitas" required step="0.01" min="0">
+            </div>
+
+            <div class="mb-3">
+                <label for="opening_hours" class="form-label">Horario de apertura</label>
+                <input type="time" class="form-control" id="opening_hours" name="opening_hours" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="closing_hours" class="form-label">Horario de cierre</label>
+                <input type="time" class="form-control" id="closing_hours" name="closing_hours" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Agregar Sitio</button>
+            <button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
+        </form>
+    </div>
+{% include "scripts.html"%}

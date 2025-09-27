@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from models.db import db
 from models.user import User
 from datetime import datetime, date
@@ -10,7 +10,7 @@ from flask_jwt_extended import create_access_token, jwt_required
 from utils.decorators import role_required
 
 #ACA VAN A ESTAR TODAS LAS RUTAS EN LAS QUE EL ADMINISTRADOR PUEDE ACCEDER
-admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
+admnin_bp = Blueprint('admnin_bp', _name_, url_prefix='/api/admin')
 
 @admnin_bp.route("/welcome", methods=["GET"])
 @jwt_required()
@@ -18,6 +18,9 @@ admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
 def test_admin():
     return jsonify({"message":"Endpoint for admin "})
 
+@admnin_bp.route("/dashboard", methods=["GET"])
+def get_users():
+    return render_template("user/user.html")
 
 @admnin_bp.route('/get')
 @jwt_required()
@@ -64,14 +67,15 @@ def add_user():
             email=validated_data['email'],
             password=validated_data['password'],
             username=validated_data['username'],
-            rol=validated_data['rol'],
+            role=validated_data['rol'],
             dni=validated_data['dni'],
             birthdate=validated_data['birthdate'],
             photo=validated_data.get('photo'),
             phone=validated_data['phone'],
             nationality=validated_data['nationality'],
             province=validated_data['province'],
-            is_activate=validated_data.get('is_activate', True)
+            is_activate=validated_data.get('is_activate', True),
+            gender=validated_data['gender']
         )
         db.session.add(new_user)
         db.session.commit()
@@ -120,8 +124,8 @@ def edit_user(id_user):
         if 'username' in validated_data:
             user.username = validated_data['username']
 
-        if 'rol' in validated_data:
-            user.rol = validated_data['rol']
+        if 'role' in validated_data:
+            user.role = validated_data['role']
 
         if 'dni' in validated_data:
             user.dni = validated_data['dni']
@@ -146,6 +150,9 @@ def edit_user(id_user):
 
         if 'password' in validated_data:
             user.set_password(validated_data['password'])
+
+        if 'gender' in validated_data:
+            user.gender = validated_data['gender']
 
         db.session.commit()
 
