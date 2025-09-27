@@ -8,18 +8,58 @@ from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
-from flask import render_template
+from flask import render_template, request, redirect, url_for, flash  
+import uuid 
 
 tourist_site = Blueprint('tourist_site', __name__)
 
 # Definimos la ruta para obtener todos los sitios turísticos
 # Estos son los dos endpoint al cual tienen acceso todos los roles.
 
-@tourist_site.route('/tourist_sites/view', methods=['GET'])
-#@jwt_required()
-#@role_required([RoleEnum.ADMIN or RoleEnum.RECEPCIONIST or RoleEnum.TOURIST])
+@tourist_site.route('/tourist_sites/view', methods=['GET', 'POST'])
 def tourist_sites_view():
-    return render_template('tourist_site/add_tourist_sites.html')
+    if request.method == 'POST':
+        # Capturar datos del formulario
+        name = request.form.get('name')
+        description = request.form.get('description')
+        address = request.form.get('address')
+        phone = request.form.get('phone')
+        category = request.form.get('category')
+        url = request.form.get('url')
+        average = request.form.get('average')
+        opening_hours = request.form.get('opening_hours')
+        closing_hours = request.form.get('closing_hours')
+        id_user = None   # lo podés setear si tenés auth
+
+        try:
+            # Crear objeto y guardar en DB
+            new_site = TouristSite(
+                id_tourist_site=str(uuid.uuid4()),
+                name=name,
+                description=description,
+                address=address,
+                phone=phone,
+                category=category,
+                url=url,
+                average=average,
+                opening_hours=opening_hours,
+                closing_hours=closing_hours,
+                id_user=id_user,
+                is_activate=True
+            )
+            db.session.add(new_site)
+            db.session.commit()
+
+            flash("Sitio turístico agregado correctamente ", "success")
+            return redirect(url_for('tourist_site.tourist_sites_view'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error al guardar: {e}", "danger")
+
+    # Si es GET o hubo error → mostrar lista
+    sitios = TouristSite.query.all()
+    return render_template('tourist_site/tourist_sites.html', sitios=sitios)
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @jwt_required()
