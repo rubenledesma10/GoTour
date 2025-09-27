@@ -1,0 +1,39 @@
+<button id="addTouristBtn" class="btn btn-primary mb-3">Agregar Información Turística</button>
+<div class="modal fade" id="touristModal" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+    <form id="touristForm">
+        <div class="modal-header">
+        <h5 class="modal-title">Agregar Turista</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+        <div class="mb-3">
+            <label for="nationality" class="form-label">Nacionalidad</label>
+            <input type="text" class="form-control" id="nationality" name="nationality" required>
+        </div>
+        <div class="mb-3">
+            <label for="province" class="form-label">Provincia</label>
+            <input type="text" class="form-control" id="province" name="province" required>
+        </div>
+        <div class="mb-3">
+            <label for="quantity" class="form-label">Cantidad de personas</label>
+            <input type="number" class="form-control" id="quantity" name="quantity" required>
+        </div>
+        <div class="mb-3">
+            <label for="person_with_disability" class="form-label">Personas con discapacidad</label>
+            <input type="number" class="form-control" id="person_with_disability" name="person_with_disability" required>
+        </div>
+        <div class="mb-3">
+            <label for="mobility" class="form-label">Movilidad</label>
+            <input type="text" class="form-control" id="mobility" name="mobility" required>
+        </div>
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+    </form>
+    </div>
+</div>
+</div>
