@@ -10,7 +10,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from utils.decorators import role_required
 
 
-tourist_bp = Blueprint('tourist_bp', __name__, url_prefix='/api/tourist')
+tourist_bp = Blueprint('tourist_bp', _name_, url_prefix='/api/tourist')
 
 @tourist_bp.route("/welcome", methods=["GET"])
 @jwt_required()

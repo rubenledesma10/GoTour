@@ -1,9 +1,9 @@
 {% include "head.html" %}
-<body>
+
     {% include "partials/navbar.html" %}
     <div class="container mt-4">
-        <h2 class="mb-4">Registro de Usuario</h2>
-        <form id="registerForm">
+        <h2 class="mb-4">Bienvenido a la familia de GoTour! 😎</h2>
+        <form id="registerForm" enctype="multipart/form-data">
 
             <div class="mb-3">
                 <label for="first_name" class="form-label">Nombre</label>
@@ -33,16 +33,6 @@
                 <label for="username" class="form-label">Nombre de usuario</label>
                 <input type="text" class="form-control" id="username" name="username"
                     placeholder="Ingrese un nombre de usuario" required minlength="3" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="role" class="form-label">Rol</label>
-                <select class="form-select" id="role" name="role" required>
-                    <option value="">Seleccione un rol</option>
-                    <option value="admin">Administrador</option>
-                    <option value="tourist">Turista</option>
-                    <option value="recepcionist">Recepcionist</option>
-                </select>
             </div>
 
             <div class="mb-3">
@@ -92,6 +82,4 @@
             <a href="{{ url_for('user_bp.login') }}" class="btn btn-secondary ms-2">Cancelar</a>
         </form>
     </div>
-
-</body>
 {% include "scripts.html"%}

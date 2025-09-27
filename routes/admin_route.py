@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from models.db import db
 from models.user import User
 from datetime import datetime, date
@@ -10,7 +10,7 @@ from flask_jwt_extended import create_access_token, jwt_required
 from utils.decorators import role_required
 
 #ACA VAN A ESTAR TODAS LAS RUTAS EN LAS QUE EL ADMINISTRADOR PUEDE ACCEDER
-admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
+admnin_bp = Blueprint('admnin_bp', _name_, url_prefix='/api/admin')
 
 @admnin_bp.route("/welcome", methods=["GET"])
 @jwt_required()
@@ -18,6 +18,9 @@ admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
 def test_admin():
     return jsonify({"message":"Endpoint for admin "})
 
+@admnin_bp.route("/dashboard", methods=["GET"])
+def get_users():
+    return render_template("user/user.html")
 
 @admnin_bp.route('/get')
 @jwt_required()
