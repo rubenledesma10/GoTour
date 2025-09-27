@@ -5,8 +5,17 @@ from models.cit import Cit
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from enums.roles_enums import RoleEnum
 from utils.decorators import role_required
+# En un archivo llamado, por ejemplo, views.py
+from flask import Blueprint, render_template
+
 
 cit_bp = Blueprint('cit_bp', __name__, url_prefix='/api/cits')
+
+@cit_bp.route("/list", endpoint="list_cits_page")
+def list_cit_page():
+    cits = Cit.query.all()
+    return render_template("cits/list_cit.html", cits=cits)
+
 
 @cit_bp.route("/", methods=["GET"])
 def get_all_cit():

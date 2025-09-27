@@ -2,7 +2,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="{{ url_for('static', filename='images/logo_2.png') }}"
-                 alt="GoTour" width="80" height="50">
+                alt="GoTour" width="80" height="50">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -11,10 +11,9 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
                     <a class="nav-link active" href="#">Inicio</a>
-
                     <a class="nav-link active" aria-current="page" href="#">Usuarios</a>
-                    <a class="nav-link active" href="#">CIT</a>
-                    <a class="nav-link active" href="#">Informacio turistas</a>
+                    <a class="nav-link" href="{{ url_for('cit_bp.list_cits_page') }}">CIT</a>
+                    <a class="nav-link" href="{{ url_for('touristinfo_bp.touristinfo_planilla') }}">Información Turística</a>
                     <a class="nav-link active">Sitios turisticos</a>
                     <a class="nav-link active">Comentarios</a>
 
@@ -26,4 +25,5 @@
             </div>
         </div>
 
-    </nav>
+    </nav> 
+

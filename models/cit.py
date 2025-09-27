@@ -1,6 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from models.db import db
 
 class Cit(db.Model):
     __tablename__ = "cit"
@@ -11,7 +9,9 @@ class Cit(db.Model):
     is_activate = db.Column(db.Boolean, default=False)
     is_activate_qr_map = db.Column(db.Boolean, default=False)
     number_cit = db.Column(db.Integer, nullable=False)
-    id_user = db.Column(db.Integer, db.ForeignKey("user.id_user"), nullable=False)
+    id_user = db.Column(db.String(50), db.ForeignKey('user.id_user'), nullable=False)
+
+
 
     def serialize(self):
         return {
