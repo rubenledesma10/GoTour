@@ -4,4 +4,4 @@ from enum import Enum
 class RoleEnum(Enum):
     ADMIN = 'admin'
     TOURIST = 'tourist'
-    RECEPCIONIST = 'receptionist'
+    RECEPCIONIST = 'recepcionist'

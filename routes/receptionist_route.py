@@ -9,18 +9,18 @@ from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
 
-recepcionist_bp=Blueprint('recepcionist_bp', _name_, url_prefix='/api/recepcionist')
+recepcionist_bp=Blueprint('recepcionist_bp', __name__, url_prefix='/api/recepcionist')
 
 @recepcionist_bp.route("/welcome", methods=["GET"])
 @jwt_required()
-@role_required(RoleEnum.RECEPCIONIST.value)
+@role_required("receptionist")
 def test_admin():
     return jsonify({"message":"Endpoint for recepcionist "})
 
 
 @recepcionist_bp.route("/my_data/edit", methods=['PUT'])
 @jwt_required()
-@role_required(RoleEnum.RECEPCIONIST.value)
+@role_required("receptionist")
 def edit_my_data():
     id_user=get_jwt_identity()
     user=User.query.get(id_user)

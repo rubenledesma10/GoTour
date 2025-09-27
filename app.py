@@ -16,8 +16,6 @@ from routes.routes_touristinfo import touristinfo_bp
 from routes.routes_cit import cit_bp
 
 
-
-
 app = Flask(__name__)
 app.config.from_object(Config)
 jwt = JWTManager(app) #inicializamos jwt en la aplicacion 
