@@ -1,6 +1,17 @@
 const token = localStorage.getItem("access_token");
+const username = localStorage.getItem("username");
+const role = localStorage.getItem("role");
 
 if (!token) {
+    window.location.href = "/";
+}
+
+if (username) {
+    document.getElementById("username").textContent = username;
+}
+
+if (role !== "admin") {
+    alert("Acceso denegado. Solo administradores.");
     window.location.href = "/";
 }
 
@@ -32,9 +43,8 @@ fetch("/api/admin/get", {
                 <td>${u.gender}</td>
                 <td>${u.is_activate}</td>
                 <td>
-                    <!-- Botones CRUD -->
                     <button class="btn btn-warning btn-sm">Editar</button>
-                    <button class="btn btn-danger btn-sm" >Eliminar</button>
+                    <button class="btn btn-danger btn-sm">Eliminar</button>
                 </td>
             `;
             tbody.appendChild(row);
