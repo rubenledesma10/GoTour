@@ -2,7 +2,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
                 <img src="{{ url_for('static', filename='images/logo_2.png') }}"
-                 alt="GoTour" width="80" height="50">
+                alt="GoTour" width="80" height="50">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,7 +18,7 @@
                     <a class="nav-link active" href="#">Acerca de GoTour</a>
                     <!--privados-->
                     <a class="nav-link active d-none" href="{{url_for('admnin_bp.get_users')}}" data-role="admin">Usuarios</a>
-                    <a class="nav-link active d-none" href="#" data-role="admin">Informacio turistas</a>
+                    <a class="nav-link active d-none" href="touristinfo/touristinfo.html" data-role="admin">Informacio turistas</a>
                     
                 
                 </div>

@@ -14,7 +14,7 @@ touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristi
 @jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def touristinfo_planilla():
-    return render_template("touristinfo/touristinfo.html")
+    return render_template("touristinfo/touristinfo.html") 
 
 
 @touristinfo_bp.route("/", methods=["GET"])

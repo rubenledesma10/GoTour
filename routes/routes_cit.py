@@ -5,7 +5,6 @@ from models.cit import Cit
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from enums.roles_enums import RoleEnum
 from utils.decorators import role_required
-# En un archivo llamado, por ejemplo, views.py
 from flask import Blueprint, render_template
 
 
@@ -33,7 +32,7 @@ def get_cit(id_cit):
 
 @cit_bp.route("/", methods=["POST"])
 @jwt_required()
-@role_required([RoleEnum.ADMIN.value])
+# @role_required([RoleEnum.ADMIN.value])
 def create_cit():
     data = request.get_json()
 
@@ -63,7 +62,7 @@ def create_cit():
 
 @cit_bp.route("/<int:id_cit>", methods=["PUT"])
 @jwt_required()
-@role_required([RoleEnum.ADMIN.value])
+# @role_required([RoleEnum.ADMIN.value])
 def update_cit(id_cit):
     cit = Cit.query.get(id_cit)
     if not cit:

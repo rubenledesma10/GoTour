@@ -23,7 +23,6 @@
                     <th>Distrito</th>
                     <th>Dirección</th>
                     <th>Número CIT</th>
-                    <th>ID Usuario</th>
                     <th>Activo</th>
                     <th>QR Map Activo</th>
                 </tr>
@@ -35,7 +34,6 @@
                     <td>{{ cit.district }}</td>
                     <td>{{ cit.address }}</td>
                     <td>{{ cit.number_cit }}</td>
-                    <td>{{ cit.id_user }}</td>
                     <td>
                         <input type="checkbox" disabled {% if cit.is_activate %}checked{% endif %}>
                     </td>
@@ -62,11 +60,6 @@
                 <label for="number_cit" class="form-label">Número CIT</label>
                 <input type="number" class="form-control" id="number_cit" name="number_cit" required>
             </div>
-            <div class="col-md-2">
-                <label for="id_user" class="form-label">ID Usuario</label>
-                <input type="text" class="form-control" id="id_user" name="id_user" required>
-            </div>
-
             <div class="col-md-2 form-check mt-3">
                 <input class="form-check-input" type="checkbox" id="is_activate" name="is_activate">
                 <label class="form-check-label" for="is_activate">Activo</label>

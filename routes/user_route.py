@@ -12,7 +12,7 @@ from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
 import os, uuid
 
-user_bp = Blueprint('user_bp', _name_, url_prefix='/api/gotour')
+user_bp = Blueprint('user_bp', __name__, url_prefix='/api/gotour')
 
 @user_bp.route("/login")
 def login():
