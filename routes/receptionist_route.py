@@ -9,7 +9,7 @@ from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
 
-recepcionist_bp=Blueprint('recepcionist_bp', _name_, url_prefix='/api/recepcionist')
+recepcionist_bp=Blueprint('recepcionist_bp', __name__, url_prefix='/api/recepcionist')
 
 @recepcionist_bp.route("/welcome", methods=["GET"])
 @jwt_required()

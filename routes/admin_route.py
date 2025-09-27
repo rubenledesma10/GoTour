@@ -10,7 +10,7 @@ from flask_jwt_extended import create_access_token, jwt_required
 from utils.decorators import role_required
 
 #ACA VAN A ESTAR TODAS LAS RUTAS EN LAS QUE EL ADMINISTRADOR PUEDE ACCEDER
-admnin_bp = Blueprint('admnin_bp', _name_, url_prefix='/api/admin')
+admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
 
 @admnin_bp.route("/welcome", methods=["GET"])
 @jwt_required()

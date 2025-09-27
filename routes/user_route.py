@@ -12,7 +12,7 @@ from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
 import os, uuid
 
-user_bp = Blueprint('user_bp', _name_, url_prefix='/api/gotour')
+user_bp = Blueprint('user_bp', __name__, url_prefix='/api/gotour')
 
 @user_bp.route("/login")
 def login():
@@ -47,7 +47,7 @@ def register_user():
         email=validated_data['email'],
         password=validated_data['password'],
         username=validated_data['username'],
-        role=RoleEnum(validated_data['role']),
+        rol=RoleEnum(validated_data['role']),
         dni=validated_data['dni'],
         birthdate=validated_data['birthdate'],
         photo=photo_filename,
