@@ -2,7 +2,7 @@
     {% include "partials/navbar.html" %}
     <div class="container mt-4">
         <h2 class="mb-4">Agregar sitio turistico</h2>
-        <form id="addTouristSiteForm">
+        <form id="addTouristSiteForm", method="POST">
 
             <div class="mb-3">
                 <label for="name" class="form-label">Nombre</label>
@@ -68,4 +68,6 @@
             <button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
         </form>
     </div>
+
+<script src="/static/tourist_site.js"></script>
 {% include "scripts.html"%}

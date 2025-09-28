@@ -13,257 +13,255 @@ import uuid
 
 tourist_site = Blueprint('tourist_site', __name__)
 
-# Definimos la ruta para obtener todos los sitios turísticos
-# Estos son los dos endpoint al cual tienen acceso todos los roles.
+    # Definimos la ruta para obtener todos los sitios turísticos
+    # Estos son los dos endpoint al cual tienen acceso todos los roles.
 
-from flask_jwt_extended import get_jwt_identity, jwt_required
-
+    #Ruta para ver los sitios turísticos cargados.
 @tourist_site.route('/tourist_sites/view', methods=['GET'])
 def tourist_sites_view():
-    # Obtener todos los sitios para mostrar en la tabla
-    sites = TouristSite.query.all()
-    return render_template('tourist_site/tourist_sites.html', sites=sites)
+        sites = TouristSite.query.all()
+        return render_template('tourist_site/tourist_sites.html', sites=sites)
 
 
-
+    #Ruta para acceder al formulario de agregar sitio turistico a traves del boton
+@tourist_site.route('/tourist_sites/add', methods=['GET', 'POST'])
+def add_tourist_site_form():
+    return render_template('tourist_site/add_tourist_sites.html')
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @jwt_required()
 @role_required([RoleEnum.ADMIN or RoleEnum.RECEPCIONIST or RoleEnum.TOURIST])
 def get_tourist_sites():
-    tourist_sites = TouristSite.query.all()
+        tourist_sites = TouristSite.query.all()
 
-    # Verificamos si hay sitios turisticos activos.
-    if not tourist_sites:
-        # DEVolvera un 200 OK con una lista vacía o un mensaje si no hay resultados
-            return jsonify({'message': f'No tourist sites registred.', 'data': []}), 200
-    # Serializamos la lista de sitios turísticos
-    serialized_sites = [site.serialize() for site in tourist_sites]
+        # Verificamos si hay sitios turisticos activos.
+        if not tourist_sites:
+            # DEVolvera un 200 OK con una lista vacía o un mensaje si no hay resultados
+                return jsonify({'message': f'No tourist sites registred.', 'data': []}), 200
+        # Serializamos la lista de sitios turísticos
+        serialized_sites = [site.serialize() for site in tourist_sites]
 
-    # Devolver la lista serializada
-    return jsonify(serialized_sites), 200
+        # Devolver la lista serializada
+        return jsonify(serialized_sites), 200
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['GET'])
 @jwt_required()
 @role_required([RoleEnum.ADMIN or RoleEnum.RECEPTIONIST or RoleEnum.TOURIST])
 def get_tourist_site_id(id_tourist_site):
-    tourist_site = TouristSite.query.get(id_tourist_site)
-    if not tourist_site:
-        return jsonify ({'message' : 'Tourist site not found'}), 404
-    return jsonify(tourist_site.serialize()), 200
+        tourist_site = TouristSite.query.get(id_tourist_site)
+        if not tourist_site:
+            return jsonify ({'message' : 'Tourist site not found'}), 404
+        return jsonify(tourist_site.serialize()), 200
 
-# ====================================================================
+    # ====================================================================
 
-# Aca solamente el administrador puede realizar las siguientes acciones.
-# Crear, editar y eliminar sitios turísticos.
+    # Aca solamente el administrador puede realizar las siguientes acciones.
+    # Crear, editar y eliminar sitios turísticos.
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['DELETE'])
 @jwt_required()
 @role_required(RoleEnum.ADMIN.value)
 def delete_tourist_site(id_tourist_site):
-    tourist_site = TouristSite.query.get(id_tourist_site)
+        tourist_site = TouristSite.query.get(id_tourist_site)
 
-    if not tourist_site: 
-        return jsonify ({'messagge' : 'Tourist not found'}), 404
-    
-    try: 
-        tourist_site.is_activate = False #Directamente mantenemos inactivo el sitio. Eliminado logico.
-        #Es decir, tenemos el espacio vacio, pero con la tabla creada.
-        #db.session.delete(tourist_site)
-        db.session.commit()
-        return jsonify({'message': 'Tourist Site delete successfully'})
-    
-    except Exception as e: 
-        db.session.rollback()
-        return jsonify ({'error': str(e)})
+        if not tourist_site: 
+            return jsonify ({'messagge' : 'Tourist not found'}), 404
+        
+        try: 
+            tourist_site.is_activate = False #Directamente mantenemos inactivo el sitio. Eliminado logico.
+            #Es decir, tenemos el espacio vacio, pero con la tabla creada.
+            #db.session.delete(tourist_site)
+            db.session.commit()
+            return jsonify({'message': 'Tourist Site delete successfully'})
+        
+        except Exception as e: 
+            db.session.rollback()
+            return jsonify ({'error': str(e)})
 
-from datetime import datetime
 
-from flask_jwt_extended import get_jwt_identity
 
-@tourist_site.route('/api/tourist_sites/', methods=['POST'])
+@tourist_site.route('/api/add_tourist_sites', methods=['POST'])
 @jwt_required()
 @role_required("admin")
 def add_tourist_site():
-    data = request.get_json()
+        data = request.get_json()
 
-    # Campos obligatorios
-    required_fields = ['name','description','address','phone','category','url']
+        required_fields = ['name','description','address','phone','category','url', 'opening_hours', 'closing_hours']
 
-    if not data or not all(key in data for key in required_fields):
-        return jsonify({'error':'Required data is missing'}), 400
-    
-    # Validación básica de que no estén vacíos
-    for field in required_fields:
-        if not str(data.get(field,'')).strip():
-            return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
+        if not data or not all(key in data for key in required_fields):
+            return jsonify({'error':'Required data is missing'}), 400
+        
+        # Validación de que los campos no estén vacíos
+        for field in required_fields:
+            if not str(data.get(field,'')).strip():
+                return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
 
-    try:
-        # Obtengo el id_user desde el token
-        id_user = get_jwt_identity()
-        if not id_user:
-            return jsonify({'error': 'User not found in token'}), 400
+        try:
+            # Obtengo el id_user desde el token
+            id_user = get_jwt_identity()
+            if not id_user:
+                return jsonify({'error': 'User not found in token'}), 400
 
-        # Validar duplicados
-        existing_site = TouristSite.query.filter(
-            (TouristSite.name == data['name']) |
-            (TouristSite.address == data['address']) |
-            (TouristSite.url == data['url'])
-        ).first()
-        if existing_site:
-            return jsonify({'error': 'Name, address or URL already exists'}), 409
+            # Restriccion para los valores duplicados
+            existing_site = TouristSite.query.filter(
+                (TouristSite.name == data['name']) |
+                (TouristSite.address == data['address']) |
+                (TouristSite.url == data['url'])
+            ).first()
+            if existing_site:
+                return jsonify({'error': 'Name, address or URL already exists'}), 409
 
-        # Convertir opcionales
-        opening_hours = datetime.strptime(data['opening_hours'], "%H:%M").time() if data.get('opening_hours') else None
-        closing_hours = datetime.strptime(data['closing_hours'], "%H:%M").time() if data.get('closing_hours') else None
-        average = float(data['average']) if data.get('average') else None
-        is_activate = bool(data.get('is_activate', True))
+            opening_hours = datetime.strptime(data['opening_hours'], "%H:%M").time() if data.get('opening_hours') else None
+            closing_hours = datetime.strptime(data['closing_hours'], "%H:%M").time() if data.get('closing_hours') else None
+            average = float(data['average']) if data.get('average') else None
+            is_activate = bool(data.get('is_activate', True))
 
-        # Crear el sitio turístico
-        new_tourist_site = TouristSite(
-            name=data['name'],
-            description=data['description'],
-            address=data['address'],
-            phone=data['phone'],
-            category=data['category'],
-            url=data['url'],
-            id_user=id_user,
-            opening_hours=opening_hours,
-            closing_hours=closing_hours,
-            average=average,
-            is_activate=is_activate
-        )
+            # Crear el sitio turístico
+            new_tourist_site = TouristSite(
+                name=data['name'],
+                description=data['description'],
+                address=data['address'],
+                phone=data['phone'],
+                category=data['category'],
+                url=data['url'],
+                id_user=id_user,
+                opening_hours=opening_hours,
+                closing_hours=closing_hours,
+                average=average,
+                is_activate=is_activate
+            )
 
-        db.session.add(new_tourist_site)
-        db.session.commit()
+            db.session.add(new_tourist_site)
+            db.session.commit()
 
-        return jsonify({
-            "message": "Tourist site created successfully",
-            "tourist_site": new_tourist_site.serialize()
-        }), 201
+            return jsonify({
+                "message": "Tourist site created successfully",
+                "tourist_site": new_tourist_site.serialize()
+            }), 201
 
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': f'Error adding Tourist Site: {str(e)}'}), 500
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Error adding Tourist Site: {str(e)}'}), 500
 
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PUT'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 
 def edit_tourist_site(id_tourist_site):
-    data = request.get_json()
-    tourist_site = TouristSite.query.get(id_tourist_site)
+        data = request.get_json()
+        tourist_site = TouristSite.query.get(id_tourist_site)
 
-    required_fields = ['name','description','address','phone','category','url','id_user', 'opening_hours', 'closing_hours']
+        required_fields = ['name','description','address','phone','category','url','id_user', 'opening_hours', 'closing_hours']
 
-    if not data: 
-        return jsonify({'error':'No data received'}), 400
-    
-    if not tourist_site:
-        return jsonify({'message':'Tourist Site not found'}), 404
-    
-    for field in required_fields:
-        if not str(data.get(field,'')).strip():
-            return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
-    
-    try: 
-        if 'name' in data:
-            tourist_site.name = data ['name']
-        if 'description' in data:
-            tourist_site.description = data ['description']
-        if 'address' in data: 
-            tourist_site.address = data ['address']
-        if 'phone' in data:
-            tourist_site.phone = data ['phone']
-        if 'category' in data: 
-            tourist_site.category = data ['category']
-        if 'url' in data: 
-            tourist_site.url = data ['url']
-            
-        db.session.commit()
-        return jsonify({'message': 'Tourist Site update correctly'}), 200
+        if not data: 
+            return jsonify({'error':'No data received'}), 400
         
-    except IntegrityError as e: 
-        db.session.rollback()
-        error_msg = str(e.orig).lower()
-        if 'name' in error_msg:
-            return jsonify({'error':'The name is al ready registred'}), 400
-        elif 'url' in error_msg:
-            return jsonify({'error':'The url is al ready registred'}), 400
-        elif 'category' in error_msg:
-            return jsonify({'error':'The category is al ready registred'}), 400
-        elif 'address' in error_msg:
-            return jsonify({'error':'The url is al ready registred'}), 400
-    except Exception as e: 
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-    
+        if not tourist_site:
+            return jsonify({'message':'Tourist Site not found'}), 404
+        
+        for field in required_fields:
+            if not str(data.get(field,'')).strip():
+                return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
+        
+        try: 
+            if 'name' in data:
+                tourist_site.name = data ['name']
+            if 'description' in data:
+                tourist_site.description = data ['description']
+            if 'address' in data: 
+                tourist_site.address = data ['address']
+            if 'phone' in data:
+                tourist_site.phone = data ['phone']
+            if 'category' in data: 
+                tourist_site.category = data ['category']
+            if 'url' in data: 
+                tourist_site.url = data ['url']
+                
+            db.session.commit()
+            return jsonify({'message': 'Tourist Site update correctly'}), 200
+            
+        except IntegrityError as e: 
+            db.session.rollback()
+            error_msg = str(e.orig).lower()
+            if 'name' in error_msg:
+                return jsonify({'error':'The name is al ready registred'}), 400
+            elif 'url' in error_msg:
+                return jsonify({'error':'The url is al ready registred'}), 400
+            elif 'category' in error_msg:
+                return jsonify({'error':'The category is al ready registred'}), 400
+            elif 'address' in error_msg:
+                return jsonify({'error':'The url is al ready registred'}), 400
+        except Exception as e: 
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+        
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PATCH'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 
 def update_tourist_site(id_tourist_site):
-    data = request.get_json()
+        data = request.get_json()
 
-    if not data:
-        return jsonify({'error': 'No data received'}), 400
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    tourist_site_to_update = TouristSite.query.get(id_tourist_site)  
-    if not tourist_site_to_update:
-        return jsonify({'message': 'Tourist Site not found'}), 404
+        tourist_site_to_update = TouristSite.query.get(id_tourist_site)  
+        if not tourist_site_to_update:
+            return jsonify({'message': 'Tourist Site not found'}), 404
 
-    updated = False  # Variable para rastrear si se realizó alguna actualización.
+        updated = False  # Variable para rastrear si se realizó alguna actualización.
 
-    try:
-        if 'name' in data:
-            if str(data['name']).strip():
-                tourist_site_to_update.name = data['name']
+        try:
+            if 'name' in data:
+                if str(data['name']).strip():
+                    tourist_site_to_update.name = data['name']
+                    updated = True
+            if 'description' in data:
+                if str(data['url']).strip():
+                    tourist_site_to_update.description = data['description']
+                    updated = True
+            if 'address' in data:
+                if str(data['district_address']).strip():
+                    tourist_site_to_update.address = data['address']
+                    updated = True
+            if 'phone' in data:
+                if str(data['street_address']).strip():
+                    tourist_site_to_update.phone = data['phone']
+                    updated = True
+            if 'category' in data:
+                if str(data['category']).strip():
+                    tourist_site_to_update.category= data['category']
+                    updated = True
+            if 'url' in data:
+                if str(data['url']).strip():
+                    tourist_site_to_update.url= data['url']
+                    updated = True
+            if 'opening_hours' in data:
+                tourist_site_to_update.opening_hours = data['opening_hours']
                 updated = True
-        if 'description' in data:
-            if str(data['url']).strip():
-                tourist_site_to_update.description = data['description']
+            if 'closing_hours' in data:
+                tourist_site_to_update.closing_hours = data['closing_hours']
                 updated = True
-        if 'address' in data:
-            if str(data['district_address']).strip():
-                tourist_site_to_update.address = data['address']
-                updated = True
-        if 'phone' in data:
-            if str(data['street_address']).strip():
-                tourist_site_to_update.phone = data['phone']
-                updated = True
-        if 'category' in data:
-            if str(data['category']).strip():
-                tourist_site_to_update.category= data['category']
-                updated = True
-        if 'url' in data:
-            if str(data['url']).strip():
-                tourist_site_to_update.url= data['url']
-                updated = True
-        if 'opening_hours' in data:
-            tourist_site_to_update.opening_hours = data['opening_hours']
-            updated = True
-        if 'closing_hours' in data:
-            tourist_site_to_update.closing_hours = data['closing_hours']
-            updated = True
 
-        if updated:
-            db.session.commit()
-            return jsonify({'message': 'Client updated correctly'}), 200
-        else:
-            return jsonify({'message': 'No valid data received for update'}), 400
+            if updated:
+                db.session.commit()
+                return jsonify({'message': 'Client updated correctly'}), 200
+            else:
+                return jsonify({'message': 'No valid data received for update'}), 400
+            
+        except IntegrityError as e: 
+            db.session.rollback()
+            error_msg = str(e.orig).lower()
+            if 'name' in error_msg:
+                return jsonify({'error':'The name is al ready registred'}), 400
+            elif 'url' in error_msg:
+                return jsonify({'error':'The url is al ready registred'}), 400
+            elif 'category' in error_msg:
+                return jsonify({'error':'The category is al ready registred'}), 400
+            elif 'address' in error_msg:
+                return jsonify({'error':'The url is al ready registred'}), 400
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
         
-    except IntegrityError as e: 
-        db.session.rollback()
-        error_msg = str(e.orig).lower()
-        if 'name' in error_msg:
-            return jsonify({'error':'The name is al ready registred'}), 400
-        elif 'url' in error_msg:
-            return jsonify({'error':'The url is al ready registred'}), 400
-        elif 'category' in error_msg:
-            return jsonify({'error':'The category is al ready registred'}), 400
-        elif 'address' in error_msg:
-            return jsonify({'error':'The url is al ready registred'}), 400
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
