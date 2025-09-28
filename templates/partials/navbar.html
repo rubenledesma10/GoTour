@@ -17,13 +17,13 @@
                     <a class="nav-link active" href="#">Acerca de GoTour</a>
                     <a class="nav-link active" href="{{url_for('tourist_site.tourist_sites_view')}}">Sitios turisticos</a>
                     <!--privados-->
-                    <a class="nav-link active d-none" href="{{url_for('admnin_bp.get_users')}}" data-role="admin">Usuarios</a>
+                    <a class="nav-link active d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Usuarios</a>
                     <a class="nav-link active d-none" href="#" data-role="admin">Informacio turistas</a>
                     
                 
                 </div>
                 <span class="navbar-text ms-auto">
-                    <a  id="authButton" href="{{ url_for('user_bp.login') }}" class="btn"
+                    <a  id="authButton"  href="{{url_for('user_bp.login')}}" class="btn"
                         style="background-color: orange; color: white;">Registrarse/Iniciar Sesion</a>
                 </span>
             </div>

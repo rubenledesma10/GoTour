@@ -11,14 +11,12 @@ touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristi
 # --- Ruta corregida: endpoint explícito ---
 
 @touristinfo_bp.route("/planilla", methods=["GET"])
-@jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def touristinfo_planilla():
     return render_template("touristinfo/touristinfo.html")
 
 
 @touristinfo_bp.route("/", methods=["GET"])
-@jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def get_all_tourists():
     tourists = TouristInfo.query.all()
@@ -28,7 +26,6 @@ def get_all_tourists():
     return jsonify([t.serialize() for t in tourists]), 200
 
 @touristinfo_bp.route("/statistics", methods=["GET"])
-@jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def get_tourist_statistics():
     total = TouristInfo.query.count()
@@ -44,7 +41,6 @@ def get_tourist_statistics():
     }), 200
 
 @touristinfo_bp.route("/<int:id>", methods=["GET"])
-@jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def get_tourist(id):
     tourist = TouristInfo.query.get(id)
@@ -53,7 +49,6 @@ def get_tourist(id):
     return jsonify(tourist.serialize()), 200
 
 @touristinfo_bp.route("/", methods=["POST"])
-@jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def create_tourist():
     data = request.get_json()
@@ -86,7 +81,6 @@ def create_tourist():
         return jsonify({"error": str(e)}), 500
 
 @touristinfo_bp.route("/<int:id>", methods=["PUT"])
-@jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def update_tourist(id):
     tourist = TouristInfo.query.get(id)
@@ -114,7 +108,6 @@ def update_tourist(id):
         return jsonify({"error": str(e)}), 500
 
 @touristinfo_bp.route("/<int:id>", methods=["DELETE"])
-@jwt_required()
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def delete_tourist(id):
     tourist = TouristInfo.query.get(id)

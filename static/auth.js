@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await res.json();
                 if (res.ok) {
                     alert("Login successful! Welcome.");
-                    localStorage.setItem("access_token", result.access_token);
+                    localStorage.setItem("token", result.token);
                     localStorage.setItem("role", result.role);
                     localStorage.setItem("username", result.username);
                     window.location.href = "/";
