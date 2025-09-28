@@ -16,47 +16,15 @@ tourist_site = Blueprint('tourist_site', __name__)
 # Definimos la ruta para obtener todos los sitios turísticos
 # Estos son los dos endpoint al cual tienen acceso todos los roles.
 
-@tourist_site.route('/tourist_sites/view', methods=['GET','POST'])
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
+@tourist_site.route('/tourist_sites/view', methods=['GET'])
 def tourist_sites_view():
-    #POST para agregar un nuevo sitio turístico desde el formulario
-    if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        address = request.form.get('address')
-        phone = request.form.get('phone')
-        category = request.form.get('category')
-        url_site = request.form.get('url')
-        average = request.form.get('average')
-        opening_hours = request.form.get('opening_hours')
-        closing_hours = request.form.get('closing_hours')
-
-        new_site = TouristSite(
-            name=name,
-            description=description,
-            address=address,
-            phone=phone,
-            category=category,
-            url=url_site,
-            average=float(average) if average else 0,
-            id_user="1",   
-            is_activate=True,
-            opening_hours=opening_hours,
-            closing_hours=closing_hours
-        )
-
-        try:
-            db.session.add(new_site)
-            db.session.commit()
-            flash("Sitio turístico agregado correctamente", "success")
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error al agregar el sitio: {e}", "danger")
-
-        return redirect(url_for('tourist_site.tourist_sites_view'))
-
-    # GET para mostrar los sitios turísticos
+    # Obtener todos los sitios para mostrar en la tabla
     sites = TouristSite.query.all()
     return render_template('tourist_site/tourist_sites.html', sites=sites)
+
+
 
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
@@ -109,42 +77,63 @@ def delete_tourist_site(id_tourist_site):
         db.session.rollback()
         return jsonify ({'error': str(e)})
 
-@tourist_site.route('/api/tourist_sites/', methods = ['POST'])
-@jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+from datetime import datetime
 
+from flask_jwt_extended import get_jwt_identity
+
+@tourist_site.route('/api/tourist_sites/', methods=['POST'])
+@jwt_required()
+@role_required("admin")
 def add_tourist_site():
     data = request.get_json()
 
-    required_fields = ['name','description','address','phone','category','url','average','id_user','opening_hours','closing_hours','is_activate'] 
+    # Campos obligatorios
+    required_fields = ['name','description','address','phone','category','url']
 
-    if not data or not all (key in data for key in required_fields):
-        return jsonify ({'error':'Required data is missing'}), 400
+    if not data or not all(key in data for key in required_fields):
+        return jsonify({'error':'Required data is missing'}), 400
     
-    for field in ['name','description','address','phone','category','url']:
+    # Validación básica de que no estén vacíos
+    for field in required_fields:
         if not str(data.get(field,'')).strip():
-            return jsonify({'error': f'{field.title()} is required and cannot be empty'})
-    #Validamos de que el promedio se ingrese a la hora de añadir un nuevo Tourist Site
-    if 'average' in data and not isinstance(data['average'], (int, float, type(None))):
-        return jsonify({'error': 'Average must be a number or null.'}), 400
-    try: 
-        print(f"Date received {data}")
+            return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
 
+    try:
+        # Obtengo el id_user desde el token
+        id_user = get_jwt_identity()
+        if not id_user:
+            return jsonify({'error': 'User not found in token'}), 400
+
+        # Validar duplicados
+        existing_site = TouristSite.query.filter(
+            (TouristSite.name == data['name']) |
+            (TouristSite.address == data['address']) |
+            (TouristSite.url == data['url'])
+        ).first()
+        if existing_site:
+            return jsonify({'error': 'Name, address or URL already exists'}), 409
+
+        # Convertir opcionales
+        opening_hours = datetime.strptime(data['opening_hours'], "%H:%M").time() if data.get('opening_hours') else None
+        closing_hours = datetime.strptime(data['closing_hours'], "%H:%M").time() if data.get('closing_hours') else None
+        average = float(data['average']) if data.get('average') else None
+        is_activate = bool(data.get('is_activate', True))
+
+        # Crear el sitio turístico
         new_tourist_site = TouristSite(
-            data['name'],
-            data['description'],
-            data['address'],
-            data['phone'],
-            data['category'],
-            data['url'],
-            data['average'],
-            data['id_user'],
-            data['is_activate'],
-            data['opening_hours'],
-            data['closing_hours']
-
+            name=data['name'],
+            description=data['description'],
+            address=data['address'],
+            phone=data['phone'],
+            category=data['category'],
+            url=data['url'],
+            id_user=id_user,
+            opening_hours=opening_hours,
+            closing_hours=closing_hours,
+            average=average,
+            is_activate=is_activate
         )
-        
+
         db.session.add(new_tourist_site)
         db.session.commit()
 
@@ -152,30 +141,11 @@ def add_tourist_site():
             "message": "Tourist site created successfully",
             "tourist_site": new_tourist_site.serialize()
         }), 201
-    
-    except IntegrityError as e:
-        db.session.rollback()
-        error_msg_lower = str(e.orig).lower() 
-        #Implementamos el error 409 para un mejor manejo en la unicidad de los atributos
-        if 'unique constraint' in error_msg_lower:
-            if 'tourist_site_url_key' in error_msg_lower: 
-                return jsonify({'error': 'The URL is already registered.'}), 409
-            elif 'tourist_site_phone_key' in error_msg_lower: 
-                return jsonify({'error': 'The phone number is already registered.'}), 409
-            elif 'tourist_site_name_key' in error_msg_lower:
-                return jsonify({'error': 'The name is already registered.'}), 409
-            elif 'tourist_site_address_key' in error_msg_lower: 
-                return jsonify({'error': 'The address is already registered.'}), 409
-            elif 'tourist_site_category_key' in error_msg_lower: 
-                return jsonify({'error': 'The category is already used by another site.'}), 409
-        #elif 'foreign key constraint' in error_msg_lower: #Mejoramos el manejo de Foreign Key's
-            # Esto captura errores si id_user o id_district no existen en sus tablas respectivas
-            print(f"Foreign Key error: {error_msg_lower}")
-        return jsonify({'error': 'Referenced user or district does not exist.'}), 404 #Not found
+
     except Exception as e:
         db.session.rollback()
-        print(f"Unexpected error: {e}")
-        return jsonify({'error':'Error adding Tourist Site'}), 500
+        return jsonify({'error': f'Error adding Tourist Site: {str(e)}'}), 500
+
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PUT'])
 @jwt_required()

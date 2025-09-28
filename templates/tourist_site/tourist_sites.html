@@ -1,33 +1,28 @@
 {% include "head.html" %}
+
 <body>
     {% include "partials/navbar.html" %}
+
     <div class="container mt-4">
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
         <h2 class="mb-4">Sitios Turísticos Creados</h2>
 
+    <h3>¿Qué deseas hacer <span id="username"></span>?</h3>
+        <a href="{{ url_for('tourist_site.add_tourist_site') }}" class="btn btn-primary mb-4">
+    Agregar sitio turístico
+        </a>
         {% if sites %}
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle">
                     <thead class="table-dark">
                         <tr>
                             <th>Nombre</th>
-                            <th>Categoría</th>
+                            <th>Descripcion</th>
                             <th>Dirección</th>
                             <th>Contacto</th>
-                            <th>Horarios</th>
+                            <th>Categoría</th>
+                            <th>Pagina Web</th>
                             <th>Visitas Promedio</th>
-                            <th>Acciones</th>
+                            <th>Horarios</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,8 +34,6 @@
                                 <td>{{ site.phone }}</td>
                                 <td>{{ site.opening_hours }} - {{ site.closing_hours }}</td>
                                 <td>{{ "{:,.2f}".format(site.average) }}</td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-info">Ver</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -49,79 +42,12 @@
             </div>
         {% else %}
             <div class="alert alert-info" role="alert">
-                ¡Aún no se han agregado sitios turísticos.!
+                ¡Aún no se han agregado sitios turísticos!
             </div>
         {% endif %}
-        
     </div>
-
-    <h2 class="mb-4">Agregar sitio turístico</h2>
-    
-    <form id="addTouristSiteForm">
-        <div class="mb-3">
-            <label for="name" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="name" name="name"
-                placeholder="Nombre del sitio" required minlength="2" maxlength="50">
-        </div>
-
-        <div class="mb-3">
-            <label for="description" class="form-label">Descripción</label>
-            <input type="text" class="form-control" id="description" name="description"
-                placeholder="Descripción del sitio" required minlength="2" maxlength="200">
-        </div>
-
-        <div class="mb-3">
-            <label for="address" class="form-label">Dirección</label>
-            <input type="text" class="form-control" id="address" name="address"
-                placeholder="Dirección del sitio turístico" required>
-        </div>
-        
-        <div class="mb-3">
-            <label for="phone" class="form-label">Contacto/s</label>
-            <input type="text" class="form-control" id="phone" name="phone"
-                placeholder="Número de contacto" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="category" class="form-label">Categoría</label>
-            <select class="form-select" id="category" name="category" required>
-                <option value="">Seleccione una categoría</option>
-                <option value="winery">Bodegas</option>
-                <option value="olive trees">Olivícolas</option>
-                <option value="accommodation/hotels">Alojamiento/Hotelería</option>
-                <option value="gastronomy">Gastronomía</option>
-                <option value="tourist services">Servicios Turísticos</option>
-                <option value="rural tourism">Turismo Rural</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="url" class="form-label">Página Web</label>
-            <input type="url" class="form-control" id="url" name="url"
-                placeholder="Ingrese la URL" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="average" class="form-label">Promedio de visitas</label>
-            <input type="number" class="form-control" id="average" name="average"
-                placeholder="Ingrese el promedio de visitas" required step="0.01" min="0">
-        </div>
-
-        <div class="mb-3">
-            <label for="opening_hours" class="form-label">Horario de apertura</label>
-            <input type="time" class="form-control" id="opening_hours" name="opening_hours" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="closing_hours" class="form-label">Horario de cierre</label>
-            <input type="time" class="form-control" id="closing_hours" name="closing_hours" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Agregar Sitio</button>
-        <button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
-    </form>
 
     <hr class="mt-5 mb-4">
 
-</body>
-{% include "scripts.html"%}
+<script src="/static/tourist_site.js"></script>
+{% include "scripts.html" %}
