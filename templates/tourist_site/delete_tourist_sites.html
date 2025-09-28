@@ -1,0 +1,21 @@
+{% include "head.html" %}
+    {% include "partials/navbar.html" %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Editar sitio turistico</h2>
+        <form id="deleteTouristSiteForm" method="POST">
+        <div class="container mt-4"></form>
+            <div class="mb-3">
+            <label for="siteSelect" class="form-label">Selecciona un sitio a editar</label>
+            <select id="siteSelect" name="id_tourist_site" class="form-select" required>
+                <option value="" disabled selected>-- Selecciona un sitio --</option>
+                {% for sitio in sites %}
+                    <option value="{{ sitio.id_tourist_site }}">{{ sitio.name }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-danger mt-3">Eliminar Sitio Turístico</button>
+            </div>
+    </div>
+
+<script src="/static/tourist_site.js"></script>
+{% include "scripts.html"%}

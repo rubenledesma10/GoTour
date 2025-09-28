@@ -6,6 +6,12 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from config.email_config import init_mail
 from datetime import timedelta
+from models.user import User
+from models.tourist_site import TouristSite
+from models.cit import Cit
+from models.touristinfo import TouristInfo
+from models.feedBack import FeedBack
+
 # Importamos los blueprints 
 from routes.user_route import user_bp
 from routes.admin_route import admin_bp
