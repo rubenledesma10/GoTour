@@ -20,7 +20,7 @@ if (userRole && username) { //verifica si hay un usuario logueado, y que rol y u
     authButton.href = "#"; // le decimos que se quede aca hasta que nosotros le indiquemos 
     authButton.style.backgroundColor = "red"; //le agregamos el color rojo
     authButton.style.color = "white"; //letra blanca
-  
+
     authButton.addEventListener("click", (e) => {
         e.preventDefault();
         //eliminamos el localstorage y cerramos sesion
@@ -33,7 +33,7 @@ if (userRole && username) { //verifica si hay un usuario logueado, y que rol y u
     });
 
 } else {
-   
+
     roleLinks.forEach(link => {
         link.classList.add("d-none");
     });
