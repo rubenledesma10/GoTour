@@ -22,53 +22,61 @@ tourist_site = Blueprint('tourist_site', __name__)
 def tourist_sites_view():
         sites = TouristSite.query.all()
         return render_template('tourist_site/tourist_sites.html', sites=sites)
+# -------------------------------------------------------------------------------- #
 
+    # Estos son los dos endpoint al cual tiene acceso el admin .
 
     #Ruta para acceder a traves del boton al formulario de agregar sitio turistico. 
 @tourist_site.route('/tourist_sites/add', methods=['GET', 'POST'])
+@role_required("admin")
 def add_tourist_site_form():
     return render_template('tourist_site/add_tourist_sites.html')
 
     #Ruta para acceder al formulario a traves del boton, asi podemos editar la informacion del sitio turistico. 
-@tourist_site.route('/tourist_sites/edit', methods=['GET', 'PUT'])
+@tourist_site.route('/tourist_sites/edit', methods=['GET'])
+@role_required("admin")
 def edit_tourist_site_form():
     sites = TouristSite.query.all()
-    return render_template('tourist_site/edit_tourist_sites.html')
+    return render_template('tourist_site/edit_tourist_sites.html', sites=sites)
 
+    #Ruta para acceder al formulario a traves del boton, asi podemos eliminar de manera logica el sitio turistico. 
+@tourist_site.route('/tourist_sites/delete', methods=['GET'])
+@role_required("admin")
+def delete_tourist_site_form():
+    sites = TouristSite.query.all()
+    return render_template('tourist_site/delete_tourist_sites.html', sites=sites)
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @jwt_required()
-@role_required([RoleEnum.ADMIN or RoleEnum.RECEPCIONIST or RoleEnum.TOURIST])
+
 def get_tourist_sites():
         tourist_sites = TouristSite.query.all()
 
         # Verificamos si hay sitios turisticos activos.
         if not tourist_sites:
-            # DEVolvera un 200 OK con una lista vacía o un mensaje si no hay resultados
+            
                 return jsonify({'message': f'No tourist sites registred.', 'data': []}), 200
-        # Serializamos la lista de sitios turísticos
+        
         serialized_sites = [site.serialize() for site in tourist_sites]
 
-        # Devolver la lista serializada
         return jsonify(serialized_sites), 200
 
-@tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['GET'])
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['GET'])
 @jwt_required()
-@role_required([RoleEnum.ADMIN or RoleEnum.RECEPTIONIST or RoleEnum.TOURIST])
+@role_required("admin")
 def get_tourist_site_id(id_tourist_site):
-        tourist_site = TouristSite.query.get(id_tourist_site)
-        if not tourist_site:
-            return jsonify ({'message' : 'Tourist site not found'}), 404
-        return jsonify(tourist_site.serialize()), 200
+    tourist_site = TouristSite.query.filter_by(id_tourist_site=id_tourist_site).first()
+    
+    if not tourist_site:
+        return jsonify ({'message' : 'Tourist site not found'}), 404
+    return jsonify(tourist_site.serialize()), 200
 
-    # ====================================================================
-
-    # Aca solamente el administrador puede realizar las siguientes acciones.
+    
     # Crear, editar y eliminar sitios turísticos.
 
-@tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['DELETE'])
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['DELETE'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def delete_tourist_site(id_tourist_site):
         tourist_site = TouristSite.query.get(id_tourist_site)
 
@@ -152,7 +160,7 @@ def add_tourist_site():
             return jsonify({'error': f'Error adding Tourist Site: {str(e)}'}), 500
 
 
-@tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PUT'])
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['PUT'])
 @jwt_required()
 @role_required("admin")
 
@@ -160,7 +168,7 @@ def edit_tourist_site(id_tourist_site):
         data = request.get_json()
         tourist_site = TouristSite.query.get(id_tourist_site)
 
-        required_fields = ['name','description','address','phone','category','url','id_user', 'opening_hours', 'closing_hours']
+        required_fields = ['name','description','address','phone','category','url', 'opening_hours', 'closing_hours']
 
         if not data: 
             return jsonify({'error':'No data received'}), 400
@@ -185,6 +193,12 @@ def edit_tourist_site(id_tourist_site):
                 tourist_site.category = data ['category']
             if 'url' in data: 
                 tourist_site.url = data ['url']
+            if 'opening_hours' in data:
+                tourist_site.opening_hours = datetime.strptime(data['opening_hours'], "%H:%M").time() if data.get('opening_hours') else None
+            if 'closing_hours' in data:
+                tourist_site.closing_hours = datetime.strptime(data['closing_hours'], "%H:%M").time() if data.get('closing_hours') else None
+            if 'average' in data:
+                tourist_site.average = float(data['average']) if data.get('average') else None
                 
             db.session.commit()
             return jsonify({'message': 'Tourist Site update correctly'}), 200
@@ -204,7 +218,7 @@ def edit_tourist_site(id_tourist_site):
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
         
-@tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PATCH'])
+@tourist_site.route('/api/tourist_sites/id_tourist_site>', methods = ['PATCH'])
 @jwt_required()
 @role_required("admin")
 

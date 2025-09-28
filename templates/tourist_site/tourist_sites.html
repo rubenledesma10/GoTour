@@ -23,6 +23,7 @@
                             <th>Pagina Web</th>
                             <th>Visitas Promedio</th>
                             <th>Horarios</th>
+                            <th>Estado</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -36,6 +37,12 @@
                                 <td><a href="{{ site.url }}" target="_blank">{{ site.url }}</a></td>
                                 <td>{{ "{:,.2f}".format(site.average) }}</td>
                                 <td>{{ site.opening_hours }} - {{ site.closing_hours }}</td>
+                                <td>
+                                    {% if site.is_activate %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    {% endif %}
                             </tr>
                         {% endfor %}
                     </tbody>
