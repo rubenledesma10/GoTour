@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -8,29 +7,26 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // 1. PRIMER FETCH: Obtener datos del usuario
+    // Obtener datos del usuario logueado
     fetch("/api/admin/dashboard", {
         headers: { "Authorization": `Bearer ${token}` }
     })
     .then(async res => {
         const text = await res.text();
-        console.log("Dashboard response:", res.status, text);
         if (!res.ok) throw new Error(text);
         return JSON.parse(text);
     })
     .then(data => {
         const usernameEl = document.getElementById("username");
-        const roleEl = document.getElementById("role");
         const adminSection = document.getElementById("adminSection");
 
         if (usernameEl) usernameEl.innerText = data.username;
-        if (roleEl) roleEl.innerText = data.role;
 
         if (data.role === "admin" && adminSection) {
             adminSection.style.display = "block";
 
-            // 2. SEGUNDO FETCH: Obtener lista de usuarios para el admin
-            return fetch("/api/admin/get", {
+            // Obtener lista de usuarios
+            fetch("/api/admin/get", {
                 headers: { "Authorization": `Bearer ${token}` }
             })
             .then(res => res.json())
@@ -66,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     })
     .catch(err => {
-        console.error("Error en admin.js:", err);
+        console.error("Error en users.js:", err);
         alert("Session expired or unauthorized. Please login again.");
         localStorage.clear();
         window.location.href = "/";

@@ -7,7 +7,9 @@ from datetime import datetime, date
 from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
+from utils.email_service import send_welcome_email
 from utils.decorators import role_required
+import os, uuid
 
 #ACA VAN A ESTAR TODAS LAS RUTAS EN LAS QUE EL ADMINISTRADOR PUEDE ACCEDER
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/api/admin')
@@ -56,7 +58,17 @@ def get_users_all(current_user):
 @admin_bp.route('/add', methods=['POST'])
 @role_required("admin")
 def add_user(current_user):
-    data = request.get_json()
+    #todos los campos de texto vienen en request.form y no en get_json
+    data = request.form.to_dict() #convierte los datos enviados  en un diccionario
+    file = request.files.get("photo")  #obtenemos la foto si se subio un archivo
+
+    #aca guardamos la foto en el servidir (nuestro proyecto)
+    photo_filename = None
+    if file:
+        filename = f"{uuid.uuid4()}_{file.filename}" #generamos el nombre unico del archivo
+        upload_path = os.path.join("static/uploads", filename) #indicamos donde guardamos las imagenes
+        file.save(upload_path)
+        photo_filename = filename
     try:
         validated_data = user_schema.load(data)
     except ValidationError as err:
@@ -69,10 +81,10 @@ def add_user(current_user):
             email=validated_data['email'].lower(),
             password=validated_data['password'],
             username=validated_data['username'],
-            role=validated_data['rol'],  # mantener coherencia con tu modelo
+            role=validated_data['role'],  
             dni=validated_data['dni'],
             birthdate=validated_data['birthdate'],
-            photo=validated_data.get('photo'),
+            photo=photo_filename,
             phone=validated_data['phone'],
             nationality=validated_data['nationality'],
             province=validated_data['province'],
@@ -81,11 +93,12 @@ def add_user(current_user):
         )
         db.session.add(new_user)
         db.session.commit()
+        send_welcome_email(new_user.email, new_user.username)
         return jsonify({
             'message':'User successfully created',
             'user': user_schema.dump(new_user)
         }), 201
-
+        
     except ValueError:
         db.session.rollback()
         return jsonify({'error':'Invalid data type'}), 400
@@ -96,6 +109,8 @@ def add_user(current_user):
         db.session.rollback()
         print(f"Unexpected error: {e}")
         return jsonify({'error':'Error adding user'}), 500
+
+    
 
 @admin_bp.route('/newUser')
 def new_user_page():
