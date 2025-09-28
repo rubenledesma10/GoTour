@@ -62,7 +62,6 @@ def tourist_sites_view():
     return render_template('tourist_site/tourist_sites.html', sitios=sitios)
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
-@jwt_required()
 @role_required([RoleEnum.ADMIN or RoleEnum.RECEPCIONIST or RoleEnum.TOURIST])
 def get_tourist_sites():
     tourist_sites = TouristSite.query.all()
@@ -78,7 +77,6 @@ def get_tourist_sites():
     return jsonify(serialized_sites), 200
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['GET'])
-@jwt_required()
 @role_required([RoleEnum.ADMIN or RoleEnum.RECEPTIONIST or RoleEnum.TOURIST])
 def get_tourist_site_id(id_tourist_site):
     tourist_site = TouristSite.query.get(id_tourist_site)
@@ -92,7 +90,6 @@ def get_tourist_site_id(id_tourist_site):
 # Crear, editar y eliminar sitios turísticos.
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['DELETE'])
-@jwt_required()
 @role_required(RoleEnum.ADMIN.value)
 def delete_tourist_site(id_tourist_site):
     tourist_site = TouristSite.query.get(id_tourist_site)
@@ -112,7 +109,6 @@ def delete_tourist_site(id_tourist_site):
         return jsonify ({'error': str(e)})
 
 @tourist_site.route('/api/tourist_sites/', methods = ['POST'])
-@jwt_required()
 @role_required(RoleEnum.ADMIN.value)
 
 def add_tourist_site():
@@ -180,7 +176,6 @@ def add_tourist_site():
         return jsonify({'error':'Error adding Tourist Site'}), 500
 
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PUT'])
-@jwt_required()
 @role_required(RoleEnum.ADMIN.value)
 
 def edit_tourist_site(id_tourist_site):
@@ -232,7 +227,6 @@ def edit_tourist_site(id_tourist_site):
         return jsonify({'error': str(e)}), 500
     
 @tourist_site.route('/api/tourist_sites/<int:id_tourist_site>', methods = ['PATCH'])
-@jwt_required()
 @role_required(RoleEnum.ADMIN.value)
 
 def update_tourist_site(id_tourist_site):

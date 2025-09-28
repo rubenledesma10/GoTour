@@ -8,7 +8,7 @@ from config.email_config import init_mail
 from datetime import timedelta
 # Importamos los blueprints 
 from routes.user_route import user_bp
-from routes.admin_route import admnin_bp
+from routes.admin_route import admin_bp
 from routes.tourist_route import tourist_bp
 from routes.receptionist_route import recepcionist_bp
 from routes.tourist_site_route import tourist_site
@@ -25,7 +25,7 @@ migrate = Migrate(app, db)
 
 # Registramos los blueprints
 app.register_blueprint(user_bp)
-app.register_blueprint(admnin_bp)
+app.register_blueprint(admin_bp)
 app.register_blueprint(tourist_bp)
 app.register_blueprint(recepcionist_bp)
 app.register_blueprint(tourist_site)

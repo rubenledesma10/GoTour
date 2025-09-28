@@ -1,11 +1,10 @@
 {% include "head.html" %}
+{% include "partials/navbar.html" %}
 
-    {% include "partials/navbar.html" %}
-    <div class="container mt-4">
-        <h2 class="mb-4">Bienvenido a la familia de GoTour! 😎</h2>
-        <form id="registerForm" enctype="multipart/form-data">
-
-            <div class="mb-3">
+<div class="container mt-4">
+    <h2 class="mb-4">Agregar nuevo integrante a la familia GoTour 😎</h2>
+    <form id="registerAdminForm" enctype="multipart/form-data">
+        <div class="mb-3">
                 <label for="first_name" class="form-label">Nombre</label>
                 <input type="text" class="form-control" id="first_name" name="first_name"
                     placeholder="Ingrese su nombre" required minlength="2" maxlength="50" required>
@@ -77,9 +76,20 @@
                 <option value="prefiero no decirlo">Prefiero no decirlo</option>
             </select>
             </div>
-
+            <div class="mb-3">
+            <label for="role" class="form-label">Seleccione el rol</label>
+            <select class="form-select" id="rol" name="rol" required>
+                <option value="" disabled selected>Seleccione una opción</option>
+                <option value="admin">Administrador</option>
+                <option value="tourist">Turista</option>
+                <option value="receptionist">Recepcionista</option>
+            </select>
+            </div>
             <button type="submit" class="btn btn-primary">Registrar</button>
-            <a href="{{ url_for('user_bp.login') }}" class="btn btn-secondary ms-2">Cancelar</a>
-        </form>
-    </div>
-{% include "scripts.html"%}
+            <a href="{{url_for('admin_bp.users_page')}}" class="btn btn-secondary ms-2">Cancelar</a>
+        
+    </form>
+</div>
+<script src="/static/admin.js"></script>
+{% include "scripts.html" %}
+

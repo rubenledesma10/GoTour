@@ -2,12 +2,13 @@ from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, jsonify, request, render_template
 from models.db import db
 from models.user import User
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+from flask import current_app as app
 from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema #aca traemos la instancia que declaramos anteriomente
 from schemas.user_login_schema import user_login_schema
 from marshmallow import Schema, fields, ValidationError
-from flask_jwt_extended import create_access_token
+import jwt 
 from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
 import os, uuid
@@ -94,13 +95,13 @@ def login_user():
         return jsonify({'error':'User account is deactivated'}),403
     
     #aca creamos el token
-    access_token = create_access_token(
-        identity=str(user.id_user),
-        additional_claims={"role": user.role.lower()}
-    ) #se genera un jwt firmado con la clave secreta. Identity lo usamos para guardar algo que identifique al usuario (id_user)
+    token = jwt.encode({
+        'id_user':user.id_user,
+        'exp':datetime.utcnow()+timedelta(hours=1)
+    }, app.config['SECRET_KEY'], algorithm="HS256")
 
     return jsonify({
-    'access_token': access_token,
+    'token': token,
     'role': user.role,
     'username': user.username
 }), 200

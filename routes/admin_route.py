@@ -1,73 +1,75 @@
 from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, jsonify, request, render_template
+from flask import current_app as app
 from models.db import db
 from models.user import User
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
-from flask_jwt_extended import create_access_token, jwt_required
 from utils.decorators import role_required
 
 #ACA VAN A ESTAR TODAS LAS RUTAS EN LAS QUE EL ADMINISTRADOR PUEDE ACCEDER
-admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
+admin_bp = Blueprint('admin_bp', __name__, url_prefix='/api/admin')
 
-@admnin_bp.route("/welcome", methods=["GET"])
-@jwt_required()
+@admin_bp.route("/welcome", methods=["GET"])
 @role_required("admin")
-def test_admin():
-    return jsonify({"message":"Endpoint for admin "})
+def test_admin(current_user):
+    return jsonify({"message": f"Endpoint for admin {current_user.username}"})
 
-@admnin_bp.route("/dashboard", methods=["GET"])
-def get_users():
+@admin_bp.route("/dashboard", methods=["GET"])
+@role_required("admin")
+def dashboard_admin_api(current_user):
+    return jsonify({
+        'username':current_user.username,
+        'role':current_user.role
+    })
+
+@admin_bp.route("/users_page", methods=["GET"])
+def users_page():
     return render_template("user/user.html")
 
-@admnin_bp.route('/get')
-@jwt_required()
+@admin_bp.route('/get')
 @role_required("admin")
-def get_users_all():
-    users=User.query.all()
+def get_users_all(current_user):
+    users = User.query.all()
     if not users:
-        return jsonify({'message':'There are not users registered'}),404
+        return jsonify({'message':'There are not users registered'}), 404
     return jsonify(users_schema.dump(users))
 
-@admnin_bp.route('/get/<string:id_user>', methods=['GET'])
-@jwt_required()
-@role_required("admin")
-def get_user_id(id_user):
-    user = User.query.get(id_user)
-    if not user:
-        return jsonify({'message':'User not found'}),404
-    return jsonify(user_schema.dump(user)),200
+# @admin_bp.route('/get/<string:id_user>', methods=['GET'])
+# @role_required("admin")
+# def get_user_id(current_user, id_user):
+#     user = User.query.get(id_user)
+#     if not user:
+#         return jsonify({'message':'User not found'}), 404
+#     return jsonify(user_schema.dump(user)), 200
 
-@admnin_bp.route('/get/dni/<string:dni>', methods=['GET'])
-@jwt_required()
-@role_required("admin")
-def get_user_dni(dni):
-    user = User.query.filter_by(dni=dni).first()
-    if not user:
-        return jsonify({'message':'User not found'}),404
-    return jsonify(user_schema.dump(user)),200
+# @admin_bp.route('/get/dni/<string:dni>', methods=['GET'])
+# @role_required("admin")
+# def get_user_dni(current_user, dni):
+#     user = User.query.filter_by(dni=dni).first()
+#     if not user:
+#         return jsonify({'message':'User not found'}), 404
+#     return jsonify(user_schema.dump(user)), 200
 
-@admnin_bp.route('/add', methods=['POST'])
-@jwt_required()
+@admin_bp.route('/add', methods=['POST'])
 @role_required("admin")
-def add_user():
+def add_user(current_user):
     data = request.get_json()
-
-
     try:
         validated_data = user_schema.load(data)
     except ValidationError as err:
         return jsonify(err.messages), 400
+
     try:
-        new_user=User(
+        new_user = User(
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
-            email=validated_data['email'],
+            email=validated_data['email'].lower(),
             password=validated_data['password'],
             username=validated_data['username'],
-            role=validated_data['rol'],
+            role=validated_data['rol'],  # mantener coherencia con tu modelo
             dni=validated_data['dni'],
             birthdate=validated_data['birthdate'],
             photo=validated_data.get('photo'),
@@ -81,131 +83,94 @@ def add_user():
         db.session.commit()
         return jsonify({
             'message':'User successfully created',
-            'user':user_schema.dump(new_user)}), 201
+            'user': user_schema.dump(new_user)
+        }), 201
+
     except ValueError:
         db.session.rollback()
-        return jsonify({'error':'Invalid data type'},400)
+        return jsonify({'error':'Invalid data type'}), 400
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
     except Exception as e:
         db.session.rollback()
         print(f"Unexpected error: {e}")
-        return jsonify({'error':'Error adding user'}),500
-    
+        return jsonify({'error':'Error adding user'}), 500
 
-@admnin_bp.route('/edit/<string:id_user>',methods=['PUT'])
-@jwt_required()
-@role_required("admin")
-def edit_user(id_user):
-    data = request.get_json()
-    if not data:
-        return jsonify({'error': 'No data received'}), 400
+@admin_bp.route('/newUser')
+def new_user_page():
+    return render_template("user/register_admin.html")    
 
-    user = User.query.get(id_user)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+# @admin_bp.route('/edit/<string:id_user>',methods=['PUT'])
+# @role_required("admin")
+# def edit_user(current_user, id_user):
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({'error': 'No data received'}), 400
 
-    try:
-        validated_data = user_schema.load(data, partial=True)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
+#     user = User.query.get(id_user)
+#     if not user:
+#         return jsonify({'error': 'User not found'}), 404
 
-    try:
-        if 'first_name' in validated_data:
-            user.first_name = validated_data['first_name']
+#     try:
+#         validated_data = user_schema.load(data, partial=True)
+#     except ValidationError as err:
+#         return jsonify(err.messages), 400
 
-        if 'last_name' in validated_data:
-            user.last_name = validated_data['last_name']
+#     try:
+#         for field in ['first_name','last_name','email','username','role','dni','birthdate',
+#                       'photo','phone','nationality','province','is_activate','gender']:
+#             if field in validated_data:
+#                 setattr(user, field, validated_data[field] if field != 'email' else validated_data[field].lower())
+#         if 'password' in validated_data:
+#             user.set_password(validated_data['password'])
 
-        if 'email' in validated_data:
-            user.email = validated_data['email'].lower()
+#         db.session.commit()
+#         return jsonify({'message': 'User edited correctly', 'user': user_schema.dump(user)}), 200
 
-        if 'username' in validated_data:
-            user.username = validated_data['username']
-
-        if 'role' in validated_data:
-            user.role = validated_data['role']
-
-        if 'dni' in validated_data:
-            user.dni = validated_data['dni']
-
-        if 'birthdate' in validated_data:
-            user.birthdate = validated_data['birthdate']
-
-        if 'photo' in validated_data:
-            user.photo = validated_data['photo']
-
-        if 'phone' in validated_data:
-            user.phone = validated_data['phone']
-
-        if 'nationality' in validated_data:
-            user.nationality = validated_data['nationality']
-
-        if 'province' in validated_data:
-            user.province = validated_data['province']
-
-        if 'is_activate' in validated_data:
-            user.is_activate = validated_data['is_activate']
-
-        if 'password' in validated_data:
-            user.set_password(validated_data['password'])
-
-        if 'gender' in validated_data:
-            user.gender = validated_data['gender']
-
-        db.session.commit()
-
-        return jsonify({'message': 'User edited correctly', 'user': user_schema.dump(user)}),200
-
-    except IntegrityError as e:
-        db.session.rollback()
-        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+#     except IntegrityError as e:
+#         db.session.rollback()
+#         return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({'error': str(e)}), 500
     
     
-@admnin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
-@jwt_required()
-@role_required("admin")
-def delete_user(id_user):
-    user=User.query.get(id_user)
-    if not user:
-        return jsonify({'message':'User not found'}),404
-    try:
-        user.is_activate=False #no lo elimnamos de la bd, hacemos un eliminado logico
-        #db.session.delete(user)
-        db.session.commit()
-        return jsonify({'message':'User delete successfuly'}),200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error':str(e)}),500
+# @admin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
+# @role_required("admin")
+# def delete_user(current_user, id_user):
+#     user = User.query.get(id_user)
+#     if not user:
+#         return jsonify({'message':'User not found'}), 404
+#     try:
+#         user.is_activate = False  # eliminado lógico
+#         db.session.commit()
+#         return jsonify({'message':'User deleted successfully'}), 200
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({'error': str(e)}), 500
     
 
-@admnin_bp.route('/get/tourists')
-@jwt_required()
-@role_required("admin")
-def get_tourists():
-    tourists= User.query.filter_by(rol=RoleEnum.TOURIST).all()
-    if not tourists:
-        return jsonify({'message':'There are not tourists registered'}),404
-    return jsonify (users_schema.dump(tourists)),200
+# @admin_bp.route('/get/tourists')
+# @role_required("admin")
+# def get_tourists(current_user):
+#     tourists = User.query.filter_by(rol=RoleEnum.TOURIST).all()
+#     if not tourists:
+#         return jsonify({'message':'There are no tourists registered'}), 404
+#     return jsonify(users_schema.dump(tourists)), 200
 
-@admnin_bp.route('/get/tourists/activate')
-@jwt_required()
-@role_required("admin")
-def get_tourists_activate():
-    tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=True).all()
-    if not tourists:
-        return jsonify({'message':'There are not tourists activates'}),404
-    return jsonify (users_schema.dump(tourists)),200
+# @admin_bp.route('/get/tourists/activate')
+# @role_required("admin")
+# def get_tourists_activate(current_user):
+#     tourists = User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=True).all()
+#     if not tourists:
+#         return jsonify({'message':'There are no active tourists'}), 404
+#     return jsonify(users_schema.dump(tourists)), 200
 
-@admnin_bp.route('/get/tourists/deactivated')
-@jwt_required()
-@role_required("admin")
-def get_tourists_deactivated():
-    tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=False).all()
-    if not tourists:
-        return jsonify({'message':'There are not tourists deactivated'}),404
-    return jsonify (users_schema.dump(tourists)),200
+# @admin_bp.route('/get/tourists/deactivated')
+# @role_required("admin")
+# def get_tourists_deactivated():
+#     tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=False).all()
+#     if not tourists:
+#         return jsonify({'message':'There are not tourists deactivated'}),404
+#     return jsonify (users_schema.dump(tourists)),200
