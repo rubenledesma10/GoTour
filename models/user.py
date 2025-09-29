@@ -13,7 +13,7 @@ class User (db.Model):
     email=db.Column(db.String(50), nullable=False, unique=True)
     password_hash=db.Column(db.Text, nullable=False)
     username=db.Column(db.String(50), nullable=False, unique=True)
-    role = db.Column(SqlEnum(RoleEnum), nullable=False) #SqlEnum nos permite guardar solamente valores que este en roles_enums y nos convierte el enum en texto
+    role = db.Column(db.String(20), nullable=False)  
     dni = db.Column(db.String(20), nullable=False, unique=True)
     birthdate= db.Column(db.Date, nullable=False) #Marshmallow puede convertir strings "YYYY-MM-DD"
     photo=db.Column(db.String(250), nullable=True)
@@ -36,7 +36,7 @@ class User (db.Model):
         self.email=email.lower()
         self.set_password(password)
         self.username=username
-        self.role=role
+        self.role = role.lower()
         self.dni=dni
         self.birthdate=birthdate
         self.photo=photo

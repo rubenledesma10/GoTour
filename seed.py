@@ -36,10 +36,10 @@ def populate_users(data):
         user = User(
             first_name=item.get('first_name'),
             last_name=item.get('last_name'),
-            email=email,
+            email=email.lower(),
             password=item.get('password'),  # se hashea con set_password
             username=username,
-            role=RoleEnum[item.get('role')],  # ADMIN / TOURIST / RECEPTIONIST
+            role=item.get('role').lower(),  # ADMIN / TOURIST / RECEPTIONIST
             dni=item.get('dni'),
             birthdate=birthdate,
             photo=item.get('photo'),
