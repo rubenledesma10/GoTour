@@ -67,7 +67,10 @@ class User (db.Model, UserMixin):
             'nationality':self.nationality,
             'province':self.province,
             'is_activate':self.is_activate
-        }
+
+
     
     def get_id(self):
         return str(self.id_user)
+
+

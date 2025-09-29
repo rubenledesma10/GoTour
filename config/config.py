@@ -6,7 +6,7 @@ load_dotenv()
 class Config:
     #configuracion para seguridad
     SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "jwtsecret")
+
 
     #configuracion para base de datos
     SQLALCHEMY_DATABASE_URI = (
@@ -15,8 +15,6 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    #configuracion para JWT
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=int(os.getenv("JWT_EXPIRES_HOURS", 1)))  # default: 1h
 
     #configuracion para email
     MAIL_SERVER = "smtp.gmail.com"

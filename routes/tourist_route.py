@@ -13,13 +13,11 @@ from utils.decorators import role_required
 tourist_bp = Blueprint('tourist_bp', __name__, url_prefix='/api/tourist')
 
 @tourist_bp.route("/welcome", methods=["GET"])
-@jwt_required()
 @role_required("tourist")
 def test_tourist():
     return jsonify({"message":"Endpoint for tourist "})
 
 @tourist_bp.route("/my_data", methods=['GET'])
-@jwt_required()
 @role_required("tourist")
 def my_data():
     id_user=get_jwt_identity() #obtenemos el token de la persona que se logueo
@@ -29,7 +27,6 @@ def my_data():
     return jsonify(user_schema.dump(user)),200
 
 @tourist_bp.route("/my_data/edit", methods=['PUT'])
-@jwt_required()
 @role_required("tourist")
 def edit_my_data():
     id_user=get_jwt_identity()

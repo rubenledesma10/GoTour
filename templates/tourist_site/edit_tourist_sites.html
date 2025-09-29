@@ -1,8 +1,18 @@
 {% include "head.html" %}
     {% include "partials/navbar.html" %}
     <div class="container mt-4">
-        <h2 class="mb-4">Agregar sitio turistico</h2>
-        <form id="addTouristSiteForm", method="POST">
+        <h2 class="mb-4">Editar sitio turistico</h2>
+        <form id="editTouristSiteForm">
+        <div class="container mt-4"></form>
+            <div class="mb-3">
+            <label for="siteSelect" class="form-label">Selecciona un sitio a editar</label>
+            <select id="siteSelect" name="id_tourist_site" class="form-select" required>
+                <option value="" disabled selected>-- Selecciona un sitio --</option>
+                {% for sitio in sites %}
+                    <option value="{{ sitio.id_tourist_site }}">{{ sitio.name }}</option>
+                {% endfor %}
+            </select>
+            </div>
 
             <div class="mb-3">
                 <label for="name" class="form-label">Nombre</label>
@@ -48,7 +58,7 @@
                     placeholder="Ingrese la URL" required minlength="2" required>
             </div>
 
-            <div class="mb-3">
+                        <div class="mb-3">
                 <label for="average" class="form-label">Promedio de visitas</label>
                 <input type="number" class="form-control" id="average" name="average"
                     placeholder="Ingrese el promedio de visitas" required step="0.01" min="0">
@@ -64,10 +74,9 @@
                 <input type="time" class="form-control" id="closing_hours" name="closing_hours" required>
             </div>
 
-            <button type="submit" class="btn btn-primary">Agregar sitio</button>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
             <button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
-        </form>
-    </div>
+        <div></div>
 
 <script src="/static/tourist_site.js"></script>
 {% include "scripts.html"%}
