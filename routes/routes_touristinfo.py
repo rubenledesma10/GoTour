@@ -15,8 +15,6 @@ touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristi
 # def touristinfo_planilla():
 #     return render_template("touristinfo/touristinfo.html") 
 
-    #     return jsonify([t.serialize() for t in tourists]), 200
-
 # @touristinfo_bp.route("/statistics", methods=["GET"])
 # @jwt_required()
 # @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
@@ -34,53 +32,52 @@ touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristi
 #     }), 200
 
 
+@touristinfo_bp.route("/planilla", methods=["GET"])
+def touristinfo_planilla():
+    tourists = TouristInfo.query.all()
+    return render_template("touristinfo/touristinfo.html", tourists=tourists)
+
+
 @touristinfo_bp.route("/", methods=["GET"])
-# @jwt_required()
-# @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def get_all_tourists():
     tourists = TouristInfo.query.all()
     if not tourists:
         return jsonify({"message": "No tourists found"}), 200
+    return jsonify([t.serialize() for t in tourists]), 200 
 
-    return jsonify([t.serialize() for t in tourists]), 200
-
-    
 
 @touristinfo_bp.route("/<int:id>", methods=["GET"])
-# @jwt_required()
-# @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def get_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
         return jsonify({"error": "Tourist not found"}), 404
     return jsonify(tourist.serialize()), 200
 
+
 @touristinfo_bp.route("/", methods=["POST"])
-# @jwt_required()
-# @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def create_tourist():
-    data = request.get_json()
+    data = request.form.to_dict()
 
-    # Lista de campos obligatorios
     required_fields = ["nationality", "province", "quantity", "person_with_disability", "mobility"]
-
-    # Verificar que existan y no estén vacíos
-    missing_or_empty = [field for field in required_fields 
-                        if field not in data or str(data[field]).strip() == ""]
+    missing_or_empty = [f for f in required_fields if f not in data or str(data[f]).strip() == ""]
     if missing_or_empty:
         return jsonify({"error": f"Missing or empty required fields: {', '.join(missing_or_empty)}"}), 400
 
-    # Validar que la cantidad de personas con discapacidad no supere la cantidad total
-    if data["person_with_disability"] > data["quantity"]:
+    try:
+        quantity = int(data["quantity"])
+        person_with_disability = int(data["person_with_disability"])
+    except ValueError:
+        return jsonify({"error": "quantity and person_with_disability must be integers"}), 400
+
+    if person_with_disability > quantity:
         return jsonify({"error": "People with disability cannot exceed total quantity"}), 400
 
     try:
-        # current_user_id = get_jwt_identity()
         new_tourist = TouristInfo(
             nationality=data["nationality"].strip(),
             province=data["province"].strip(),
-            quantity=data["quantity"],
-            person_with_disability=data["person_with_disability"],
+            quantity=quantity,
+            person_with_disability=person_with_disability,
             mobility=data["mobility"].strip(),
             id_user="39c6fd66-5883-44fa-8017-86e12e154a2b"
         )
@@ -97,34 +94,38 @@ def create_tourist():
 
 
 @touristinfo_bp.route("/<int:id>", methods=["PATCH"])
-# @jwt_required()
-# @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def update_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
         return jsonify({"error": "Tourist not found"}), 404
 
-    data = request.get_json()
+    data = request.form.to_dict()
     if not data:
         return jsonify({"error": "Invalid data"}), 400
 
-    # Validaciones de campos vacíos
     errors = {}
     for field in ["nationality", "province", "quantity", "person_with_disability", "mobility"]:
-        if field in data and (data[field] is None or str(data[field]).strip() == ""):
+        if field in data and str(data[field]).strip() == "":
             errors[field] = f"{field} cannot be empty"
 
     if errors:
         return jsonify({"errors": errors}), 400
 
-    # Actualización de campos
+    if "quantity" in data:
+        try:
+            tourist.quantity = int(data["quantity"])
+        except ValueError:
+            return jsonify({"error": "quantity must be an integer"}), 400
+    if "person_with_disability" in data:
+        try:
+            tourist.person_with_disability = int(data["person_with_disability"])
+        except ValueError:
+            return jsonify({"error": "person_with_disability must be an integer"}), 400
+
     tourist.nationality = data.get("nationality", tourist.nationality)
     tourist.province = data.get("province", tourist.province)
-    tourist.quantity = data.get("quantity", tourist.quantity)
-    tourist.person_with_disability = data.get("person_with_disability", tourist.person_with_disability)
     tourist.mobility = data.get("mobility", tourist.mobility)
 
-    # Validación lógica
     if tourist.person_with_disability > tourist.quantity:
         return jsonify({"error": "People with disability cannot exceed total quantity"}), 400
 
@@ -137,8 +138,6 @@ def update_tourist(id):
 
 
 @touristinfo_bp.route("/<int:id>", methods=["DELETE"])
-# @jwt_required()
-# @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def delete_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:

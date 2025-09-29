@@ -12,13 +12,14 @@
                 <div class="navbar-nav">
                     <!--enlaces publicos-->
                     <a class="nav-link active" href="/">Inicio</a>
-                    <a class="nav-link active" href="#">CIT</a>
+                    <a class="nav-link active" href="{{ url_for('cit_bp.list_cits_page') }}">CIT</a>
                     <a class="nav-link active " href="#" >Comentarios</a>
                     <a class="nav-link active" href="#">Sitios turisticos</a>
                     <a class="nav-link active" href="#">Acerca de GoTour</a>
                     <!--privados-->
                     <a class="nav-link active d-none" href="{{url_for('admnin_bp.get_users')}}" data-role="admin">Usuarios</a>
-                    <a class="nav-link active d-none" href="touristinfo/touristinfo.html" data-role="admin">Informacio turistas</a>
+                    <a class="nav-link active" href="{{ url_for('touristinfo_bp.touristinfo_planilla') }}" data-role="admin">Información Turística</a>
+
                     
                 
                 </div>
