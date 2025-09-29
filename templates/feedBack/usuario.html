@@ -17,7 +17,6 @@
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
                     <a class="nav-link active" href="/">Inicio</a>
@@ -28,9 +27,17 @@
                     <a class="nav-link active" aria-current="page" href="/feedback">Comentarios</a>
                 </div>
                 <span class="navbar-text ms-auto">
-                    <button type="button" class="btn" style="background-color: orange; color: white;">
-                        Registrarse / Iniciar Sesión
-                    </button>
+                    {% if current_user.is_authenticated %}
+                        <!-- Si está logueado, botón rojo con nombre -->
+                        <a href="{{ url_for('user_bp.logout') }}" class="btn btn-danger">
+                            Cerrar Sesión ({{ current_user.username }})
+                        </a>
+                    {% else %}
+                        <!-- Si no está logueado, botón normal -->
+                        <a href="{{ url_for('user_bp.login') }}" class="btn" style="background-color: orange; color: white;">
+                            Registrarse / Iniciar Sesión
+                        </a>
+                    {% endif %}
                 </span>
             </div>
         </div>
@@ -44,22 +51,32 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <form id="feedbackForm">
+
+                    <!-- Selector dinámico de sitios turísticos -->
                     <div class="mb-3">
-                        <label for="comment" class="form-label">Comentario</label>
-                        <textarea id="comment" class="form-control"></textarea>
+                        <label for="touristSiteId" class="form-label">Lugar Turístico</label>
+                        <select id="touristSiteId" class="form-control" required>
+                            <option value="">-- Selecciona un sitio --</option>
+                            {% for s in sites %}
+                            <!-- 🔹 Corregido: s.id -> s.id_tourist_site -->
+                            <option value="{{ s.id_tourist_site }}">{{ s.name }} - {{ s.description }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
+
                     <div class="mb-3">
                         <label for="qualification" class="form-label">Calificación (1-5)</label>
-                        <input type="number" id="qualification" class="form-control" min="1" max="5">
+                        <input type="number" id="qualification" class="form-control" min="1" max="5" required>
                     </div>
                     <div class="mb-3">
-                        <label for="tour_site" class="form-label">Sitio Visitado</label>
-                        <input type="text" id="tour_site" class="form-control">
+                        <label for="comment" class="form-label">Comentario</label>
+                        <textarea id="comment" class="form-control" required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="user" class="form-label">Usuario</label>
-                        <input type="text" id="user" class="form-control">
+                        <label class="form-label">Usuario</label>
+                        <input type="text" class="form-control" value="{{ current_user.first_name }} {{ current_user.last_name }}" readonly>
                     </div>
+
                     <button type="submit" class="btn btn-primary">Enviar</button>
                 </form>
             </div>
@@ -67,7 +84,7 @@
 
         <!-- Últimos feedbacks -->
         <h2 class="mb-3">Últimos comentarios</h2>
-        <ul class="list-group" id="latestFeedbacks"></ul>
+        <div class="row row-cols-1 row-cols-md-2 g-4" id="latestFeedbacks"></div>
     </div>
 
     <!-- Bootstrap -->
@@ -75,4 +92,77 @@
 
     <!-- Script de lógica -->
     <script>
-        const token = "PON_ACA_TU_TOKEN_JWT"; // ⚠️ reemplazar con token real
+        const API_URL = "/api/feedback/";
+
+        // Renderizar estrellas ⭐
+        function renderStars(qualification) {
+            let stars = "";
+            for (let i = 0; i < qualification; i++) stars += "⭐";
+            for (let i = qualification; i < 5; i++) stars += "☆";
+            return stars;
+        }
+
+        // Cargar últimos feedbacks
+        async function loadFeedbacks() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+
+                const container = document.getElementById("latestFeedbacks");
+                container.innerHTML = "";
+
+                data.forEach(f => {
+                    const card = document.createElement("div");
+                    card.className = "col";
+                    card.innerHTML = `
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">${renderStars(f.qualification)}</h5>
+                                <p class="card-text">${f.comment}</p>
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>👤 ${f.user?.username || "Usuario"}</span>
+                                    <span>📍 ${f.tourist_site?.name || "Sitio"}</span>
+                                    <span>📅 ${f.date_hour ? new Date(f.date_hour).toLocaleDateString() : ""}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Error cargando feedbacks:", err);
+            }
+        }
+
+        // Enviar nuevo feedback
+        document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const newFeedback = {
+                comment: document.getElementById("comment").value,
+                qualification: parseInt(document.getElementById("qualification").value),
+                // 🔹 id_user eliminado, backend usa current_user
+                id_tourist_site: document.getElementById("touristSiteId").value
+            };
+
+            console.log("Enviando feedback:", newFeedback); // 👀 debug
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newFeedback)
+                });
+
+                await res.json();
+                loadFeedbacks();
+                document.getElementById("feedbackForm").reset();
+            } catch (err) {
+                console.error("Error enviando feedback:", err);
+            }
+        });
+
+        // Cargar feedbacks al inicio
+        loadFeedbacks();
+    </script>
+</body>
+</html>

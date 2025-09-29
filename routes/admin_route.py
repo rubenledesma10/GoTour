@@ -14,7 +14,7 @@ admnin_bp = Blueprint('admnin_bp', __name__, url_prefix='/api/admin')
 
 @admnin_bp.route("/welcome", methods=["GET"])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def test_admin():
     return jsonify({"message":"Endpoint for admin "})
 
@@ -24,7 +24,7 @@ def get_users():
 
 @admnin_bp.route('/get')
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def get_users_all():
     users=User.query.all()
     if not users:
@@ -33,7 +33,7 @@ def get_users_all():
 
 @admnin_bp.route('/get/<string:id_user>', methods=['GET'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def get_user_id(id_user):
     user = User.query.get(id_user)
     if not user:
@@ -42,7 +42,7 @@ def get_user_id(id_user):
 
 @admnin_bp.route('/get/dni/<string:dni>', methods=['GET'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def get_user_dni(dni):
     user = User.query.filter_by(dni=dni).first()
     if not user:
@@ -51,7 +51,7 @@ def get_user_dni(dni):
 
 @admnin_bp.route('/add', methods=['POST'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def add_user():
     data = request.get_json()
 
@@ -67,7 +67,7 @@ def add_user():
             email=validated_data['email'],
             password=validated_data['password'],
             username=validated_data['username'],
-            role=validated_data['rol'],
+            role=validated_data['role'],
             dni=validated_data['dni'],
             birthdate=validated_data['birthdate'],
             photo=validated_data.get('photo'),
@@ -96,7 +96,7 @@ def add_user():
 
 @admnin_bp.route('/edit/<string:id_user>',methods=['PUT'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def edit_user(id_user):
     data = request.get_json()
     if not data:
@@ -168,7 +168,7 @@ def edit_user(id_user):
     
 @admnin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def delete_user(id_user):
     user=User.query.get(id_user)
     if not user:
@@ -185,7 +185,7 @@ def delete_user(id_user):
 
 @admnin_bp.route('/get/tourists')
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def get_tourists():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST).all()
     if not tourists:
@@ -194,7 +194,7 @@ def get_tourists():
 
 @admnin_bp.route('/get/tourists/activate')
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def get_tourists_activate():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=True).all()
     if not tourists:
@@ -203,9 +203,10 @@ def get_tourists_activate():
 
 @admnin_bp.route('/get/tourists/deactivated')
 @jwt_required()
-@role_required(RoleEnum.ADMIN.value)
+@role_required("admin")
 def get_tourists_deactivated():
     tourists= User.query.filter_by(rol=RoleEnum.TOURIST, is_activate=False).all()
     if not tourists:
         return jsonify({'message':'There are not tourists deactivated'}),404
     return jsonify (users_schema.dump(tourists)),200
+

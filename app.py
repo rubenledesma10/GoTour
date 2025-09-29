@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from flask_login import LoginManager,login_required
 from config.config import Config
 from models.db import db
 from flask_migrate import Migrate
@@ -13,6 +14,9 @@ from routes.tourist_site_route import tourist_site
 from routes.routes_touristinfo import touristinfo_bp
 from routes.routes_cit import cit_bp
 from routes.feedBack_route import feedback_bp
+from models.user import User
+from models.tourist_site import TouristSite
+
 
 
 
@@ -34,6 +38,10 @@ app.register_blueprint(touristinfo_bp)
 app.register_blueprint(cit_bp)
 app.register_blueprint(feedback_bp, url_prefix="/api/feedback")
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "user_bp.login"
+
 
 with app.app_context():
     from models.user import User
@@ -46,6 +54,24 @@ with app.app_context():
 @app.route("/")
 def home():
     return render_template("index.html")
+
+# @app.route("/feedback")
+# def feedback_page():
+#     return render_template("feedBack/usuario.html")  # turista
+
+@app.route("/admin/feedback")
+def admin_feedback_page():
+    return render_template("feedBack/administrador.html")  # admin
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id) 
+
+@app.route("/feedback")
+@login_required
+def feedback_page():
+    sites = TouristSite.query.all()  # traigo todos los sitios turísticos
+    return render_template("feedBack/usuario.html", sites=sites)
 
 if __name__=='__main__':
     print("Ejecutando GoTour...")

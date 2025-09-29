@@ -22,16 +22,16 @@ class TouristSite (db.Model):
 
 def __init__(self, name, description, address, phone, category, url, id_user, average=None, is_activate=True): 
         
-        self.name = name
-        self.description = description
-        self.address = address
-        self.phone = phone 
-        self.category = category
-        self.url = url
-        self.average = average
+    self.name = name
+    self.description = description
+    self.address = address
+    self.phone = phone 
+    self.category = category
+    self.url = url
+    self.average = average
         #Estableci None por defecto a average para luego sacar un promedio de las visitas y calificaciones del lugar. 
-        self.id_user = id_user
-        self.is_activate = is_activate
+    self.id_user = id_user
+    self.is_activate = is_activate
     
 def serialize(self): 
         return {

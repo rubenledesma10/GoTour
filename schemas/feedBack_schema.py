@@ -10,14 +10,13 @@ class FeedbackSchema(Schema):
         validate=validate.Range(min=1, max=5, error="La calificación debe estar entre 1 y 5")
     )
 
-    
     tour_site = fields.Method("get_tour_site", dump_only=True)
 
-    id_user = fields.Int(required=True)            
-    id_tourist_site = fields.Int(required=True)
+    # 🔹 id_user ya no lo pedimos como obligatorio (lo maneja backend con current_user)
+    # id_user = fields.Str(required=True)
+    id_tourist_site = fields.Str(required=True)
 
     def get_tour_site(self, obj):
-        
         return getattr(getattr(obj, "tourist_site", None), "name", None)
 
 feedback_schema = FeedbackSchema()

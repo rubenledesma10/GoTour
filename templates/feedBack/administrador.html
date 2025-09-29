@@ -28,9 +28,17 @@
                     <a class="nav-link active" aria-current="page" href="/admin/feedback">Comentarios (Admin)</a>
                 </div>
                 <span class="navbar-text ms-auto">
-                    <button type="button" class="btn" style="background-color: orange; color: white;">
-                        Registrarse / Iniciar Sesión
-                    </button>
+                    {% if current_user.is_authenticated %}
+                        <!-- Si el admin está logueado, mostrar botón rojo con su nombre -->
+                        <a href="{{ url_for('user_bp.logout') }}" class="btn btn-danger">
+                            Cerrar Sesión ({{ current_user.username }})
+                        </a>
+                    {% else %}
+                        <!-- Si no está logueado, mostrar botón normal -->
+                        <a href="{{ url_for('user_bp.login') }}" class="btn" style="background-color: orange; color: white;">
+                            Registrarse / Iniciar Sesión
+                        </a>
+                    {% endif %}
                 </span>
             </div>
         </div>
@@ -77,7 +85,7 @@
                 <input type="number" id="editQualification" class="form-control" min="1" max="5">
               </div>
               <div class="mb-3">
-                <label for="editTourSite" class="form-label">Sitio</label>
+                <label for="editTourSite" class="form-label">Sitio (ID)</label>
                 <input type="text" id="editTourSite" class="form-control">
               </div>
               <button type="submit" class="btn btn-primary">Guardar cambios</button>
@@ -92,35 +100,36 @@
 
     <!-- Script de lógica -->
     <script>
-        const token = "PON_ACA_TU_TOKEN_JWT"; // 
         const API_URL = "/api/feedback/";
 
         // Cargar feedbacks
         async function loadFeedbacks() {
-            const res = await fetch(API_URL, {
-                headers: { "Authorization": "Bearer " + token }
-            });
-            const data = await res.json();
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
 
-            const tbody = document.getElementById("feedbackTableBody");
-            tbody.innerHTML = "";
+                const tbody = document.getElementById("feedbackTableBody");
+                tbody.innerHTML = "";
 
-            data.forEach((f, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${f.comment}</td>
-                    <td>${f.qualification}</td>
-                    <td>${f.tour_site}</td>
-                    <td>${f.user_name}</td>
-                    <td>${new Date(f.date_hour).toLocaleString("es-AR")}</td>
-                    <td>
-                        <button class="btn btn-sm btn-success me-2" onclick="openEditModal(${f.id}, '${f.comment}', ${f.qualification}, '${f.tour_site}')">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteFeedback(${f.id})">Eliminar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+                data.forEach((f, index) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${f.comment}</td>
+                        <td>${f.qualification}</td>
+                        <td>${f.tourist_site ? f.tourist_site.name : "—"}</td>
+                        <td>${f.user ? f.user.username : "—"}</td>
+                        <td>${new Date(f.date_hour).toLocaleString("es-AR")}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-2" onclick="openEditModal('${f.id_feedback}', '${f.comment}', ${f.qualification}, '${f.tourist_site ? f.tourist_site.id : ""}')">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error cargando feedbacks:", err);
+            }
         }
 
         // Abrir modal de edición
@@ -144,31 +153,38 @@
                 id_tourist_site: document.getElementById("editTourSite").value
             };
 
-            await fetch(API_URL + id, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify(updatedFeedback)
-            });
+            try {
+                await fetch(API_URL + id, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(updatedFeedback)
+                });
 
-            loadFeedbacks();
-            bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
-        });
+                loadFeedbacks();
+                bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+            } catch (err) {
+                console.error("Error actualizando feedback:", err);
+            }
+        }
 
         // Eliminar feedback
         async function deleteFeedback(id) {
             if (!confirm("¿Seguro que deseas eliminar este feedback?")) return;
 
-            await fetch(API_URL + id, {
-                method: "DELETE",
-                headers: { "Authorization": "Bearer " + token }
-            });
+            try {
+                await fetch(API_URL + id, {
+                    method: "DELETE"
+                });
 
-            loadFeedbacks();
+                loadFeedbacks();
+            } catch (err) {
+                console.error("Error eliminando feedback:", err);
+            }
         }
 
+        // Cargar feedbacks al inicio
         loadFeedbacks();
     </script>
 </body>

@@ -10,8 +10,8 @@ class feedBack(db.Model):
     qualification = db.Column(db.Integer, nullable=False)
 
     # 🔹 Foreign Keys
-    id_user = db.Column(db.Integer, db.ForeignKey("user.id_user"), nullable=False)
-    id_tourist_site = db.Column(db.Integer, db.ForeignKey("tourist_site.id_tourist_site"), nullable=False)
+    id_user = db.Column(db.String(50), db.ForeignKey("user.id_user"), nullable=False)
+    id_tourist_site = db.Column(db.String(50), db.ForeignKey("tourist_site.id_tourist_site"), nullable=False)
 
     # 🔹 Relaciones
     user = db.relationship("User", backref="feedbacks")
@@ -27,9 +27,15 @@ class feedBack(db.Model):
     def serialize(self):
         return {
             "id_feedback": self.id_feedback,
-            "date_hour": self.date_hour.isoformat(),
+            "date_hour": self.date_hour.isoformat() if self.date_hour else None,
             "comment": self.comment,
             "qualification": self.qualification,
-            "user_name": self.user.name if self.user else str(self.id_user),
-            "tour_site": self.tourist_site.name if self.tourist_site else str(self.id_tourist_site)
+            "user": {
+                "id": self.user.id_user if self.user else None,
+                "username": self.user.username if self.user else None
+            },
+            "tourist_site": {
+                "id": self.tourist_site.id_tourist_site if self.tourist_site else None,
+                "name": self.tourist_site.name if self.tourist_site else None
+            }
         }
