@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoTour - Administrador Feedback</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="{{ url_for('static', filename='images/logo_2.png') }}" alt="GoTour" width="80" height="50">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link active" href="/">Inicio</a>
+                    <a class="nav-link" href="#">Usuarios</a>
+                    <a class="nav-link" href="#">CIT</a>
+                    <a class="nav-link" href="#">Información turistas</a>
+                    <a class="nav-link" href="#">Sitios turísticos</a>
+                    <a class="nav-link active" aria-current="page" href="/admin/feedback">Comentarios (Admin)</a>
+                </div>
+                <span class="navbar-text ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <!-- Si el admin está logueado, mostrar botón rojo con su nombre -->
+                        <a href="{{ url_for('user_bp.logout') }}" class="btn btn-danger">
+                            Cerrar Sesión ({{ current_user.username }})
+                        </a>
+                    {% else %}
+                        <!-- Si no está logueado, mostrar botón normal -->
+                        <a href="{{ url_for('user_bp.login') }}" class="btn" style="background-color: orange; color: white;">
+                            Registrarse / Iniciar Sesión
+                        </a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido -->
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Gestión de Feedbacks</h1>
+
+        <!-- Tabla de feedbacks -->
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Comentario</th>
+                    <th>Calificación</th>
+                    <th>Sitio</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="feedbackTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal para editar feedback -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Feedback</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editForm">
+              <input type="hidden" id="editId">
+              <div class="mb-3">
+                <label for="editComment" class="form-label">Comentario</label>
+                <textarea id="editComment" class="form-control"></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editQualification" class="form-label">Calificación</label>
+                <input type="number" id="editQualification" class="form-control" min="1" max="5">
+              </div>
+              <div class="mb-3">
+                <label for="editTourSite" class="form-label">Sitio (ID)</label>
+                <input type="text" id="editTourSite" class="form-control">
+              </div>
+              <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script de lógica -->
+    <script>
+        const API_URL = "/api/feedback/";
+
+        // Cargar feedbacks
+        async function loadFeedbacks() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+
+                const tbody = document.getElementById("feedbackTableBody");
+                tbody.innerHTML = "";
+
+                data.forEach((f, index) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${f.comment}</td>
+                        <td>${f.qualification}</td>
+                        <td>${f.tourist_site ? f.tourist_site.name : "—"}</td>
+                        <td>${f.user ? f.user.username : "—"}</td>
+                        <td>${new Date(f.date_hour).toLocaleString("es-AR")}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-2" onclick="openEditModal('${f.id_feedback}', '${f.comment}', ${f.qualification}, '${f.tourist_site ? f.tourist_site.id : ""}')">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error cargando feedbacks:", err);
+            }
+        }
+
+        // Abrir modal de edición
+        function openEditModal(id, comment, qualification, tour_site) {
+            document.getElementById("editId").value = id;
+            document.getElementById("editComment").value = comment;
+            document.getElementById("editQualification").value = qualification;
+            document.getElementById("editTourSite").value = tour_site;
+
+            const modal = new bootstrap.Modal(document.getElementById("editModal"));
+            modal.show();
+        }
+
+        // Guardar cambios en feedback
+        document.getElementById("editForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("editId").value;
+            const updatedFeedback = {
+                comment: document.getElementById("editComment").value,
+                qualification: parseInt(document.getElementById("editQualification").value),
+                id_tourist_site: document.getElementById("editTourSite").value
+            };
+
+            try {
+                await fetch(API_URL + id, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(updatedFeedback)
+                });
+
+                loadFeedbacks();
+                bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+            } catch (err) {
+                console.error("Error actualizando feedback:", err);
+            }
+        }
+
+        // Eliminar feedback
+        async function deleteFeedback(id) {
+            if (!confirm("¿Seguro que deseas eliminar este feedback?")) return;
+
+            try {
+                await fetch(API_URL + id, {
+                    method: "DELETE"
+                });
+
+                loadFeedbacks();
+            } catch (err) {
+                console.error("Error eliminando feedback:", err);
+            }
+        }
+
+        // Cargar feedbacks al inicio
+        loadFeedbacks();
+    </script>
+</body>
+</html>

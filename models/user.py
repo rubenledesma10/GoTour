@@ -4,8 +4,9 @@ from enums.roles_enums import RoleEnum
 from sqlalchemy import Enum as SqlEnum
 from werkzeug.security import generate_password_hash, check_password_hash #generate hashea la contraseña, check compara contraseña escrita en el hash guardado
 from datetime import date
+from flask_login import UserMixin
 
-class User (db.Model):
+class User (db.Model, UserMixin):
     __tablename__='user'
     id_user=db.Column(db.String(50), primary_key=True,unique=True, default=lambda: str(uuid.uuid4()))
     first_name=db.Column(db.String(50),nullable=False)
@@ -57,7 +58,7 @@ class User (db.Model):
             'email':self.email,
             #'password':self.password,
             'username':self.username,
-            'rol':self.rol.value,
+            'role':self.role,
             'dni':self.dni,
             'birthdate':self.birthdate,
             'age': age,
@@ -66,4 +67,10 @@ class User (db.Model):
             'nationality':self.nationality,
             'province':self.province,
             'is_activate':self.is_activate
-        }
+
+
+    
+    def get_id(self):
+        return str(self.id_user)
+
+
