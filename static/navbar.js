@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         authButton.style.color = "white";
         authButton.href = "#";
 
- features/user
+
         authButton.onclick = (e) => {
             e.preventDefault();
             localStorage.clear();
