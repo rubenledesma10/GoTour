@@ -46,24 +46,24 @@ class User (db.Model):
         self.is_activate=is_activate
         self.gender=gender
 
-    # def serialize(self):
-    #     today = date.today()
-    #     birthdate = self.birthdate
-    #     age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
-    #     return{
-    #         'id_user':self.id_user,
-    #         'first_name':self.first_name,
-    #         'last_name':self.last_name,
-    #         'email':self.email,
-    #         #'password':self.password,
-    #         'username':self.username,
-    #         'rol':self.rol.value,
-    #         'dni':self.dni,
-    #         'birthdate':self.birthdate,
-    #         'age': age,
-    #         'photo':self.photo,
-    #         'phone':self.phone,
-    #         'nationality':self.nationality,
-    #         'province':self.province,
-    #         'is_activate':self.is_activate
-    #     }
+    def serialize(self):
+        today = date.today()
+        birthdate = self.birthdate
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        return{
+            'id_user':self.id_user,
+            'first_name':self.first_name,
+            'last_name':self.last_name,
+            'email':self.email,
+            #'password':self.password,
+            'username':self.username,
+            'rol':self.rol.value,
+            'dni':self.dni,
+            'birthdate':self.birthdate,
+            'age': age,
+            'photo':self.photo,
+            'phone':self.phone,
+            'nationality':self.nationality,
+            'province':self.province,
+            'is_activate':self.is_activate
+        }
