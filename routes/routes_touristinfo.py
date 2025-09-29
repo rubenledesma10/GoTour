@@ -8,13 +8,6 @@ from utils.decorators import role_required
 
 touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristinfo')
 
-
-# @touristinfo_bp.route("/planilla", methods=["GET"])
-# # @jwt_required()
-# # @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
-# def touristinfo_planilla():
-#     return render_template("touristinfo/touristinfo.html") 
-
 # @touristinfo_bp.route("/statistics", methods=["GET"])
 # @jwt_required()
 # @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
@@ -93,7 +86,9 @@ def create_tourist():
         return jsonify({"error": str(e)}), 500
 
 
+
 @touristinfo_bp.route("/<int:id>", methods=["PATCH"])
+@role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def update_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
@@ -138,6 +133,7 @@ def update_tourist(id):
 
 
 @touristinfo_bp.route("/<int:id>", methods=["DELETE"])
+@role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def delete_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:

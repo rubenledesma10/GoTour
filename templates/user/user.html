@@ -1,9 +1,10 @@
- {% include "head.html" %}
-    {% include "partials/navbar.html" %}
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
 <div class="container mt-4" id="adminSection">
     <h3>¿Qué deseas hacer <span id="username"></span>?</h3>
 
-    <button type="button" class="btn btn-primary mb-2">Nuevo Usuario</button>
+    <a href="{{url_for('admin_bp.new_user_page')}}" class="btn btn-primary mb-2">Nuevo Usuario</a>
     <table class="table table-bordered table-hover">
         <thead>
             <tr>
