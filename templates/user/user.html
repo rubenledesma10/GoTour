@@ -1,13 +1,13 @@
 {% include "head.html" %}
 {% include "partials/navbar.html" %}
-<div class="container mt-4" id="adminSection">
+<div class="container mt-4 ms-3" id="adminSection">
     <h3>¿Qué deseas hacer <span id="username"></span>?</h3>
 
     <a href="{{url_for('admin_bp.new_user_page')}}" class="btn btn-primary mb-2">Nuevo Usuario</a>
-    <table class="table table-bordered table-hover">
+</div>
+    <table class="table table-bordered table-hover w-100">
         <thead>
             <tr>
-                <th scope="col">#</th>
                 <th scope="col">Nombre</th>
                 <th scope="col">Apellido</th>
                 <th scope="col">Email</th>
@@ -20,12 +20,13 @@
                 <th scope="col">Provincia</th>
                 <th scope="col">Género</th>
                 <th scope="col">Activo</th>
-                <th scope="col">ACCIÓNES</th>
+                <th scope="col">ACCIONES</th>
             </tr>
         </thead>
         <tbody class="table-group-divider" id="usersTableBody">
         </tbody>
     </table>
-</div>
+
+
 <script src="/static/admin.js"></script>
 {% include "scripts.html"%}

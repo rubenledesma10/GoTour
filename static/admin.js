@@ -1,3 +1,25 @@
+function deleteUser(userId) {
+    const token = localStorage.getItem("token"); // ⬅️ importante
+    if (!token) {
+        alert("No token found, please login");
+        return;
+    }
+
+    if (!confirm("Are you sure you want to delete this user?")) return;
+
+    fetch(`/api/admin/delete/${userId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch(err => console.error(err));
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
 
@@ -38,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 users.forEach(u => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td>${u.id_user}</td>
                         <td>${u.first_name}</td>
                         <td>${u.last_name}</td>
                         <td>${u.email}</td>
@@ -50,11 +71,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td>${u.nationality}</td>
                         <td>${u.province}</td>
                         <td>${u.gender}</td>
-                        <td>${u.is_activate}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary me-1">Edit</button>
-                            <button class="btn btn-sm btn-danger">Delete</button>
+                        ${u.is_activate 
+                        ? '<span class="badge bg-success">Activo</span>' 
+                        : '<span class="badge bg-secondary">Inactivo</span>'
+                        }
                         </td>
+                        <td>
+                        <div class="d-grid gap-1" style="grid-template-columns: repeat(2, 1fr);">
+                            <button class="btn btn-sm btn-success">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id_user}')">Delete</button>
+                        </div>
+                        </td>
+
                     `;
                     tbody.appendChild(row);
                 });

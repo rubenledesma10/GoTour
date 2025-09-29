@@ -151,19 +151,19 @@ def new_user_page():
 #         return jsonify({'error': str(e)}), 500
     
     
-# @admin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
-# @role_required("admin")
-# def delete_user(current_user, id_user):
-#     user = User.query.get(id_user)
-#     if not user:
-#         return jsonify({'message':'User not found'}), 404
-#     try:
-#         user.is_activate = False  # eliminado lógico
-#         db.session.commit()
-#         return jsonify({'message':'User deleted successfully'}), 200
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({'error': str(e)}), 500
+@admin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
+@role_required("admin")
+def delete_user(current_user, id_user):
+    user = User.query.get(id_user)
+    if not user:
+        return jsonify({'message':'User not found'}), 404
+    try:
+        user.is_activate = False  #eliminado lógico
+        db.session.commit()
+        return jsonify({'message':'User deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
     
 
 # @admin_bp.route('/get/tourists')
