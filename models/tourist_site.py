@@ -18,6 +18,7 @@ class TouristSite(db.Model):
     user = db.relationship('User', backref='tourist_sites', lazy=True)
     is_activate = db.Column(db.Boolean, default=True, nullable=False)
 
+
     
     def __init__(self, name, description, address, phone, category, url, id_user, opening_hours=None, closing_hours=None, average=None, is_activate=True): 
         self.name = name
@@ -31,6 +32,7 @@ class TouristSite(db.Model):
         self.closing_hours = closing_hours
         self.average = average
         self.is_activate = is_activate
+
 
     def serialize(self): 
         return {

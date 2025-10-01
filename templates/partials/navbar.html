@@ -1,33 +1,45 @@
 <nav class="navbar navbar-expand-lg bg-light" id="navbarRol">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <img src="{{ url_for('static', filename='images/logo_2.png') }}"
-                alt="GoTour" width="80" height="50">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
-                    <!--enlaces publicos-->
-                    <a class="nav-link active" href="/">Inicio</a>
-                    <a class="nav-link active" href="#">CIT</a>
-                    <a class="nav-link active " href="#" >Comentarios</a>
-                    <a class="nav-link active" href="#">Acerca de GoTour</a>
-                    <a class="nav-link active" href="{{url_for('tourist_site.tourist_sites_view')}}">Sitios turisticos</a>
-                    <!--privados-->
-                    <a class="nav-link active d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Usuarios</a>
-                    <a class="nav-link active d-none" href="#" data-role="admin">Informacio turistas</a>
-                    
-                
-                </div>
-                <span class="navbar-text ms-auto">
-                    <a  id="authButton"  href="{{url_for('user_bp.login')}}" class="btn"
-                        style="background-color: orange; color: white;">Registrarse/Iniciar Sesion</a>
-                </span>
-            </div>
-        </div>
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">
+      <img src="{{ url_for('static', filename='images/logo_2.png') }}" alt="GoTour" width="80" height="50">
+    </a>
 
-    </nav>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <!-- enlaces públicos -->
+        <a class="nav-link active" href="/">Inicio</a>
+        <a class="nav-link active" href="#">CIT</a>
+        <a class="nav-link active" href="{{ url_for('feedback_page') }}">Comentarios</a>
+        <a class="nav-link active" href="#">Sitios turisticos</a>
+        <a class="nav-link active" href="#">Acerca de GoTour</a>
+
+        <!-- privados (ocultos por rol) -->
+        <a class="nav-link active d-none" href="{{ url_for('admnin_bp.get_users') }}" data-role="admin">Usuarios</a>
+        <a class="nav-link active d-none" href="#" data-role="admin">Informacio turistas</a>
+      </div>
+
+      <span class="navbar-text ms-auto">
+        {% if current_user.is_authenticated %}
+          <!-- Botón rojo con el usuario logueado -->
+          <a href="{{ url_for('user_bp.logout') }}" class="btn btn-danger">
+            Cerrar Sesión ({{ current_user.username }})
+          </a>
+        {% else %}
+          <!-- Si NO está logueado, mostramos botones a login y registro -->
+          <a href="{{ url_for('user_bp.login') }}" class="btn me-2"
+             style="background-color: orange; color: white;">
+            Iniciar Sesión
+          </a>
+          <a href="{{ url_for('user_bp.register') }}" class="btn btn-outline-secondary">
+            Registrarme
+          </a>
+        {% endif %}
+      </span>
+    </div>
+  </div>
+</nav>
