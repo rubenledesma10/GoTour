@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for
-from flask_login import LoginManager, login_required, logout_user, current_user
+#from flask_login import LoginManager, login_required, logout_user, current_user
 from config.config import Config
 from models.db import db
 from flask_migrate import Migrate
@@ -36,13 +36,13 @@ app.register_blueprint(cit_bp)
 app.register_blueprint(feedback_bp, url_prefix="/api/feedback")
 
 # Login Manager
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "user_bp.login"
+# login_manager = LoginManager()
+# login_manager.init_app(app)
+# login_manager.login_view = "user_bp.login"
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return User.query.get(user_id)
 
 # Rutas
 @app.route("/")
@@ -56,26 +56,15 @@ def feedback_page():
     sites = TouristSite.query.all()
     return render_template("feedBack/usuario.html", sites=sites)
 
-@app.route("/admin/feedback")
-@login_required
-def admin_feedback_page():
-    """Página de administración de comentarios (solo admins)."""
-    if current_user.role != "ADMIN":
-        return render_template("errors/403.html"), 403
-    return render_template("feedBack/administrador.html")
 
-@app.route("/logout")
-@login_required
-def logout():
-    """Cierra sesión correctamente (una sola vez)."""
-    logout_user()
-    return redirect(url_for("home"))
 
 # Crear tablas si no existen
 with app.app_context():
+    from models.user import User
     from models.cit import Cit
     from models.touristinfo import TouristInfo
     from models.feedBack import feedBack
+    from models.tourist_site import TouristSite
     db.create_all()
 
 if __name__ == '__main__':

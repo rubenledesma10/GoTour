@@ -38,7 +38,7 @@ class UserRegisterSchema(Schema):
     role = fields.Str(
         required=True,
         validate=validate.OneOf(
-            ["admin", "tourist", "receptionist"],  # strings en minúscula
+            ["admin", "tourist", "receptionist"],  
             error="Invalid role"
         ),
         error_messages={"required": "Role is required"}

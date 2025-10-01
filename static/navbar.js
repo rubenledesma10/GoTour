@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
         authButton.style.color = "white";
         authButton.href = "#";
 
-
         authButton.onclick = (e) => {
             e.preventDefault();
             localStorage.clear();
@@ -29,6 +28,5 @@ document.addEventListener("DOMContentLoaded", () => {
         authButton.textContent = "Registrarse/Iniciar Sesión";
         authButton.style.backgroundColor = "orange";
         authButton.style.color = "white";
-        // apunta a tu ruta real
     }
 });

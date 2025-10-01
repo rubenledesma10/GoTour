@@ -1,6 +1,7 @@
 from models.db import db
 from datetime import datetime
 
+
 class feedBack(db.Model):
     __tablename__ = "feedback"
 
