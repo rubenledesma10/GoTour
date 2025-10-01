@@ -9,46 +9,48 @@ from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
 from flask import render_template, request, redirect, url_for, flash  
-import uuid 
+import uuid
+from utils.decorators import role_required
+from models.user import User
 
 tourist_site = Blueprint('tourist_site', __name__)
 
-    # Definimos la ruta para obtener todos los sitios turísticos
-    # Estos son los dos endpoint al cual tienen acceso todos los roles.
+# -------------------------------------------------------------------------------- #
+        # Rutas para renderizar las plantillas de los sitios turísticos.
 
-    #Ruta para ver los sitios turísticos cargados.
 @tourist_site.route('/tourist_sites/view', methods=['GET'])
 
 def tourist_sites_view():
         sites = TouristSite.query.all()
         return render_template('tourist_site/tourist_sites.html', sites=sites)
-# -------------------------------------------------------------------------------- #
 
-    # Estos son los dos endpoint al cual tiene acceso el admin .
+
 
     #Ruta para acceder a traves del boton al formulario de agregar sitio turistico. 
 @tourist_site.route('/tourist_sites/add', methods=['GET', 'POST'])
-@role_required("admin")
+#@role_required("admin")
 def add_tourist_site_form():
     return render_template('tourist_site/add_tourist_sites.html')
 
     #Ruta para acceder al formulario a traves del boton, asi podemos editar la informacion del sitio turistico. 
 @tourist_site.route('/tourist_sites/edit', methods=['GET'])
-@role_required("admin")
+#@role_required("admin")
 def edit_tourist_site_form():
     sites = TouristSite.query.all()
     return render_template('tourist_site/edit_tourist_sites.html', sites=sites)
 
     #Ruta para acceder al formulario a traves del boton, asi podemos eliminar de manera logica el sitio turistico. 
 @tourist_site.route('/tourist_sites/delete', methods=['GET'])
-@role_required("admin")
+#@role_required("admin")
 def delete_tourist_site_form():
     sites = TouristSite.query.all()
     return render_template('tourist_site/delete_tourist_sites.html', sites=sites)
 
-@tourist_site.route('/api/tourist_sites', methods=['GET'])
-@jwt_required()
 
+# --------------------------------------------------------------------------------- #
+    # Estos son los endpoint para el CRUD de sitios turísticos.
+        # Crear, editar y eliminar sitios turísticos.
+@tourist_site.route('/api/tourist_sites', methods=['GET'])
 def get_tourist_sites():
         tourist_sites = TouristSite.query.all()
 
@@ -61,23 +63,20 @@ def get_tourist_sites():
 
         return jsonify(serialized_sites), 200
 
-@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['GET'])
-@jwt_required()
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['GET'])
 @role_required("admin")
-def get_tourist_site_id(id_tourist_site):
+def get_tourist_site_id(current_user, id_tourist_site):
     tourist_site = TouristSite.query.filter_by(id_tourist_site=id_tourist_site).first()
     
     if not tourist_site:
-        return jsonify ({'message' : 'Tourist site not found'}), 404
+        return jsonify({'message': 'Tourist site not found'}), 404
     return jsonify(tourist_site.serialize()), 200
 
-    
-    # Crear, editar y eliminar sitios turísticos.
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['DELETE'])
-@jwt_required()
+
 @role_required("admin")
-def delete_tourist_site(id_tourist_site):
+def delete_tourist_site(current_user, id_tourist_site):
         tourist_site = TouristSite.query.get(id_tourist_site)
 
         if not tourist_site: 
@@ -97,74 +96,71 @@ def delete_tourist_site(id_tourist_site):
 
 
 @tourist_site.route('/api/add_tourist_sites', methods=['POST'])
-@jwt_required()
 @role_required("admin")
-def add_tourist_site():
-        data = request.get_json()
+def add_tourist_site(current_user):
+    data = request.get_json()
 
-        required_fields = ['name','description','address','phone','category','url', 'opening_hours', 'closing_hours']
+    required_fields = ['name','description','address','phone','category','url', 'opening_hours', 'closing_hours','average', 'is_activate']
 
-        if not data or not all(key in data for key in required_fields):
-            return jsonify({'error':'Required data is missing'}), 400
-        
-        # Validación de que los campos no estén vacíos
-        for field in required_fields:
-            if not str(data.get(field,'')).strip():
-                return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
+    # Validación de campos vacíos
+    for field in required_fields:
+        value = data.get(field)
+        if value is None or str(value).strip() == '':
+            return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
 
-        try:
-            # Obtengo el id_user desde el token
-            id_user = get_jwt_identity()
-            if not id_user:
-                return jsonify({'error': 'User not found in token'}), 400
+    try:
+        # Obtengo el id_user desde el token
+        id_user = current_user.id_user
+        if not id_user:
+            return jsonify({'error': 'User not found in token'}), 400
 
-            # Restriccion para los valores duplicados
-            existing_site = TouristSite.query.filter(
-                (TouristSite.name == data['name']) |
-                (TouristSite.address == data['address']) |
-                (TouristSite.url == data['url'])
-            ).first()
-            if existing_site:
-                return jsonify({'error': 'Name, address or URL already exists'}), 409
+        # Restricción para valores duplicados
+        existing_site = TouristSite.query.filter(
+            (TouristSite.name == data.get('name')) |
+            (TouristSite.address == data.get('address')) |
+            (TouristSite.url == data.get('url'))
+        ).first()
+        if existing_site:
+            return jsonify({'error': 'Name, address or URL already exists'}), 409
 
-            opening_hours = datetime.strptime(data['opening_hours'], "%H:%M").time() if data.get('opening_hours') else None
-            closing_hours = datetime.strptime(data['closing_hours'], "%H:%M").time() if data.get('closing_hours') else None
-            average = float(data['average']) if data.get('average') else None
-            is_activate = bool(data.get('is_activate', True))
+        # Hacemos el parseo de los datos, es decir, convertirlos de string a su tipo correspondiente
+        opening_hours = datetime.strptime(data.get('opening_hours'), "%H:%M").time() if data.get('opening_hours') else None
+        closing_hours = datetime.strptime(data.get('closing_hours'), "%H:%M").time() if data.get('closing_hours') else None
+        average = float(data.get('average', 0))
+        is_activate = str(data.get('is_activate', 'true')).lower() in ('true', '1')
 
-            # Crear el sitio turístico
-            new_tourist_site = TouristSite(
-                name=data['name'],
-                description=data['description'],
-                address=data['address'],
-                phone=data['phone'],
-                category=data['category'],
-                url=data['url'],
-                id_user=id_user,
-                opening_hours=opening_hours,
-                closing_hours=closing_hours,
-                average=average,
-                is_activate=is_activate
-            )
+        # Crear el sitio turístico
+        new_tourist_site = TouristSite(
+            name=data.get('name'),
+            description=data.get('description'),
+            address=data.get('address'),
+            phone=data.get('phone'),
+            category=data.get('category'),
+            url=data.get('url'),
+            opening_hours=opening_hours,
+            closing_hours=closing_hours,
+            average=average,
+            is_activate=is_activate,
+            id_user=id_user
+        )
 
-            db.session.add(new_tourist_site)
-            db.session.commit()
+        db.session.add(new_tourist_site)
+        db.session.commit()
 
-            return jsonify({
-                "message": "Tourist site created successfully",
-                "tourist_site": new_tourist_site.serialize()
-            }), 201
+        return jsonify({
+            "message": "Tourist site created successfully",
+            "tourist_site": new_tourist_site.serialize()
+        }), 201
 
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': f'Error adding Tourist Site: {str(e)}'}), 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error adding Tourist Site: {str(e)}'}), 500
 
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['PUT'])
-@jwt_required()
 @role_required("admin")
 
-def edit_tourist_site(id_tourist_site):
+def edit_tourist_site(current_user, id_tourist_site):
         data = request.get_json()
         tourist_site = TouristSite.query.get(id_tourist_site)
 
@@ -210,16 +206,13 @@ def edit_tourist_site(id_tourist_site):
                 return jsonify({'error':'The name is al ready registred'}), 400
             elif 'url' in error_msg:
                 return jsonify({'error':'The url is al ready registred'}), 400
-            elif 'category' in error_msg:
-                return jsonify({'error':'The category is al ready registred'}), 400
             elif 'address' in error_msg:
                 return jsonify({'error':'The url is al ready registred'}), 400
         except Exception as e: 
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
         
-@tourist_site.route('/api/tourist_sites/id_tourist_site>', methods = ['PATCH'])
-@jwt_required()
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['PATCH'])
 @role_required("admin")
 
 def update_tourist_site(id_tourist_site):
@@ -268,7 +261,7 @@ def update_tourist_site(id_tourist_site):
 
             if updated:
                 db.session.commit()
-                return jsonify({'message': 'Client updated correctly'}), 200
+                return jsonify({'message': 'Tourist_Site updated correctly'}), 200
             else:
                 return jsonify({'message': 'No valid data received for update'}), 400
             
