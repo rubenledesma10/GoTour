@@ -1,5 +1,5 @@
 function deleteUser(userId) {
-    const token = localStorage.getItem("token"); // ⬅️ importante
+    const token = localStorage.getItem("token"); 
     if (!token) {
         alert("No token found, please login");
         return;
@@ -17,6 +17,31 @@ function deleteUser(userId) {
         location.reload();
     })
     .catch(err => console.error(err));
+}
+
+function activatedUser(userId) {
+    const token = localStorage.getItem("token"); 
+    if (!token) {
+        alert("No token found, please login");
+        return;
+    }
+
+    if (!confirm("Are you sure you want to activate this user?")) return;
+
+    fetch(`/api/admin/activate/${userId}`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch(err => console.error(err));
+}
+
+function editUser(userId) {
+    window.location.href = `/api/admin/edit/${userId}`;
 }
 
 
@@ -79,8 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         </td>
                         <td>
                         <div class="d-grid gap-1" style="grid-template-columns: repeat(2, 1fr);">
-                            <button class="btn btn-sm btn-success">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id_user}')">Delete</button>
+                            <button class="btn btn-sm btn-success" onclick="editUser('${u.id_user}')">Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id_user}')">Desactivar</button>
+                            <button class="btn btn-sm btn-warning" onclick="activatedUser('${u.id_user}')">Activar</button>
                         </div>
                         </td>
 

@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!registerAdminForm) return;
 
     registerAdminForm.addEventListener("submit", async (e) => {
-        e.preventDefault(); // ⚠️ previene GET
+        e.preventDefault(); 
 
         const formData = new FormData(registerAdminForm);
 

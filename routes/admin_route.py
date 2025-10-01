@@ -116,39 +116,59 @@ def add_user(current_user):
 def new_user_page():
     return render_template("user/register_admin.html")    
 
-# @admin_bp.route('/edit/<string:id_user>',methods=['PUT'])
-# @role_required("admin")
-# def edit_user(current_user, id_user):
-#     data = request.get_json()
-#     if not data:
-#         return jsonify({'error': 'No data received'}), 400
+@admin_bp.route('/edit/<string:id_user>',methods=['GET'])
+def edit_user_page(id_user):
+    user = User.query.get(id_user)
+    if not user:
+        return "Usuario no encontrado", 404
+    return render_template("user/edit_admin.html", user=user)
+    
 
-#     user = User.query.get(id_user)
-#     if not user:
-#         return jsonify({'error': 'User not found'}), 404
+@admin_bp.route('/edit/<string:id_user>', methods=['PUT'])
+@role_required("admin")
+def edit_user(current_user, id_user):
+    user = User.query.get(id_user)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
 
-#     try:
-#         validated_data = user_schema.load(data, partial=True)
-#     except ValidationError as err:
-#         return jsonify(err.messages), 400
+    data = request.form.to_dict()
+    file = request.files.get("photo")
 
-#     try:
-#         for field in ['first_name','last_name','email','username','role','dni','birthdate',
-#                       'photo','phone','nationality','province','is_activate','gender']:
-#             if field in validated_data:
-#                 setattr(user, field, validated_data[field] if field != 'email' else validated_data[field].lower())
-#         if 'password' in validated_data:
-#             user.set_password(validated_data['password'])
+    try:
+        validated_data = user_schema.load(data, partial=True)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
 
-#         db.session.commit()
-#         return jsonify({'message': 'User edited correctly', 'user': user_schema.dump(user)}), 200
+    try:
+        # Guardar foto si se subió
+        if file:
+            filename = f"{uuid.uuid4()}_{file.filename}"
+            upload_path = os.path.join("static/uploads", filename)
+            file.save(upload_path)
+            user.photo = filename
 
-#     except IntegrityError as e:
-#         db.session.rollback()
-#         return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({'error': str(e)}), 500
+        # Actualizar campos
+        for field, value in validated_data.items():
+            if field == "email":
+                value = value.lower()
+            if field == "password":
+                user.set_password(value)
+            else:
+                setattr(user, field, value)
+
+        db.session.commit()
+        return jsonify({
+            'message': 'User edited correctly',
+            'user': user_schema.dump(user)
+        }), 200
+
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
     
     
 @admin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
@@ -161,6 +181,21 @@ def delete_user(current_user, id_user):
         user.is_activate = False  #eliminado lógico
         db.session.commit()
         return jsonify({'message':'User deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
+@admin_bp.route('/activate/<string:id_user>', methods=['PATCH'])
+@role_required("admin")
+def activate_user(current_user, id_user):
+    user = User.query.get(id_user)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    try:
+        user.is_activate = True  #reactivar usuario
+        db.session.commit()
+        return jsonify({'message': 'User activated successfully'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

@@ -28,6 +28,5 @@ document.addEventListener("DOMContentLoaded", () => {
         authButton.textContent = "Registrarse/Iniciar Sesión";
         authButton.style.backgroundColor = "orange";
         authButton.style.color = "white";
-        // apunta a tu ruta real
     }
 });
