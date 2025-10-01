@@ -51,17 +51,18 @@ def delete_tourist_site_form():
     # Estos son los endpoint para el CRUD de sitios turísticos.
         # Crear, editar y eliminar sitios turísticos.
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
-def get_tourist_sites():
-        tourist_sites = TouristSite.query.all()
+@role_required("admin")
+def get_tourist_sites(current_user):
+    tourist_sites = TouristSite.query.all()
 
-        # Verificamos si hay sitios turisticos activos.
-        if not tourist_sites:
-            
-                return jsonify({'message': f'No tourist sites registred.', 'data': []}), 200
-        
-        serialized_sites = [site.serialize() for site in tourist_sites]
+    # Verificamos si hay sitios turísticos activos
+    if not tourist_sites:
+        return jsonify({'message': 'No tourist sites registered.', 'data': []}), 200
 
-        return jsonify(serialized_sites), 200
+    serialized_sites = [site.serialize() for site in tourist_sites]
+
+    return jsonify(serialized_sites), 200
+
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['GET'])
 @role_required("admin")
