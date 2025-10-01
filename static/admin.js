@@ -5,7 +5,7 @@ function deleteUser(userId) {
         return;
     }
 
-    if (!confirm("Are you sure you want to delete this user?")) return;
+    if (!confirm("Are you sure you want to desactivated this user?")) return;
 
     fetch(`/api/admin/delete/${userId}`, {
         method: "DELETE",
@@ -43,6 +43,7 @@ function activatedUser(userId) {
 function editUser(userId) {
     window.location.href = `/api/admin/edit/${userId}`;
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
@@ -99,7 +100,7 @@ users.forEach(u => {
                     : '<span class="badge bg-secondary">No</span>'}
             </p>
             <div class="d-flex justify-content-center gap-2">
-                <button class="btn btn-sm btn-success" onclick="editUser('${u.id_user}')">Editar</button>
+                  <a class="btn btn-success btn-sm" href="/api/admin/edit/${u.id_user}">Editar</a>
                             <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id_user}')">Desactivar</button>
                             <button class="btn btn-sm btn-warning" onclick="activatedUser('${u.id_user}')">Activar</button>
             </div>

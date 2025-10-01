@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, redirect
 from flask import current_app as app
 from models.db import db
 from models.user import User
@@ -114,10 +114,9 @@ def add_user(current_user):
 
 @admin_bp.route('/newUser')
 def new_user_page():
-    return render_template("user/register_admin.html")    
-
-@admin_bp.route('/edit/<string:id_user>',methods=['GET'])
-
+    return render_template("user/register_admin.html")   
+ 
+@admin_bp.route('/edit/<string:id_user>')
 def edit_user_page(id_user):
     user = User.query.get(id_user)
     if not user:
