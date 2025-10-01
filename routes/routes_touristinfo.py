@@ -137,7 +137,7 @@ def update_tourist(id):
         return jsonify({"error": str(e)}), 500
 
 
-@touristinfo_bp.route("/<int:id>", methods=["DELETE"])
+@touristinfo_bp.route("/<int:id>", methods=["POST", "DELETE"])
 def delete_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
