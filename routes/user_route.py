@@ -12,6 +12,7 @@ from marshmallow import Schema, fields, ValidationError
 from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
 import os, uuid
+from flask import redirect
 from flask_login import login_user, logout_user, login_required, current_user  # 🔹 agregado
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/gotour')
@@ -130,7 +131,7 @@ def login_user_route():
 @login_required
 def logout():
     logout_user()
-    return jsonify({"message": "Sesión cerrada"}), 200
+    return redirect("/")
 
 @user_bp.route("/profile")
 @login_required
