@@ -8,10 +8,12 @@ from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema #aca traemos la instancia que declaramos anteriomente
 from schemas.user_login_schema import user_login_schema
 from marshmallow import Schema, fields, ValidationError
-import jwt 
+# import jwt   # 🔹 lo dejamos comentado, ya no se usa directamente
 from utils.email_service import send_welcome_email, send_reset_password_email
 import random, string
 import os, uuid
+from flask import redirect
+from flask_login import login_user, logout_user, login_required, current_user  # 🔹 agregado
 
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/gotour')
 
@@ -79,10 +81,18 @@ def register_user():
     return jsonify({"user": user_schema.dump(user)}), 201
 
 @user_bp.route('/login', methods=['POST'])
-def login_user():
-    data=request.get_json()
+def login_user_route():
+    # 🔹 soporta tanto JSON como form-data
+    if request.is_json:
+        data = request.get_json()
+        email = data.get("email")
+        password = data.get("password")
+    else:
+        email = request.form.get("email")
+        password = request.form.get("password")
+
     try:
-        validated_data=user_login_schema.load(data)
+        validated_data=user_login_schema.load({"email": email, "password": password})
     except ValidationError as err:
         return jsonify(err.messages),400 #si falta un atributo o no cumple con algunas de las validaciones devuelve un 400
     
@@ -94,17 +104,43 @@ def login_user():
     if not user.is_activate: #si el usuario esta desactivado
         return jsonify({'error':'User account is deactivated'}),403
     
-    #aca creamos el token
-    token = jwt.encode({
-        'id_user':user.id_user,
-        'exp':datetime.utcnow()+timedelta(hours=1)
-    }, app.config['SECRET_KEY'], algorithm="HS256")
+    # --- ORIGINAL JWT (comentado) ---
+    # aca creamos el token
+    # token = jwt.encode({
+    #     'id_user':user.id_user,
+    #     'exp':datetime.utcnow()+timedelta(hours=1)
+    # }, app.config['SECRET_KEY'], algorithm="HS256")
+
+    # return jsonify({
+    # 'token': token,
+    # 'role': user.role,
+    # 'username': user.username
+    # }), 200
+
+    # 🔹 Flask-Login: inicia sesión y guarda en la cookie
+    login_user(user)
 
     return jsonify({
-    'token': token,
-    'role': user.role,
-    'username': user.username
-}), 200
+        "message": "Login exitoso",
+        "user_id": user.id_user,
+        "username": user.username,
+        "role": user.role
+    }), 200
+
+@user_bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
+
+@user_bp.route("/profile")
+@login_required
+def profile():
+    return jsonify({
+        "user_id": current_user.id_user,
+        "username": current_user.username,
+        "email": current_user.email
+    }), 200
 
 @user_bp.route('/forgot-password')
 def forgot_password():
@@ -121,11 +157,9 @@ def forgot_password_new_password():
 
     new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) #generar contraseña aleatoria
 
-    
     user.set_password(new_password) #actualizar contraseña en DB (hasheada con tu método de User)
     db.session.commit()
 
-    
     send_reset_password_email(user.email, new_password) #enviar correo con la nueva contraseña
 
     return jsonify({"message": "An email with the new password has been sent"}), 200

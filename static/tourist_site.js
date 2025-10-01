@@ -1,5 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Lógica para el botón de cancelar
+    const cancelButton = document.getElementById('cancelButton');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', () => {
+            window.location.href = '/tourist_sites/view';
+        });
+    }
+
     // Logica para el formulario de agregar sitio turístico (POST)
     
     const addTouristSiteForm = document.getElementById('addTouristSiteForm');
@@ -8,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addTouristSiteForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -51,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     alert('Sitio turístico agregado con éxito!');
-                    window.location.href = '/tourist_sites/view';
+                    window.location.href = '/tourist_sites/view'; // Nos redirige a la vista de sitios turísticos
                 } else {
                     alert('Error al agregar el sitio turístico: ' + (result.error || result.message || JSON.stringify(result)));
                     console.error('API Error:', result);
@@ -63,13 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Lógica para el botón de cancelar
-    const cancelButton = document.getElementById('cancelButton');
-    if (cancelButton) {
-        cancelButton.addEventListener('click', () => {
-            window.location.href = '/';
-        });
-    }
 
     
     // Logica para el formulario de editar sitio turístico (PUT)
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -142,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -177,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     alert('Sitio turístico actualizado con éxito!');
-                    window.location.reload();
+                    window.location.href = '/tourist_sites/view'; // Nos redirige a la vista de sitios turísticos
                 } else {
                     alert('Error al actualizar: ' + (result.error || result.message || JSON.stringify(result)));
                     console.error('API Error:', result);
@@ -213,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -232,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     alert(' Sitio turístico marcado como inactivo con éxito: ' + result.message);
-                    window.location.reload();
+                    window.location.href = '/tourist_sites/view'; // Nos redirige a la vista de sitios turísticos
                 } else {
                     alert(' Error al eliminar: ' + (result.error || result.message || JSON.stringify(result)));
                     console.error('API Error:', result);
@@ -244,4 +245,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-

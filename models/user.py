@@ -4,8 +4,9 @@ from enums.roles_enums import RoleEnum
 from sqlalchemy import Enum as SqlEnum
 from werkzeug.security import generate_password_hash, check_password_hash #generate hashea la contraseña, check compara contraseña escrita en el hash guardado
 from datetime import date
+from flask_login import UserMixin
 
-class User (db.Model):
+class User (db.Model, UserMixin):
     __tablename__='user'
     id_user=db.Column(db.String(50), primary_key=True,unique=True, default=lambda: str(uuid.uuid4()))
     first_name=db.Column(db.String(50),nullable=False)
@@ -46,24 +47,30 @@ class User (db.Model):
         self.is_activate=is_activate
         self.gender=gender
 
-    # def serialize(self):
-    #     today = date.today()
-    #     birthdate = self.birthdate
-    #     age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
-    #     return{
-    #         'id_user':self.id_user,
-    #         'first_name':self.first_name,
-    #         'last_name':self.last_name,
-    #         'email':self.email,
-    #         #'password':self.password,
-    #         'username':self.username,
-    #         'rol':self.rol.value,
-    #         'dni':self.dni,
-    #         'birthdate':self.birthdate,
-    #         'age': age,
-    #         'photo':self.photo,
-    #         'phone':self.phone,
-    #         'nationality':self.nationality,
-    #         'province':self.province,
-    #         'is_activate':self.is_activate
-    #     }
+    def serialize(self):
+        today = date.today()
+        birthdate = self.birthdate
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        return{
+            'id_user':self.id_user,
+            'first_name':self.first_name,
+            'last_name':self.last_name,
+            'email':self.email,
+            #'password':self.password,
+            'username':self.username,
+            'role':self.role,
+            'dni':self.dni,
+            'birthdate':self.birthdate,
+            'age': age,
+            'photo':self.photo,
+            'phone':self.phone,
+            'nationality':self.nationality,
+            'province':self.province,
+            'is_activate':self.is_activate
+
+
+    
+    def get_id(self):
+        return str(self.id_user)
+
+
