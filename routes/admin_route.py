@@ -117,6 +117,7 @@ def new_user_page():
     return render_template("user/register_admin.html")    
 
 @admin_bp.route('/edit/<string:id_user>',methods=['GET'])
+
 def edit_user_page(id_user):
     user = User.query.get(id_user)
     if not user:
