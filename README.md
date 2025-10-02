@@ -78,9 +78,9 @@ Apply migrations to the database:
 
 🔹 Note: Make sure your FLASK_APP environment variable is set, for example:
 
-export FLASK_APP=app.py        # Linux/macOS
-set FLASK_APP=app.py           # Windows CMD
-$env:FLASK_APP="app.py"        # PowerShell
+export FLASK_APP=app.py        # Linux/macOS <br>
+set FLASK_APP=app.py           # Windows CMD <br>
+$env:FLASK_APP="app.py"        # PowerShell <br>
 6. _Run the application:_
 
 `python3 -m venv <nombre_del_entorno` 
