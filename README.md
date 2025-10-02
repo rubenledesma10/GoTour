@@ -61,8 +61,27 @@ On Windows, Linux, and macOS:
 
 `pip install -r requirements.txt`
 
+5. _Run database migrations (Flask-Migrate):_
 
-5. _Run the application:_
+Initialize migrations folder (only first time):
+
+`flask db init`
+
+Generate a new migration after model changes:
+
+`flask db migrate -m "Initial migration"`
+
+Apply migrations to the database:
+
+`flask db upgrade`
+
+
+🔹 Note: Make sure your FLASK_APP environment variable is set, for example:
+
+export FLASK_APP=app.py        # Linux/macOS
+set FLASK_APP=app.py           # Windows CMD
+$env:FLASK_APP="app.py"        # PowerShell
+6. _Run the application:_
 
 `python3 -m venv <nombre_del_entorno` 
 
