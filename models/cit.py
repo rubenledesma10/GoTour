@@ -1,6 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy ()
+from models.db import db   
 
 class Cit(db.Model):
     __tablename__ = "cit"
@@ -8,22 +6,20 @@ class Cit(db.Model):
     id_cit = db.Column(db.Integer, primary_key=True, autoincrement=True)
     number_cit = db.Column(db.Integer, unique=True, nullable=False)
     district = db.Column(db.String(50), nullable=False)
-    address = db.Column(db.String (100), nullable=False)
+    address = db.Column(db.String(100), nullable=False)
     is_activate = db.Column(db.Boolean, default=False)
     is_activate_qr_map = db.Column(db.Boolean, default=False)
-    id_user = db.Column(db.String(50), db.ForeignKey("user.id_user"), nullable=False)  # <-- cambiar a String
+    id_user = db.Column(db.String(50), db.ForeignKey("user.id_user"), nullable=False)
 
+    def __init__(self, district, address, number_cit, id_user, is_activate=False, is_activate_qr_map=False):
+        self.district = district
+        self.address = address
+        self.number_cit = number_cit
+        self.id_user = id_user
+        self.is_activate = is_activate
+        self.is_activate_qr_map = is_activate_qr_map
 
-def __init__(self, district, address, number_cit, id_user, is_activate=False, is_activate_qr_map=False):
-    self.district = district
-    self.address = address
-    self.number_cit = number_cit
-    self.id_user = id_user
-    self.is_activate = is_activate
-    self.is_activate_qr_map = is_activate_qr_map
-
-    
-    def serialize(self):
+    def serialize(self):   # 👈 dentro de la clase, con la misma indentación que __init__
         return {
             "id_cit": self.id_cit,
             "number_cit": self.number_cit,
@@ -33,4 +29,3 @@ def __init__(self, district, address, number_cit, id_user, is_activate=False, is
             "is_activate_qr_map": self.is_activate_qr_map,
             "id_user": self.id_user
         }
-

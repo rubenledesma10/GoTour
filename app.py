@@ -52,7 +52,7 @@ def home():
 @app.route("/feedback")
 def feedback_page():
     """Página de comentarios (pública: cualquiera puede ver).
-       Solo los logueados podrán comentar (lo valida el backend)."""
+    Solo los logueados podrán comentar (lo valida el backend)."""
     sites = TouristSite.query.all()
     return render_template("feedBack/usuario.html", sites=sites)
 

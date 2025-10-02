@@ -12,13 +12,13 @@
                 <div class="navbar-nav">
                     <!--enlaces publicos-->
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="/">Inicio</a>
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">CIT</a>
+                    <a class="nav-link active" href="{{ url_for('cit_bp.list_cits_page') }}">CIT</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">Comentarios</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">Sitios turisticos</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">Acerca de GoTour</a>
                     <!--privados-->
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Usuarios</a>
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="#" data-role="admin">Informacio turistas</a>
+                    <a class="nav-link active" href="{{ url_for('touristinfo_bp.touristinfo_planilla') }}" data-role="admin">Información Turística</a>
                     
                 
                 </div>
