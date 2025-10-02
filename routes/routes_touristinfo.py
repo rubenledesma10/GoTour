@@ -91,7 +91,10 @@ def create_tourist():
         return jsonify({"error": str(e)}), 500
 
 
+
 @touristinfo_bp.route("/<int:id>", methods=["PATCH"]) #Actualizar parcialmente un turista
+@touristinfo_bp.route("/<int:id>", methods=["PATCH"])
+@role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def update_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
@@ -136,6 +139,8 @@ def update_tourist(id):
 
 
 @touristinfo_bp.route("/<int:id>", methods=["POST", "DELETE"]) #Eliminar un turista ESTA CON POST ADELANTE PORQUE EL FORM-DELETE NO FUNCIONA SIN EL POST
+@touristinfo_bp.route("/<int:id>", methods=["DELETE"])
+@role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def delete_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
