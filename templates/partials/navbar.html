@@ -15,7 +15,8 @@
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">CIT</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{url_for('feedback_bp.get_feedback_view')}}">Comentarios</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">Sitios turisticos</a>
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">Acerca de GoTour</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('about') }}">Acerca de GoTour</a>
+
                     <!--privados-->
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Usuarios</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="#" data-role="admin">Informacio turistas</a>
