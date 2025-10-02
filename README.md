@@ -17,10 +17,10 @@ GoTour enhances the tourist experience by saving time, improving safety 🛡️,
 
 _Initial Entities:_
 
-📌CIT
-📌FEEDBACK
-📌TOURIST_SITES
-📌TOURIST_INFO
+📌CIT <br>
+📌FEEDBACK <br>
+📌TOURIST_SITES <br>
+📌TOURIST_INFO <br>
 📌USER(ADMIN,RECEPCIONIST,TOURIST)
 
 
