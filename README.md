@@ -2,9 +2,9 @@
 
 _Members:_
 
-📌Ledesma Ruben
-📌Puebla Santiago
-📌Espinosa Rodrigo
+📌Ledesma Ruben <br>
+📌Puebla Santiago <br>
+📌Espinosa Rodrigo <br>
 📌Romano Santiago
 
 _Introduction:_
