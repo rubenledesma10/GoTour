@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from models.db import db
 from models.user import User
 from datetime import datetime, date
@@ -16,6 +16,12 @@ tourist_bp = Blueprint('tourist_bp', __name__, url_prefix='/api/tourist')
 @role_required("tourist")
 def test_tourist():
     return jsonify({"message":"Endpoint for tourist "})
+
+
+@tourist_bp.route("/my_data_view")
+@role_required("tourist")
+def my_data_page():
+    return render_template("user/edit_tourist.html")
 
 @tourist_bp.route("/my_data", methods=['GET'])
 @role_required("tourist")

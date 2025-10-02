@@ -5,13 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const role = localStorage.getItem("role");
 
     if (username && role) {
-        // Mostrar u ocultar links según rol
+        //mostrar u ocultar links según rol
         roleLinks.forEach(link => {
             const allowedRoles = link.dataset.role.split(",");
             link.classList.toggle("d-none", !allowedRoles.includes(role));
         });
 
-        // Configurar botón de cerrar sesión
+        //configurar botón de cerrar sesión
         authButton.textContent = `Cerrar Sesión (${username})`;
         authButton.style.backgroundColor = "red";
         authButton.style.color = "white";
