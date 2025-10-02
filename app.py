@@ -50,6 +50,7 @@ def home():
     return render_template("index.html")
 
 
+
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -61,6 +62,7 @@ def about():
 #        Solo los logueados podrán comentar (lo valida el backend)."""
 #     sites = TouristSite.query.all()
 #     return render_template("feedBack/usuario.html", sites=sites)
+
 
 
 

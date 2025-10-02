@@ -9,10 +9,15 @@ class TouristInfo(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     mobility = db.Column(db.String(100))
     person_with_disability = db.Column(db.Integer)
-
-    # 👈 FK corregida
     id_user = db.Column(db.String(50), db.ForeignKey('user.id_user'), nullable=False)
 
+    def __init__(self, nationality, province, quantity, mobility, person_with_disability, id_user):
+        self.nationality = nationality
+        self.province = province
+        self.quantity = quantity
+        self.mobility = mobility
+        self.person_with_disability = person_with_disability
+        self.id_user = id_user
 
     def serialize(self):
         return {
