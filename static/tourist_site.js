@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addTouristSiteForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("No hay token de acceso válido. Por favor, inicia sesión.");
                 return;
@@ -244,4 +244,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-

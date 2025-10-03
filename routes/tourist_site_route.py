@@ -13,8 +13,7 @@ import uuid
 
 tourist_site = Blueprint('tourist_site', __name__)
 
-    # Definimos la ruta para obtener todos los sitios turísticos
-    # Estos son los dos endpoint al cual tienen acceso todos los roles.
+#-------------------------------Rutas para renderizar los templates------------------------------------- #
 
     #Ruta para ver los sitios turísticos cargados.
 @tourist_site.route('/tourist_sites/view', methods=['GET'])
@@ -22,29 +21,32 @@ tourist_site = Blueprint('tourist_site', __name__)
 def tourist_sites_view():
         sites = TouristSite.query.all()
         return render_template('tourist_site/tourist_sites.html', sites=sites)
-# -------------------------------------------------------------------------------- #
-
-    # Estos son los dos endpoint al cual tiene acceso el admin .
 
     #Ruta para acceder a traves del boton al formulario de agregar sitio turistico. 
 @tourist_site.route('/tourist_sites/add', methods=['GET', 'POST'])
-@role_required("admin")
+@role_required("admin") 
+@jwt_required()
 def add_tourist_site_form():
     return render_template('tourist_site/add_tourist_sites.html')
 
     #Ruta para acceder al formulario a traves del boton, asi podemos editar la informacion del sitio turistico. 
 @tourist_site.route('/tourist_sites/edit', methods=['GET'])
-@role_required("admin")
+@role_required("admin") 
+@jwt_required()
 def edit_tourist_site_form():
     sites = TouristSite.query.all()
     return render_template('tourist_site/edit_tourist_sites.html', sites=sites)
 
     #Ruta para acceder al formulario a traves del boton, asi podemos eliminar de manera logica el sitio turistico. 
 @tourist_site.route('/tourist_sites/delete', methods=['GET'])
-@role_required("admin")
+@role_required("admin") 
+@jwt_required()
 def delete_tourist_site_form():
     sites = TouristSite.query.all()
     return render_template('tourist_site/delete_tourist_sites.html', sites=sites)
+
+# -------------------------------API's con el CRUD------------------------------------------------ #
+
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @jwt_required()
@@ -286,4 +288,3 @@ def update_tourist_site(id_tourist_site):
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
-
