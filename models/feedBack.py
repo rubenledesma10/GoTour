@@ -18,6 +18,7 @@ class feedBack(db.Model):
     user = db.relationship("User", backref="feedbacks")
     tourist_site = db.relationship("TouristSite", backref="feedbacks")
 
+
     def __init__(self, comment, qualification, id_user, id_tourist_site, date_hour=None):
         self.date_hour = date_hour or datetime.utcnow()
         self.comment = comment
