@@ -46,11 +46,14 @@
                    value="{{ user.dni }}" required minlength="7" maxlength="20">
         </div>
 
+        <input type="date" class="form-control" id="birthdate" name="birthdate" 
+       value="{{ user.birthdate }}">
+
         <div class="mb-3">
-            <label for="birthdate" class="form-label">Fecha de nacimiento</label>
-            <input type="date" class="form-control" id="birthdate" name="birthdate" 
-                   value="{{ user.birthdate.strftime('%Y-%m-%d') if user.birthdate else '' }}">
+            <label for="age" class="form-label">Edad</label>
+            <input type="text" id="age" class="form-control" value="{{ user.age }}" disabled>
         </div>
+
 
         <div class="mb-3">
             <label for="photo" class="form-label">Foto de perfil</label><br>

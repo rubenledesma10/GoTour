@@ -121,7 +121,10 @@ def edit_user_page(id_user):
     user = User.query.get(id_user)
     if not user:
         return "Usuario no encontrado", 404
-    return render_template("user/edit_admin.html", user=user)
+
+    user_data = user_schema.dump(user)  #para que me incluya age 
+
+    return render_template("user/edit_admin.html", user=user_data)
     
 
 @admin_bp.route('/edit/<string:id_user>', methods=['PUT'])

@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         form.nationality.value = user.nationality || "";
         form.province.value = user.province || "";
         form.gender.value = user.gender || "";
+        form.age.value = user.age || "";
     })
     .catch(err => {
         console.error("Error al cargar usuario", err);

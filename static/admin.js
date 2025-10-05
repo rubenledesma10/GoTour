@@ -95,6 +95,7 @@ users.forEach(u => {
                 <strong>Rol:</strong> ${u.role}<br>
                 <strong>DNI:</strong> ${u.dni}<br>
                 <strong>Fecha Nac.:</strong> ${u.birthdate}<br>
+                <strong>Edad:</strong> ${u.age}<br>
                 <strong>Celular:</strong> ${u.phone}<br>
                 <strong>Nacionalidad:</strong> ${u.nationality}<br>
                 <strong>Provincia:</strong> ${u.province}<br>

@@ -94,6 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <strong>Username:</strong> ${user.username}<br>
                                 <strong>DNI:</strong> ${user.dni}<br>
                                 <strong>Fecha Nac.:</strong> ${user.birthdate}<br>
+                                <strong>Edad:</strong> ${user.age}<br>
                                 <strong>Celular:</strong> ${user.phone}<br>
                                 <strong>Nacionalidad:</strong> ${user.nationality}<br>
                                 <strong>Provincia:</strong> ${user.province}<br>
