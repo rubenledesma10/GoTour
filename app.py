@@ -44,11 +44,10 @@ app.register_blueprint(feedback_bp)
 # def load_user(user_id):
 #     return User.query.get(user_id)
 
-# Rutas
+#ruta principal
 @app.route("/")
 def home():
     return render_template("index.html")
-
 
 
 @app.route('/about')

@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Error editando usuario");
 
-            alert("Usuario editado correctamente ✅");
+            alert("Usuario editado correctamente");
             window.location.href = "/api/admin/users_page"; // redirige a la lista
         } catch (err) {
             console.error("Error en edición:", err);

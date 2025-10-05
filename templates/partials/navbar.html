@@ -23,12 +23,10 @@
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="{{ url_for('touristinfo_bp.touristinfo_planilla') }}" data-role="admin">Información Turística</a>
                 </div>
                 <div class="ms-auto d-flex align-items-center gap-2">
-                <!--privados para turista que se loguea-->
-                <a class="btn btn-warning btn-sm px-3 py-2 d-none" 
-                   href="{{url_for('tourist_bp.my_data_page')}}" data-role="tourist">
-                    Mis datos
+                <!--privados para turista y recepcionista que se loguea-->
+                <a id="myDataBtn" class="btn btn-warning btn-sm px-3 py-2 d-none">
+                Mis datos
                 </a>
-                
                 <!--boton de registrarse y loguearse-->
                 <a id="authButton" href="{{url_for('user_bp.login')}}" class="btn"
                    style="background-color: orange; color: white;">

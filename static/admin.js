@@ -1,22 +1,22 @@
-function deleteUser(userId) {
-    const token = localStorage.getItem("token"); 
-    if (!token) {
+function deleteUser(userId) { //desactivar usuario. le pasamos el id del usuario a desactivar desde onclick
+    const token = localStorage.getItem("token"); //guardamos el token de localstorage
+    if (!token) { //validamos si hay token
         alert("No token found, please login");
         return;
     }
 
-    if (!confirm("Are you sure you want to desactivated this user?")) return;
+    if (!confirm("Are you sure you want to deactivate this user?")) return; //cartel para confirmar si queremos eliminarlo
 
-    fetch(`/api/admin/delete/${userId}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
+    fetch(`/api/admin/delete/${userId}`, { //apuntamos al back
+        method: "DELETE", //le decimos que metodo es 
+        headers: { "Authorization": `Bearer ${token}` } //mandamos el token por la cabecera
     })
-    .then(res => res.json())
+    .then(res => res.json()) //devuelve repuesta del back
     .then(data => {
         alert(data.message);
         location.reload();
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error(err)); //captura si hay algun error
 }
 
 function activatedUser(userId) {
@@ -40,26 +40,29 @@ function activatedUser(userId) {
     .catch(err => console.error(err));
 }
 
-function editUser(userId) {
+function editUser(userId) { //nos lleva a la vista de edicion 
     window.location.href = `/api/admin/edit/${userId}`;
 }
 
-
+//esto es lo que se inicializa al cargar la pagina
 document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token"); //obtenemos el token
 
     if (!token) {
-        window.location.href = "/";
+        window.location.href = "/"; // si el token no esta, nos lleva al index
         return;
     }
 
+    //llamamos al endopint para obtener la informacion actual del usuario
     fetch("/api/admin/dashboard", { headers: { "Authorization": `Bearer ${token}` } })
-    .then(async res => {
-        const text = await res.text();
-        if (!res.ok) throw new Error(text);
-        return JSON.parse(text);
+    .then(async res => { //leemos la respuesta del servidor
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({})); //capatamos el error
+            throw new Error(errorData.message || "Error en la petición");
+        }
+        return res.json(); //obtenemos la respuesta exitosa del back
     })
-    .then(data => {
+    .then(data => { //info del usuario
         const usernameEl = document.getElementById("username");
         const adminSection = document.getElementById("adminSection");
         if (usernameEl) usernameEl.innerText = data.username;
@@ -73,8 +76,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const container = document.getElementById("usersCardsContainer");
                 container.innerHTML = "";
 users.forEach(u => {
-    const card = document.createElement("div");
-    card.className = "col-md-4 mb-3";
+    const card = document.createElement("div"); //creamos un div que va a tener las cards
+    card.className = "col-md-4 mb-3"; //estilso de bootrstrap
+    //creamos la card
     card.innerHTML = `
     <div class="card h-100 text-center">
         <!-- Imagen del usuario centrada y responsiva -->
@@ -107,12 +111,12 @@ users.forEach(u => {
         </div>
     </div>
 `;
-    container.appendChild(card);
+    container.appendChild(card); //aca se añade la card
 });
 
             });
         }
-    })
+    }) //capturamos errores
     .catch(err => {
         console.error(err);
         alert("Session expired or unauthorized. Please login again.");
