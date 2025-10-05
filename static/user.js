@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </p>
                                 <div class="mt-3 d-flex justify-content-center gap-3">
                                     
-                                    
+                                    <a href="/api/tourist/edit_page" class="btn btn-sm btn-success text-white">Editar Perfil</a>
                                     <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id_user}')">Desactivar</button>
                                 </div>
                             </div>

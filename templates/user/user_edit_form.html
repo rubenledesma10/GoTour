@@ -2,10 +2,79 @@
 {% include "partials/navbar.html" %}
 
 <div class="container mt-4">
-    <form id="userForm" enctype="multipart/form-data" class="card p-3 shadow-sm">
-        <!-- JS llenará los campos del formulario -->
-    </form>
-</div>
-<script src="/static/js/user_edit.js"></script>
+  <h3>Editar tu perfil</h3>
+  <form id="editUserForm" enctype="multipart/form-data">
+    
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="first_name" class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="first_name" name="first_name" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="last_name" class="form-label">Apellido</label>
+        <input type="text" class="form-control" id="last_name" name="last_name" required>
+      </div>
+    </div>
 
+    <div class="mb-3">
+      <label for="email" class="form-label">Correo</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="username" class="form-label">Usuario</label>
+      <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="dni" class="form-label">DNI</label>
+      <input type="text" class="form-control" id="dni" name="dni" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="birthdate" class="form-label">Fecha de nacimiento</label>
+      <input type="date" class="form-control" id="birthdate" name="birthdate" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="phone" class="form-label">Teléfono</label>
+      <input type="text" class="form-control" id="phone" name="phone" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="nationality" class="form-label">Nacionalidad</label>
+      <input type="text" class="form-control" id="nationality" name="nationality" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="province" class="form-label">Provincia</label>
+      <input type="text" class="form-control" id="province" name="province" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="gender" class="form-label">Género</label>
+      <select id="gender" name="gender" class="form-select" required>
+        <option value="">Seleccione...</option>
+        <option value="masculino">Masculino</option>
+        <option value="femenino">Femenino</option>
+        <option value="prefiero no decirlo">Prefiero no decirlo</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Nueva contraseña (opcional)</label>
+      <input type="password" class="form-control" id="password" name="password" minlength="6">
+    </div>
+
+    <div class="mb-3">
+      <label for="photo" class="form-label">Foto de perfil</label>
+      <input type="file" class="form-control" id="photo" name="photo">
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar cambios</button>
+    <a href="/api/tourist/users_page" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+
+<script src="/static/user_edit.js"></script>
 {% include "scripts.html"%}

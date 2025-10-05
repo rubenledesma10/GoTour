@@ -8,6 +8,7 @@ from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
 from utils.decorators import role_required
+import os, uuid
 
 
 tourist_bp = Blueprint('tourist_bp', __name__, url_prefix='/api/tourist')
@@ -52,69 +53,66 @@ def delete_user(current_user, id_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'An internal error occurred'}), 500 
+    
+@tourist_bp.route("/edit_page", methods=["GET"])
+def edit_page():
+    return render_template("user/user_edit_form.html")
 
-# @tourist_bp.route("/my_data/edit", methods=['PUT'])
-# @role_required("tourist")
-# def edit_my_data():
-#     id_user=get_jwt_identity()
-#     user=User.query.get(id_user)
-#     if not user:
-#         return jsonify({"error":"User not found"}),404
-#     data=request.get_json()
-#     if not data:
-#         return jsonify({'error':'No data received'}),400
-#     try:
-#         validated_data=user_schema.load(data, partial=True)
-#     except ValidationError as err:
-#         return jsonify(err.messages),400
-#     try:
-#         if 'first_name' in validated_data:
-#             user.first_name = validated_data['first_name']
+@tourist_bp.route("/my_data/edit", methods=['PUT'])
+@role_required("tourist")
+def edit_my_data(current_user):
+   # 1. IDENTIFICACIÓN SEGURA: El usuario a editar ES el usuario logueado.
+    user = current_user
+    
+    # Obtener datos de texto y archivo de FormData
+    data = request.form.to_dict()
+    file = request.files.get("photo")
 
-#         if 'last_name' in validated_data:
-#             user.last_name = validated_data['last_name']
+    try:
+        # 2. Validar datos de texto con Marshmallow
+        validated_data = user_schema.load(data, partial=True)
+        
+    except ValidationError as err:
+        return jsonify(err.messages), 400
 
-#         if 'email' in validated_data:
-#             user.email = validated_data['email'].lower()
+    try:
+        # 3. Guardar foto si se subió (Lógica de Admin)
+        if file and file.filename:
+            
+            # Generar nombre único con UUID (como en tu admin)
+            file_extension = os.path.splitext(file.filename)[1]
+            filename = f"{uuid.uuid4()}{file_extension}" 
+            upload_path = os.path.join("static/uploads", filename)
+                 
+                    
+            file.save(upload_path)
+            user.photo = filename # Actualiza el campo 'photo' del usuario
+            
+        # 4. ACTUALIZAR CAMPOS DE TEXTO
+        for field, value in validated_data.items():
+            
+            # 🚨 SEGURIDAD: Bloquear la edición de campos sensibles
+            if field in ["role", "is_activate", "id_user"]: # NO puede cambiar su rol o estado
+                continue
+                
+            if field == "email":
+                user.email = value.lower()
+            elif field == "password":
+                user.set_password(value) # Usar tu método de hashing
+            elif hasattr(user, field): 
+                 setattr(user, field, value)
 
-#         if 'username' in validated_data:
-#             user.username = validated_data['username']
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Your profile has been successfully updated.',
+            'user': user_schema.dump(user)
+        }), 200
 
-#         if 'role' in validated_data:
-#             user.rol = validated_data['role']
-
-#         if 'dni' in validated_data:
-#             user.dni = validated_data['dni']
-
-#         if 'birthdate' in validated_data:
-#             user.birthdate = validated_data['birthdate']
-
-#         if 'photo' in validated_data:
-#             user.photo = validated_data['photo']
-
-#         if 'phone' in validated_data:
-#             user.phone = validated_data['phone']
-
-#         if 'nationality' in validated_data:
-#             user.nationality = validated_data['nationality']
-
-#         if 'province' in validated_data:
-#             user.province = validated_data['province']
-
-#         if 'is_activate' in validated_data:
-#             user.is_activate = validated_data['is_activate']
-
-#         if 'password' in validated_data:
-#             user.set_password(validated_data['password'])
-
-#         if 'gender' in validated_data:
-#             user.gender = validated_data['gender']
-
-#         db.session.commit()
-#         return jsonify({'message': 'User edited correctly', 'user':  user_schema.dump(user)}), 200
-#     except IntegrityError as e:
-#         db.session.rollback()
-#         return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({'error': str(e)}), 500
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({'error': 'The provided data (e.g., email or username) already exists.'}), 400
+    except Exception as e:
+        db.session.rollback()
+        print(f"Update error: {e}")
+        return jsonify({'error': 'An internal server error occurred.'}), 500
