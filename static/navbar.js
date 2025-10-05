@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
             myDataBtn.href = "/api/tourist/users_page";
             myDataBtn.classList.remove("d-none");
         } else if (role === "receptionist") {
-            myDataBtn.href = "/api/recepcionist/my_data_view";
+            myDataBtn.href = "/api/recepcionist/users_page";
             myDataBtn.classList.remove("d-none");
         } else {
             myDataBtn.classList.add("d-none");

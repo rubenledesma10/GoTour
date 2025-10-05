@@ -143,6 +143,9 @@ def reactivate_account_post():
     if not user:
         return jsonify({"error": "No user found with that email"}), 404
     
+    if user.role != "tourist":
+        return jsonify({"error": "Only tourist accounts can be reactivated"}), 403
+    
     if user.is_activate:
         return jsonify({"error": "User is already active"}), 400
 
@@ -155,8 +158,9 @@ def reactivate_account_post():
     db.session.commit()
 
     # Enviar email de bienvenida + nueva contraseña
-    send_welcome_email(user.email, user.username)  # ya tenés esta
-    send_reset_password_email(user.email, new_password)  # reusamos esta para la clave
+    send_welcome_email(user.email, user.username)
+    send_reset_password_email(user.email, new_password)
     
     return jsonify({"message": "Your account has been reactivated. Check your email for the new password."}), 200
+
 
