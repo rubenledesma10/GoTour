@@ -129,3 +129,34 @@ def forgot_password_new_password():
     send_reset_password_email(user.email, new_password) #enviar correo con la nueva contraseña
 
     return jsonify({"message": "An email with the new password has been sent"}), 200
+
+@user_bp.route('/reactivate-account')
+def reactivate_account():
+    return render_template("auth/reactivate_account.html")
+
+@user_bp.route('/reactivate-account', methods=['POST'])
+def reactivate_account_post():
+    data = request.get_json()
+    email = data.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "No user found with that email"}), 404
+    
+    if user.is_activate:
+        return jsonify({"error": "User is already active"}), 400
+
+    # Generar nueva contraseña
+    new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+    # Reactivar cuenta
+    user.is_activate = True
+    user.set_password(new_password)
+    db.session.commit()
+
+    # Enviar email de bienvenida + nueva contraseña
+    send_welcome_email(user.email, user.username)  # ya tenés esta
+    send_reset_password_email(user.email, new_password)  # reusamos esta para la clave
+    
+    return jsonify({"message": "Your account has been reactivated. Check your email for the new password."}), 200
+

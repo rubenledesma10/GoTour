@@ -1,0 +1,16 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<div class="container mt-4">
+    <h3>Reactivar cuenta</h3>
+    <form id="reactivateForm">
+        <div class="mb-3">
+            <label for="email" class="form-label">Correo</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">Reactivar cuenta</button>
+        <a type="button" class="btn btn-secondary"  href="{{url_for('user_bp.login_user')}}">Cancelar</a>
+
+    </form>
+</div>
+{% include "scripts.html" %}

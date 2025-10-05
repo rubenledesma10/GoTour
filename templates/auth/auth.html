@@ -15,12 +15,19 @@
                 <input type="password" name="password" id="password" class="form-control">
             </div>
         </div>
-        <small class="form-text text-muted"><a href="{{url_for('user_bp.forgot_password')}}" target="_blank">Olvidé mi contraseña</a></small>
+       <small class="form-text text-muted">
+  <a href="{{url_for('user_bp.forgot_password')}}" target="_blank">Olvidé mi contraseña</a>
+  <a href="{{url_for('user_bp.reactivate_account')}}" target="_blank" class="ms-3">Reactivar cuenta</a>
+</small>
+
+        
         <br>
+        
         <br>
         
         <button type="submit" class="btn" style="background-color: orange; color: white;">Iniciar Sesion</button>
         <a href="{{ url_for('user_bp.register') }}" class="btn btn-primary ms-2">Registrarme</a>
+        
         </form>
     </div>
 

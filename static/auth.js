@@ -94,4 +94,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    const reactivateForm = document.getElementById("reactivateForm");
+    if (reactivateForm) {
+        reactivateForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const data = { email: form.email.value };
+
+            try {
+                const res = await fetch('/api/gotour/reactivate-account', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    alert(result.message);
+                    window.location.href = "/api/gotour/login";
+                } else {
+                    alert(result.error || "No se pudo reactivar la cuenta");
+                }
+            } catch (error) {
+                console.error('Request error:', error);
+                alert('Error al intentar reactivar la cuenta.');
+            }
+        });
+    }
+
 });
