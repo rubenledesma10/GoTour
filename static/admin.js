@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 container.innerHTML = "";
 users.forEach(u => {
     const card = document.createElement("div"); //creamos un div que va a tener las cards
-    card.className = "col-md-4 mb-3"; //estilso de bootrstrap
+    card.className = "col-12 col-md-4 mb-3"; //estilso de bootrstrap
     //creamos la card
     card.innerHTML = `
     <div class="card h-100 text-center">

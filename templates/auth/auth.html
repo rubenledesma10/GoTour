@@ -1,34 +1,26 @@
 {% include "head.html" %}
+{% include "partials/navbar.html" %}
 
-        {% include "partials/navbar.html" %}
-    <div class="container mt-4">
-        <form id="loginForm">
-        <div class="row mb-3">
-            <label for="exampleFormControlInput1" class="col-form-label">Email address</label>
-            <div class="col-sm-8"> 
-                <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com">
-            </div>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Iniciar Sesión</h2>
+    <form id="loginForm" class="mx-auto" style="max-width: 500px;">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com" required>
         </div>
-        <div class="row mb-3">
-            <label for="inputPassword" class="col-form-label">Password</label>
-            <div class="col-sm-8">
-                <input type="password" name="password" id="password" class="form-control">
-            </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" name="password" id="password" class="form-control" required>
         </div>
-       <small class="form-text text-muted">
-  <a href="{{url_for('user_bp.forgot_password')}}" target="_blank">Olvidé mi contraseña</a>
-  <a href="{{url_for('user_bp.reactivate_account')}}" target="_blank" class="ms-3">Reactivar cuenta</a>
-</small>
+        <small class="form-text text-muted d-block mb-3">
+            <a href="{{ url_for('user_bp.forgot_password') }}" target="_blank">Olvidé mi contraseña</a>
+            <a href="{{ url_for('user_bp.reactivate_account') }}" target="_blank" class="ms-3">Reactivar cuenta</a>
+        </small>
+        <div class="d-flex justify-content-center gap-2">
+            <button type="submit" class="btn btn-warning">Iniciar Sesión</button>
+            <a href="{{ url_for('user_bp.register') }}" class="btn btn-primary">Registrarme</a>
+        </div>
+    </form>
+</div>
 
-        
-        <br>
-        
-        <br>
-        
-        <button type="submit" class="btn" style="background-color: orange; color: white;">Iniciar Sesion</button>
-        <a href="{{ url_for('user_bp.register') }}" class="btn btn-primary ms-2">Registrarme</a>
-        
-        </form>
-    </div>
-
-{% include "scripts.html"%}
+{% include "scripts.html" %}
