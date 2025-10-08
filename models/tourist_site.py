@@ -19,19 +19,20 @@ class TouristSite(db.Model):
     is_activate = db.Column(db.Boolean, default=True, nullable=False)
 
 
-def __init__(self, name, description, address, phone, category, url, id_user, average=None, is_activate=True): 
-        
-    self.name = name
-    self.description = description
-    self.address = address
-    self.phone = phone 
-    self.category = category
-    self.url = url
-    self.average = average
-        #Estableci None por defecto a average para luego sacar un promedio de las visitas y calificaciones del lugar. 
-    self.id_user = id_user
-    self.is_activate = is_activate
     
+    def __init__(self, name, description, address, phone, category, url, id_user, opening_hours=None, closing_hours=None, average=None, is_activate=True): 
+        self.name = name
+        self.description = description
+        self.address = address
+        self.phone = phone 
+        self.category = category
+        self.url = url
+        self.id_user = id_user
+        self.opening_hours = opening_hours
+        self.closing_hours = closing_hours
+        self.average = average
+        self.is_activate = is_activate
+
 
     def serialize(self): 
         return {

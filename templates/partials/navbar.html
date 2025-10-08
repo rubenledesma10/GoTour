@@ -1,45 +1,40 @@
 <nav class="navbar navbar-expand-lg bg-light" id="navbarRol">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">
-      <img src="{{ url_for('static', filename='images/logo_2.png') }}" alt="GoTour" width="80" height="50">
-    </a>
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="{{ url_for('static', filename='images/logo_2.png') }}"
+                alt="GoTour" width="80" height="50">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <!--enlaces publicos-->
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="/">Inicio</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">CIT</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{url_for('feedback_bp.get_feedback_view')}}">Comentarios</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('about') }}">Acerca de GoTour</a>
+                    <a class="nav-link active" href="{{ url_for('cit_bp.list_cits_page') }}">CIT</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('tourist_site.tourist_sites_view') }}">Sitios turisticos</a>
+                    <!--privados para administrador-->
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Usuarios</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="{{ url_for('touristinfo_bp.touristinfo_planilla') }}" data-role="admin">Información Turística</a>
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                <!--privados para turista que se loguea-->
+                <a class="btn btn-warning btn-sm px-3 py-2 d-none" 
+                href="{{url_for('tourist_bp.my_data_page')}}" data-role="tourist">
+                    Mis datos
+                </a>
+                
+                <!--boton de registrarse y loguearse-->
+                <a id="authButton" href="{{url_for('user_bp.login')}}" class="btn"
+                style="background-color: orange; color: white;">
+                    Registrarse/Iniciar Sesión
+                </a>
+            </div>
+            </div>
+        </div>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <!-- enlaces públicos -->
-        <a class="nav-link active" href="/">Inicio</a>
-        <a class="nav-link active" href="#">CIT</a>
-        <a class="nav-link active" href="{{ url_for('feedback_page') }}">Comentarios</a>
-        <a class="nav-link active" href="{{url_for('tourist_site.tourist_sites_view')}}">Sitios turisticos</a>
-        <a class="nav-link active" href="#">Acerca de GoTour</a>
-
-        <!-- privados (ocultos por rol) -->
-        <a class="nav-link active d-none" href="{{ url_for('admnin_bp.get_users') }}" data-role="admin">Usuarios</a>
-        <a class="nav-link active d-none" href="#" data-role="admin">Informacio turistas</a>
-      </div>
-
-      <span class="navbar-text ms-auto">
-        {% if current_user.is_authenticated %}
-          <!-- Botón rojo con el usuario logueado -->
-          <a href="{{ url_for('user_bp.logout') }}" class="btn btn-danger">
-            Cerrar Sesión ({{ current_user.username }})
-          </a>
-        {% else %}
-          <!-- Si NO está logueado, mostramos botones a login y registro -->
-          <a href="{{ url_for('user_bp.login') }}" class="btn me-2"
-            style="background-color: orange; color: white;">
-            Iniciar Sesión
-          </a>
-          <a href="{{ url_for('user_bp.register') }}" class="btn btn-outline-secondary">
-            Registrarme
-          </a>
-        {% endif %}
-      </span>
-    </div>
-  </div>
-</nav>
+    </nav>

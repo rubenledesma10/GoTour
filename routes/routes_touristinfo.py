@@ -8,6 +8,12 @@ from utils.decorators import role_required
 
 touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristinfo')
 
+# @touristinfo_bp.route("/planilla", methods=["GET"])
+# # @jwt_required()
+# # @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
+# def touristinfo_planilla():
+#     return render_template("touristinfo/touristinfo.html") 
+
 # @touristinfo_bp.route("/statistics", methods=["GET"])
 # @jwt_required()
 # @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
@@ -24,14 +30,13 @@ touristinfo_bp = Blueprint('touristinfo_bp', __name__, url_prefix='/api/touristi
 #         "porcentaje_extranjeros": round((extranjeros / total) * 100, 2) if total > 0 else 0
 #     }), 200
 
-
-@touristinfo_bp.route("/planilla", methods=["GET"])
+@touristinfo_bp.route("/planilla", methods=["GET"])#Vista para renderizar la planilla de turistas
 def touristinfo_planilla():
     tourists = TouristInfo.query.all()
     return render_template("touristinfo/touristinfo.html", tourists=tourists)
 
 
-@touristinfo_bp.route("/", methods=["GET"])
+@touristinfo_bp.route("/", methods=["GET"])#Traer todos los turistas
 def get_all_tourists():
     tourists = TouristInfo.query.all()
     if not tourists:
@@ -39,7 +44,7 @@ def get_all_tourists():
     return jsonify([t.serialize() for t in tourists]), 200 
 
 
-@touristinfo_bp.route("/<int:id>", methods=["GET"])
+@touristinfo_bp.route("/<int:id>", methods=["GET"])# Traer un turista por su ID
 def get_tourist(id):
     tourist = TouristInfo.query.get(id)
     if not tourist:
@@ -47,7 +52,7 @@ def get_tourist(id):
     return jsonify(tourist.serialize()), 200
 
 
-@touristinfo_bp.route("/", methods=["POST"])
+@touristinfo_bp.route("/", methods=["POST"])#Crear un nuevo turista
 def create_tourist():
     data = request.form.to_dict()
 
@@ -60,10 +65,10 @@ def create_tourist():
         quantity = int(data["quantity"])
         person_with_disability = int(data["person_with_disability"])
     except ValueError:
-        return jsonify({"error": "quantity and person_with_disability must be integers"}), 400
+        return jsonify({"error": "quantity and person_with_disability must be integers"}), 400#Si los valores no son enteros
 
     if person_with_disability > quantity:
-        return jsonify({"error": "People with disability cannot exceed total quantity"}), 400
+        return jsonify({"error": "People with disability cannot exceed total quantity"}), 400#Si la cantidad de personas con discapacidad es mayor que la cantidad total
 
     try:
         new_tourist = TouristInfo(
@@ -87,6 +92,7 @@ def create_tourist():
 
 
 
+@touristinfo_bp.route("/<int:id>", methods=["PATCH"]) #Actualizar parcialmente un turista
 @touristinfo_bp.route("/<int:id>", methods=["PATCH"])
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def update_tourist(id):
@@ -99,7 +105,7 @@ def update_tourist(id):
         return jsonify({"error": "Invalid data"}), 400
 
     errors = {}
-    for field in ["nationality", "province", "quantity", "person_with_disability", "mobility"]:
+    for field in ["nationality", "province", "quantity", "person_with_disability", "mobility"]:#Campos permitidos para actualizar
         if field in data and str(data[field]).strip() == "":
             errors[field] = f"{field} cannot be empty"
 
@@ -115,14 +121,14 @@ def update_tourist(id):
         try:
             tourist.person_with_disability = int(data["person_with_disability"])
         except ValueError:
-            return jsonify({"error": "person_with_disability must be an integer"}), 400
+            return jsonify({"error": "person_with_disability must be an integer"}), 400#Si el valor no es un entero
 
     tourist.nationality = data.get("nationality", tourist.nationality)
     tourist.province = data.get("province", tourist.province)
     tourist.mobility = data.get("mobility", tourist.mobility)
 
     if tourist.person_with_disability > tourist.quantity:
-        return jsonify({"error": "People with disability cannot exceed total quantity"}), 400
+        return jsonify({"error": "People with disability cannot exceed total quantity"}), 400#Si la cantidad de personas con discapacidad es mayor que la cantidad total
 
     try:
         db.session.commit()
@@ -132,6 +138,7 @@ def update_tourist(id):
         return jsonify({"error": str(e)}), 500
 
 
+@touristinfo_bp.route("/<int:id>", methods=["POST", "DELETE"]) #Eliminar un turista ESTA CON POST ADELANTE PORQUE EL FORM-DELETE NO FUNCIONA SIN EL POST
 @touristinfo_bp.route("/<int:id>", methods=["DELETE"])
 @role_required([RoleEnum.RECEPCIONIST.value, RoleEnum.ADMIN.value])
 def delete_tourist(id):
