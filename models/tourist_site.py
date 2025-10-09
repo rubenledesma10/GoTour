@@ -1,4 +1,5 @@
-from models.db import db 
+from models.db import db
+from flask import url_for
 import uuid
 
 class TouristSite(db.Model):
@@ -11,6 +12,7 @@ class TouristSite(db.Model):
     phone = db.Column(db.String(50), nullable=False)
     category = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(250), unique=True, nullable=False)
+    photo = db.Column(db.String(250), nullable=True)
     average = db.Column(db.Float, nullable=True)
     opening_hours = db.Column(db.Time, nullable=True)
     closing_hours = db.Column(db.Time, nullable=True)
@@ -18,23 +20,7 @@ class TouristSite(db.Model):
     user = db.relationship('User', backref='tourist_sites', lazy=True)
     is_activate = db.Column(db.Boolean, default=True, nullable=False)
 
-
-    
-    def __init__(self, name, description, address, phone, category, url, id_user, opening_hours=None, closing_hours=None, average=None, is_activate=True): 
-        self.name = name
-        self.description = description
-        self.address = address
-        self.phone = phone 
-        self.category = category
-        self.url = url
-        self.id_user = id_user
-        self.opening_hours = opening_hours
-        self.closing_hours = closing_hours
-        self.average = average
-        self.is_activate = is_activate
-
-
-    def serialize(self): 
+    def serialize(self):
         return {
             'id_tourist_site': self.id_tourist_site,
             'name': self.name,
@@ -44,6 +30,7 @@ class TouristSite(db.Model):
             'category': self.category,
             'url': self.url,
             'average': self.average,
+            'photo': url_for('static', filename=f'tourist_sites_images/{self.photo}', _external=True) if self.photo else None,
             'opening_hours': self.opening_hours.strftime("%H:%M:%S") if self.opening_hours else None,
             'closing_hours': self.closing_hours.strftime("%H:%M:%S") if self.closing_hours else None,
             'id_user': self.id_user,

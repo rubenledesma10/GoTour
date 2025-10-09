@@ -15,9 +15,13 @@ from routes.routes_cit import cit_bp
 from routes.feedBack_route import feedback_bp
 from models.user import User
 from models.tourist_site import TouristSite
+import os   
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['STATIC_UPLOADS'] = os.path.join(app.root_path, 'static', 'uploads')
+os.makedirs(app.config['STATIC_UPLOADS'], exist_ok=True)
 
 # Inicializaciones
 jwt = JWTManager(app)

@@ -1,61 +1,128 @@
 {% include "head.html" %}
 
-<body>
-    {% include "partials/navbar.html" %}
+<body id="protectedBody" style="display: none;">
 
-    <div class="container mt-4">
-        <h2 class="mb-4">Sitios Turìsticos Creados</h2>
 
-    <h3>¿Qué deseas hacer <span id="username"></span>?</h3>
-        <a href="/tourist_sites/add" class="btn btn-primary mb-4">Agregar sitio turístico</a>
-        <a href="/tourist_sites/edit" class="btn btn-warning mb-4 text-white">Editar sitio turístico</a>
-        <a href="/tourist_sites/delete" class="btn btn-danger mb-4">Eliminar sitio turístico</a>
-        {% if sites %}
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Descripcion</th>
-                            <th>Dirección</th>
-                            <th>Contacto</th>
-                            <th>Categoría</th>
-                            <th>Pagina Web</th>
-                            <th>Visitas Promedio</th>
-                            <th>Horarios</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for site in sites %}
-                            <tr>
-                                <td>{{ site.name }}</td>
-                                <td>{{ site.description }}</td>
-                                <td>{{ site.address }}</td>
-                                <td>{{ site.phone }}</td>
-                                <td>{{ site.category | title }}</td>
-                                <td><a href="{{ site.url }}" target="_blank">{{ site.url }}</a></td>
-                                <td>{{ "{:,.2f}".format(site.average) }}</td>
-                                <td>{{ site.opening_hours }} - {{ site.closing_hours }}</td>
-                                <td>
-                                    {% if site.is_activate %}
-                                        <span class="badge bg-success">Activo</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Inactivo</span>
-                                    {% endif %}
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+{% include "partials/navbar.html" %}
+
+
+<div class="container mt-4">
+    <h2 class="mb-4">Sitios Turísticos Creados</h2>
+
+    <h3 class="admin-only">¿Qué deseas hacer?</h3>
+    <a href="/tourist_sites/add" class="btn btn-primary mb-2 admin-only">Agregar sitio turístico</a>
+    <a href="/tourist_sites/edit" class="btn btn-warning mb-2 text-white admin-only">Editar sitio turístico</a>
+    <a href="/tourist_sites/delete" class="btn btn-danger mb-2 admin-only">Eliminar sitio turístico</a>
+
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for site in sites %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0">
+            {% if site.photo %}
+                <img src="{{ url_for('static', filename='tourist_sites_images/' ~ site.photo) }}"
+                    class="card-img-top site-photo" 
+                    alt="{{ site.name }}" 
+                    style="height: 200px; object-fit: cover; cursor: pointer;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#imageModal"
+                    data-img-src="{{ url_for('static', filename='tourist_sites_images/' ~ site.photo) }}"
+                    data-img-name="{{ site.name }}">
+            {% else %}
+                <div class="bg-light text-muted text-center py-5">Sin imagen</div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title text-primary">{{ site.name }}</h5>
+                
+                    Descripcion:
+                <p class="card-text">{{ site.description }}</p>
+                    
+                <p class="text-muted mb-1">
+                    Direccion:
+                    <i class="bi bi-geo-alt-fill"></i> {{ site.address }}
+                </p>
+                <p class="text-muted mb-1">
+                    Contacto/s:
+                    <i class="bi bi-telephone-fill"></i> {{ site.phone }}
+                </p>
+                <p class="text-muted mb-1">
+                    Horarios:
+                    <i class="bi bi-clock"></i> {{ site.opening_hours }} - {{ site.closing_hours }}
+                </p>
+                <p class="text-muted mb-1">
+                    <i class="bi bi-bar-chart-line"></i>
+                    Promedio visitas:
+                    <strong>{{ "{:,.2f}".format(site.average or 0) }}</strong>
+                </p>
+                <p class="text-muted">
+                    Categoria:
+                    <i class="bi bi-tag-fill"></i> {{ site.category }}
+                </p>
             </div>
-        {% else %}
-            <div class="alert alert-info" role="alert">
-                ¡Aún no se han agregado sitios turísticos!
+
+            <div class="card-footer bg-transparent">
+                {% if site.url %}
+                    <a href="{{ site.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-box-arrow-up-right"></i> Ver sitio
+                    </a>
+                {% endif %}
+                {% if site.is_activate %}
+                    <span class="badge bg-success float-end">Activo</span>
+                {% else %}
+                    <span class="badge bg-secondary float-end">Inactivo</span>
+                {% endif %}
             </div>
-        {% endif %}
+        </div>
     </div>
+    {% endfor %}
+</div>
 
-    <hr class="mt-5 mb-4">
+<!--  Modal Bootstrap para ver imagen ampliada -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="imageModalLabel">Vista ampliada</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center">
+            <img id="modalImage" src="" alt="" class="img-fluid rounded shadow">
+        </div>
+        </div>
+    </div>
+</div>
 
-<script src="/static/tourist_site.js"></script>
-{% include "scripts.html" %} 
+<!-- 🔹 Script JS del modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('imageModalLabel');
+
+    // Captura el click en cualquier imagen de la tabla
+    document.querySelectorAll('.site-photo').forEach(img => {
+        img.addEventListener('click', () => {
+            const imgSrc = img.getAttribute('data-img-src');
+            const imgName = img.getAttribute('data-img-name');
+
+            modalImage.src = imgSrc;
+            modalTitle.textContent = `Vista ampliada - ${imgName}`;
+        });
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const role = localStorage.getItem('role');
+    console.log("Rol detectado:", role);
+
+    // Ocultamos los accesos con la clase "admin-only" si el usuario no es administrador
+    if (role !== 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+    }
+});
+</script>
+
+</body>
+
+<script src="/static/tourist_sites/tourist_sites.js"></script>
+{% include "scripts.html" %}

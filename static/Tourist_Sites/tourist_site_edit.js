@@ -1,10 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("tourist_site_edit.js cargado correctamente");
+
+    // Control de acceso - solo admins
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
+
+    // Si no hay token o el usuario no es admin, redirigimos a login o vista principal
+    if (!token) {
+        alert("No hay token de acceso. Por favor, inicia sesión.");
+        window.location.href = '/login'; // o la ruta de tu login
+        return;
+    }
+
+    if (role !== 'admin') {
+        alert("No tienes permisos para acceder a esta sección.");
+        window.location.href = '/tourist_sites/view';
+        return;
+    }
+
+    // Logica principal
     const siteSelect = document.getElementById('siteSelect');
     const editTouristSiteForm = document.getElementById('editTouristSiteForm');
-    const isActivateInput = document.getElementById('is_activate');
-
-    // Lógica para el botón de cancelar
     const cancelButton = document.getElementById('cancelButton');
+
+    // Elementos del archivo imagen
+    const currentImage = document.getElementById('currentImage');
+    const noImageText = document.getElementById('noImageText');
+    const previewImage = document.getElementById('previewImage');
+    const photoInput = document.getElementById('photo');
+    const noNewImageText = document.getElementById('noNewImageText');
+    
+    // Vista previa de la nueva imagen
+    if (photoInput) {
+        photoInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    if (noNewImageText) noNewImageText.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.src = '';
+                previewImage.style.display = 'none';
+                if (noNewImageText) noNewImageText.style.display = 'block';
+            }
+        });
+    }
+
+    // Botón para cancelar
     if (cancelButton) {
         cancelButton.addEventListener('click', () => {
             window.location.href = '/tourist_sites/view';
@@ -12,18 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // Carga los datos del sitio seleccionado
     if (siteSelect && editTouristSiteForm) {
-        // Cargar datos del sitio seleccionado
         siteSelect.addEventListener('change', async (event) => {
             const selectedSiteId = event.target.value;
             if (!selectedSiteId) {
                 editTouristSiteForm.reset();
-                return;
-            }
-
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert("No hay token de acceso válido. Por favor, inicia sesión.");
+                currentImage.style.display = 'none';
+                noImageText.style.display = 'block';
                 return;
             }
 
@@ -37,26 +79,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const siteData = await response.json();
 
-                document.getElementById('name').value = siteData.name;
-                document.getElementById('description').value = siteData.description;
-                document.getElementById('address').value = siteData.address;
-                document.getElementById('phone').value = siteData.phone;
-                document.getElementById('category').value = siteData.category;
-                document.getElementById('url').value = siteData.url;
-                document.getElementById('average').value = siteData.average;
+                // Rellenamos los campos
+                document.getElementById('name').value = siteData.name || '';
+                document.getElementById('description').value = siteData.description || '';
+                document.getElementById('address').value = siteData.address || '';
+                document.getElementById('phone').value = siteData.phone || '';
+                document.getElementById('category').value = siteData.category || '';
+                document.getElementById('url').value = siteData.url || '';
+                document.getElementById('average').value = siteData.average || '';
                 document.getElementById('opening_hours').value = siteData.opening_hours?.substring(0, 5) || '';
                 document.getElementById('closing_hours').value = siteData.closing_hours?.substring(0, 5) || '';
 
-                if (isActivateInput) isActivateInput.checked = siteData.is_activate === 1;
+                // Imagen actual
+                if (siteData.photo) {
+                    currentImage.src = siteData.photo;
+                    currentImage.style.display = 'block';
+                    noImageText.style.display = 'none';
+                } else {
+                    currentImage.style.display = 'none';
+                    noImageText.style.display = 'block';
+                }
+
+                // Limpia la vista previa anterior
+                previewImage.src = '';
+                previewImage.style.display = 'none';
+                photoInput.value = '';
 
             } catch (error) {
-                console.error('Error al cargar la información del sitio:', error);
+                console.error('Error al cargar el sitio:', error);
                 alert('Hubo un error al cargar los datos.');
                 editTouristSiteForm.reset();
             }
         });
 
-        // Guardar cambios (PUT)
+        // Guardamos los cambios
         editTouristSiteForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
@@ -66,33 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert("No hay token de acceso válido. Por favor, inicia sesión.");
-                return;
-            }
-
-            const data = {
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value,
-                address: document.getElementById('address').value,
-                phone: document.getElementById('phone').value,
-                category: document.getElementById('category').value,
-                url: document.getElementById('url').value,
-                average: document.getElementById('average').value !== '' ? parseFloat(document.getElementById('average').value) : null,
-                opening_hours: document.getElementById('opening_hours').value,
-                closing_hours: document.getElementById('closing_hours').value,
-                is_activate: isActivateInput ? (isActivateInput.checked ? 1 : 0) : undefined,
-            };
+            const formData = new FormData(editTouristSiteForm);
 
             try {
                 const response = await fetch(`/api/tourist_sites/${selectedSiteId}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
                 });
 
                 const result = await response.json();
