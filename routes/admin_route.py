@@ -177,13 +177,21 @@ def edit_user(current_user, id_user):
 @admin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
 @role_required("admin")
 def delete_user(current_user, id_user):
+
+    if str(current_user.id_user) == id_user:
+        return jsonify({'message': 'You cannot deactivate your own account'}), 403
+    
     user = User.query.get(id_user)
     if not user:
         return jsonify({'message':'User not found'}), 404
+    
+    if not user.is_activate:
+        return jsonify({'message':'The user is already deactivate. '})
+
     try:
         user.is_activate = False  #eliminado lógico
         db.session.commit()
-        return jsonify({'message':'User deleted successfully'}), 200
+        return jsonify({'message':'User deactivated successfully'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -192,8 +200,12 @@ def delete_user(current_user, id_user):
 @role_required("admin")
 def activate_user(current_user, id_user):
     user = User.query.get(id_user)
+
     if not user:
         return jsonify({'message': 'User not found'}), 404
+
+    if user.is_activate:
+        return jsonify({'message':'The user is already active. '})
 
     try:
         user.is_activate = True  #reactivar usuario

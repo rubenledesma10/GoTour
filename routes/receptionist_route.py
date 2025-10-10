@@ -44,6 +44,8 @@ def delete_user(current_user, id_user):
     if str(current_user.id_user) != id_user: 
         return jsonify({'message': 'Access Denied. You can only deactivate your own account.'}), 403
 
+    if str(current_user.id_user) == id_user:
+        return jsonify({'message': 'You cannot deactivate your own account'}), 403
     user = current_user
     
     try:
@@ -112,7 +114,7 @@ def edit_my_data(current_user):
 
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'error': 'The provided data (e.g., email or username) already exists.'}), 400
+        return jsonify({'error': 'The provided data (dni, email or username) already exists.'}), 400
     except Exception as e:
         db.session.rollback()
         print(f"Update error: {e}")

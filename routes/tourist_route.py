@@ -111,7 +111,7 @@ def edit_my_data(current_user):
 
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'error': 'The provided data (e.g., email or username) already exists.'}), 400
+        return jsonify({'error': 'The provided data (dni, email or username) already exists.'}), 400
     except Exception as e:
         db.session.rollback()
         print(f"Update error: {e}")

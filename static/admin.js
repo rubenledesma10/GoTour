@@ -1,23 +1,26 @@
-function deleteUser(userId) { //desactivar usuario. le pasamos el id del usuario a desactivar desde onclick
-    const token = localStorage.getItem("token"); //guardamos el token de localstorage
-    if (!token) { //validamos si hay token
+function deleteUser(userId) { 
+    // desactivar usuario. le pasamos el id del usuario a desactivar desde onclick
+    const token = localStorage.getItem("token"); // guardamos el token de localstorage
+    
+    if (!token) { // validamos si hay token
         alert("No token found, please login");
         return;
     }
 
-    if (!confirm("Are you sure you want to deactivate this user?")) return; //cartel para confirmar si queremos eliminarlo
+    if (!confirm("Are you sure you want to deactivate this user?")) return; // cartel para confirmar si queremos eliminarlo
 
-    fetch(`/api/admin/delete/${userId}`, { //apuntamos al back
-        method: "DELETE", //le decimos que metodo es 
-        headers: { "Authorization": `Bearer ${token}` } //mandamos el token por la cabecera
+    fetch(`/api/admin/delete/${userId}`, { // apuntamos al back
+        method: "DELETE", // le decimos que metodo es 
+        headers: { "Authorization": `Bearer ${token}` } // mandamos el token por la cabecera
     })
-    .then(res => res.json()) //devuelve repuesta del back
+    .then(res => res.json()) // devuelve respuesta del back
     .then(data => {
         alert(data.message);
         location.reload();
     })
-    .catch(err => console.error(err)); //captura si hay algun error
+    .catch(err => console.error(err)); // captura si hay algun error
 }
+
 
 function activatedUser(userId) {
     const token = localStorage.getItem("token"); 

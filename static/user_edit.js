@@ -38,6 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
         form.province.value = user.province || "";
         form.gender.value = user.gender || "";
         form.age.value = user.age || "";
+        if (role === "receptionist") {
+        form.email.setAttribute("disabled", "true");
+    }
     })
     .catch(err => {
         console.error("Error al cargar usuario", err);

@@ -6,7 +6,7 @@ function deleteUser(userId) {
         return;
     }
 
-    if (!confirm("¿Seguro que querés desactivar tu cuenta?")) return;
+    if (!confirm("Are you sure you want to deactivate your account?")) return;
 
     const role = localStorage.getItem("role");
     const deleteEndpoint = role === "receptionist" 
@@ -24,8 +24,8 @@ function deleteUser(userId) {
             localStorage.clear(); 
             window.location.href = "/"; 
         } else {
-            const errorMessage = data.message || data.error || `Error ${status} al desactivar.`;
-            alert("Error al desactivar: " + errorMessage);
+            const errorMessage = data.message || data.error || `Error ${status} deactivating:`;
+            alert("Error deactivating: " + errorMessage);
         }
     })
     .catch(err => {
@@ -80,35 +80,41 @@ document.addEventListener("DOMContentLoaded", () => {
             container.innerHTML = "";
 
             // Generamos la card del usuario
-            const userCardHTML = `
-                <div class="col-md-8 mx-auto">
-                    <div class="card h-100 p-4 text-center">
-                        <img src="${user.photo ? `/static/uploads/${user.photo}` : '/static/default-avatar.png'}" 
-                             class="card-img-top mx-auto d-block mt-3 rounded-circle" 
-                             alt="Foto de ${user.first_name}" 
-                             style="width:150px; height:150px; object-fit:cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">${user.first_name} ${user.last_name}</h5>
-                            <p class="card-text text-start mx-auto" style="max-width: 400px;">
-                                <strong>Email:</strong> ${user.email}<br>
-                                <strong>Username:</strong> ${user.username}<br>
-                                <strong>DNI:</strong> ${user.dni}<br>
-                                <strong>Fecha Nac.:</strong> ${user.birthdate}<br>
-                                <strong>Edad:</strong> ${user.age}<br>
-                                <strong>Celular:</strong> ${user.phone}<br>
-                                <strong>Nacionalidad:</strong> ${user.nationality}<br>
-                                <strong>Provincia:</strong> ${user.province}<br>
-                                <strong>Género:</strong> ${user.gender}<br>
-                                <strong>Rol:</strong> ${user.role}<br>
-                            </p>
-                            <div class="mt-3 d-flex justify-content-center gap-3">
-                                <a href="${editPage}" class="btn btn-sm btn-success text-white">Editar Perfil</a>
-                                <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id_user}')">Desactivar</button>
-                            </div>
-                        </div>
-                    </div>
+            // Generamos la card del usuario
+const userCardHTML = `
+    <div class="col-md-6 col-lg-5 mx-auto">
+        <div class="card shadow-sm border-0 text-center p-3" style="max-width: 400px; margin: auto;">
+            <!-- Imagen redonda -->
+            <img src="${user.photo ? `/static/uploads/${user.photo}` : '/static/default-avatar.png'}" 
+                 class="rounded-circle mx-auto mt-3 mb-2" 
+                 alt="Foto de ${user.first_name}" 
+                 style="width:120px; height:120px; object-fit:cover; border: 3px solid #f0f0f0;">
+            
+            <div class="card-body">
+                <h5 class="card-title mb-1">${user.first_name} ${user.last_name}</h5>
+                <p class="text-muted mb-3">${user.role}</p>
+
+                <div class="text-start mx-auto" style="max-width: 300px; font-size: 0.9rem;">
+                    <strong>Email:</strong> ${user.email}<br>
+                    <strong>Username:</strong> ${user.username}<br>
+                    <strong>DNI:</strong> ${user.dni}<br>
+                    <strong>Fecha Nac.:</strong> ${user.birthdate}<br>
+                    <strong>Edad:</strong> ${user.age}<br>
+                    <strong>Celular:</strong> ${user.phone}<br>
+                    <strong>Nacionalidad:</strong> ${user.nationality}<br>
+                    <strong>Provincia:</strong> ${user.province}<br>
+                    <strong>Género:</strong> ${user.gender}<br>
                 </div>
-            `;
+
+                <div class="mt-3 d-flex justify-content-center gap-2">
+                    <a href="${editPage}" class="btn btn-sm btn-success">Editar Perfil</a>
+                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id_user}')">Desactivar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+`;
+
             container.innerHTML = userCardHTML;
 
             // 3️⃣ Si existe el formulario de edición, rellenamos los campos
