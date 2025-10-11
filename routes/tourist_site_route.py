@@ -1,6 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, jsonify, request
 from models.db import db
+# from models.feedBack import Feedback 
 from models.tourist_site import TouristSite
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
@@ -338,6 +339,65 @@ def update_tourist_site(current_user, id_tourist_site):
         db.session.rollback()
         return jsonify({'error': f'Error updating Tourist Site: {str(e)}'}), 500
 
+# --------------------------------------------------------------------------------- #
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>/reactivate', methods=['PUT']) #Endpoint para reactivar un sitio turistico.
+@role_required("admin")
+def reactivate_tourist_site(current_user, id_tourist_site):
+    tourist_site = TouristSite.query.get(id_tourist_site)
+
+    if not tourist_site:
+        return jsonify({'error': 'Tourist Site not found'}), 404
+
+    if tourist_site.is_activate:
+        return jsonify({'message': 'Tourist site is already active'}), 400
+
+    try:
+        tourist_site.is_activate = True
+        db.session.commit()
+        return jsonify({
+            'message': 'Tourist site reactivated successfully',
+            'tourist_site': tourist_site.serialize()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error reactivating Tourist Site: {str(e)}'}), 500
+
+# --------------------------------------------------------------------------------- # Endpoint para agregar un comentario a un sitio turistico.
+
+
+# @tourist_site.route('/api/tourist_sites/<id_tourist_site>/feedback', methods=['POST'])
+# @role_required("tourist")
+# def add_feedback(current_user, id_tourist_site):
+#     data = request.get_json()
+
+#     # Validar datos
+#     if not data or not data.get("comment"):
+#         return jsonify({"error": "El campo 'comment' es obligatorio"}), 400
+
+#     # Validar que el sitio exista
+#     tourist_site = TouristSite.query.get(id_tourist_site)
+#     if not tourist_site:
+#         return jsonify({"error": "El sitio turístico no existe"}), 404
+
+#     try:
+#         new_feedback = Feedback(
+#             id_user=current_user.id_user,
+#             id_tourist_site=id_tourist_site,
+#             comment=data["comment"].strip()
+#         )
+
+#         db.session.add(new_feedback)
+#         db.session.commit()
+
+#         return jsonify({
+#             "message": "Comentario agregado con éxito",
+#             "feedback": new_feedback.serialize()
+#         }), 201
+
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": f"Error al agregar comentario: {str(e)}"}), 500
 
 # -------------------------------------------------------------------------------- #
         # Rutas para renderizar las plantillas de los sitios turísticos.

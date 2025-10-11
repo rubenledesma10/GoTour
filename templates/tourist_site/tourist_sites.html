@@ -7,7 +7,7 @@
 
 
 <div class="container mt-4">
-    <h2 class="mb-4">Sitios Turísticos Creados</h2>
+    <h2 class="mb-4 mt-3">Sitios Turísticos Creados</h2>
 
     <h3 class="admin-only">¿Qué deseas hacer?</h3>
     <a href="/tourist_sites/add" class="btn btn-primary mb-2 admin-only">Agregar sitio turístico</a>
@@ -15,7 +15,7 @@
     <a href="/tourist_sites/delete" class="btn btn-danger mb-2 admin-only">Eliminar sitio turístico</a>
 
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
     {% for site in sites %}
     <div class="col">
         <div class="card h-100 shadow-sm border-0">
@@ -32,6 +32,14 @@
                 <div class="bg-light text-muted text-center py-5">Sin imagen</div>
             {% endif %}
             <div class="card-body">
+
+                <div class="comment-section tourist-only mt-3">
+                    <a href="/feedback/" class="btn btn-success btn-sm tourist-only">
+                        <i class="bi bi-chat-dots"></i> Comentar
+                    </a>
+
+                </div>
+
                 <h5 class="card-title text-primary">{{ site.name }}</h5>
                 
                     Descripcion:
@@ -60,16 +68,25 @@
                 </p>
             </div>
 
-            <div class="card-footer bg-transparent">
-                {% if site.url %}
-                    <a href="{{ site.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-box-arrow-up-right"></i> Ver sitio
-                    </a>
-                {% endif %}
+            <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                <div>
+                    {% if site.url %}
+                        <a href="{{ site.url }}" target="_blank" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="bi bi-box-arrow-up-right"></i> Ver sitio
+                        </a>
+                    {% endif %}
+                    
+                    {% if not site.is_activate %}
+                        <button class="btn btn-success btn-sm btn-reactivate admin-only" data-id="{{ site.id_tourist_site }}">
+                            <i class="bi bi-arrow-clockwise"></i> Reactivar
+                        </button>
+                    {% endif %}
+                </div>
+            
                 {% if site.is_activate %}
-                    <span class="badge bg-success float-end">Activo</span>
+                    <span class="badge bg-success">Activo</span>
                 {% else %}
-                    <span class="badge bg-secondary float-end">Inactivo</span>
+                    <span class="badge bg-secondary">Inactivo</span>
                 {% endif %}
             </div>
         </div>
