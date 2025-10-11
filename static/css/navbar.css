@@ -50,6 +50,20 @@
     margin-right: 0.5rem;
     margin-bottom: 0.25rem;
 }
+/* Botón Bitácora (verde moderno) */
+.navbar .btn-success {
+    background-color: #28a745; /* Verde moderno */
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.navbar .btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
 
 /* Ajuste en móviles: que los botones apilen verticalmente */
 @media (max-width: 991px) {

@@ -3,12 +3,14 @@ from flask import Blueprint, jsonify, request, render_template, redirect
 from flask import current_app as app
 from models.db import db
 from models.user import User
+from models.audit_log import AuditLog
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
 from utils.email_service import send_welcome_email, send_welcome_email_admin
 from utils.decorators import role_required
+from utils.utils import log_action
 import os, uuid
 
 #ACA VAN A ESTAR TODAS LAS RUTAS EN LAS QUE EL ADMINISTRADOR PUEDE ACCEDER
@@ -103,6 +105,7 @@ def add_user(current_user):
         db.session.add(new_user)
         db.session.commit()
         send_welcome_email_admin(new_user.email, new_user.username)
+        log_action(current_user.id_user, f"Created user {new_user.id_user}")
         return jsonify({
             'message':'User successfully created',
             'user': user_schema.dump(new_user)
@@ -178,6 +181,8 @@ def edit_user(current_user, id_user):
             else:
                 setattr(user, field, value)
 
+        log_action(current_user.id_user, f"Edited user {id_user}")
+
         db.session.commit()
         return jsonify({
             'message': 'User edited correctly',
@@ -219,6 +224,7 @@ def delete_user(current_user, id_user):
     try:
         user.is_activate = False  #eliminado lógico
         db.session.commit()
+        log_action(current_user.id_user, f"Deactivated user {id_user}")
         return jsonify({'message':'User deactivated successfully'}), 200
     except Exception as e:
         db.session.rollback()
@@ -238,11 +244,25 @@ def activate_user(current_user, id_user):
     try:
         user.is_activate = True  #reactivar usuario
         db.session.commit()
+        log_action(current_user.id_user, f"Activated user {id_user}")
         return jsonify({'message': 'User activated successfully'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
     
+@admin_bp.route('/audit-logs', methods=['GET'])
+def get_audit_logs():
+    logs = db.session.query(AuditLog, User.username)\
+    .join(User, AuditLog.user_id == User.id_user)\
+    .order_by(AuditLog.timestamp.desc()).all()
+    return jsonify([
+        {"id": log.AuditLog.id,
+        "user": log.username,
+        "action": log.AuditLog.action,
+        "timestamp": log.AuditLog.timestamp}
+        for log in logs
+    ])
+
 
 # @admin_bp.route('/get/tourists')
 # @role_required("admin")
@@ -267,3 +287,6 @@ def activate_user(current_user, id_user):
 #     if not tourists:
 #         return jsonify({'message':'There are not tourists deactivated'}),404
 #     return jsonify (users_schema.dump(tourists)),200
+@admin_bp.route("/audit-logs-page")
+def audit_logs_page():
+    return render_template("user/audit_logs.html")

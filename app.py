@@ -15,6 +15,7 @@ from routes.routes_cit import cit_bp
 from routes.feedBack_route import feedback_bp
 from models.user import User
 from models.tourist_site import TouristSite
+from utils.utils import log_action
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -72,6 +73,7 @@ with app.app_context():
     from models.touristinfo import TouristInfo
     from models.feedBack import feedBack
     from models.tourist_site import TouristSite
+    from models.audit_log import AuditLog
     db.create_all()
 
 if __name__ == '__main__':

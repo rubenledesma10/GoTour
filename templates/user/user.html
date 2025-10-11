@@ -36,13 +36,17 @@
     <!-- Contenedor de cards -->
     <div class="row" id="usersCardsContainer"></div>
 </div>
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-  <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div class="toast-body" id="toastMessage">Mensaje</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+<!-- Contenedor de toasts en la esquina superior derecha -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <!-- Toast normal / éxito -->
+    <div id="liveToastNormal" class="toast align-items-center border border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body" id="toastMessageNormal"></div>
     </div>
-  </div>
+
+    <!-- Toast de confirmación -->
+    <div id="liveToastConfirm" class="toast align-items-center border border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body" id="toastMessageConfirm"></div>
+    </div>
 </div>
 <script src="/static/admin.js"></script>
 {% include "scripts.html"%}

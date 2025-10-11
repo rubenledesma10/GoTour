@@ -1,7 +1,7 @@
 from models.db import db
 
 class TouristInfo(db.Model):
-    __tablename__ = 'touristInfo'
+    __tablename__ = 'touristinfo'
 
     id_turist = db.Column(db.Integer, primary_key=True)
     nationality = db.Column(db.String(50), nullable=False)

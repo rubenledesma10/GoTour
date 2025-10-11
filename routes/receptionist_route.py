@@ -8,6 +8,7 @@ from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from utils.decorators import role_required
+from utils.utils import log_action
 import random, string
 import os, uuid
 
@@ -124,6 +125,7 @@ def edit_my_data(current_user):
             elif hasattr(user, field): 
                  setattr(user, field, value)
 
+        log_action(user.id_user, "Updated their profile")
         db.session.commit()
         
         return jsonify({
