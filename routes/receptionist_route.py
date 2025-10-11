@@ -114,7 +114,16 @@ def edit_my_data(current_user):
 
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'error': 'The provided data (dni, email or username) already exists.'}), 400
+        if "email" in str(e.orig):
+            return jsonify({"error": "Email ya registrado"}), 400
+        elif "dni" in str(e.orig):
+            return jsonify({"error": "DNI ya registrado"}), 400
+        elif "username" in str(e.orig):
+            return jsonify({"error": "Nombre de usuario ya usado"}), 400
+        elif "phone" in str(e.orig):
+            return jsonify({"error": "Número de telefono ya usado"}), 400
+        else:
+            return jsonify({"error": "Ya existe un registro con estos datos"}), 400
     except Exception as e:
         db.session.rollback()
         print(f"Update error: {e}")

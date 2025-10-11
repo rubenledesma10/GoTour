@@ -1,96 +1,125 @@
 {% include "head.html" %}
 {% include "partials/navbar.html" %}
 
-<div class="container mt-4">
-    <h2 class="mb-4">Agregar nuevo integrante a la familia GoTour 😎</h2>
-    <form id="registerAdminForm" enctype="multipart/form-data">
-        <div class="mb-3">
+<div class="container mt-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4">
+      <h2 class="mb-4 text-center text-primary fw-bold">
+        👤 Agregar nuevo integrante a la familia GoTour 😎
+      </h2>
+
+      <form id="registerAdminForm" enctype="multipart/form-data">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="first_name" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="first_name_input" name="first_name"
-                placeholder="Ingrese su nombre" required minlength="2" maxlength="50">
-        </div>
-
-        <div class="mb-3">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="first_name" name="first_name"
+              placeholder="Ingrese su nombre" required minlength="2" maxlength="50">
+          </div>
+          <div class="col-md-6 mb-3">
             <label for="last_name" class="form-label">Apellido</label>
-            <input type="text" class="form-control" id="last_name_input" name="last_name"
-                placeholder="Ingrese su apellido" required minlength="2" maxlength="50">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="last_name" name="last_name"
+              placeholder="Ingrese su apellido" required minlength="2" maxlength="50">
+          </div>
         </div>
 
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="email" class="form-label">Correo electrónico</label>
-            <input type="email" class="form-control" id="email_input" name="email"
-                placeholder="ejemplo@correo.com" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="password" class="form-label">Contraseña</label>
-            <input type="password" class="form-control" id="password_input" name="password"
-                placeholder="Mínimo 6 caracteres" required minlength="6">
-        </div>
-
-        <div class="mb-3">
+            <input type="email" class="form-control rounded-3 shadow-sm" id="email" name="email"
+              placeholder="ejemplo@correo.com" required>
+          </div>
+          <div class="col-md-6 mb-3">
             <label for="username" class="form-label">Nombre de usuario</label>
-            <input type="text" class="form-control" id="username_input" name="username"
-                placeholder="Ingrese un nombre de usuario" required minlength="3">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="username" name="username"
+              placeholder="Ingrese un nombre de usuario" required minlength="3">
+          </div>
         </div>
 
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="dni" class="form-label">DNI</label>
-            <input type="text" class="form-control" id="dni_input" name="dni"
-                placeholder="Ingrese su DNI" required minlength="7" maxlength="20">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="dni" name="dni"
+              placeholder="Ingrese su DNI" required minlength="7" maxlength="20">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" class="form-control rounded-3 shadow-sm" id="password" name="password"
+              placeholder="Mínimo 6 caracteres" required minlength="6">
+          </div>
         </div>
 
-        <div class="mb-3">
-            <label for="birthdate" class="form-label">Fecha de nacimiento</label>
-            <input type="date" class="form-control" id="birthdate_input" name="birthdate" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="photo" class="form-label">Foto de perfil (opcional)</label>
-            <input class="form-control" type="file" id="photo_input" name="photo" accept="image/*">
-        </div>
-
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="phone" class="form-label">Teléfono</label>
-            <input type="tel" class="form-control" id="phone_input" name="phone"
-                placeholder="Ej: +54 9 261 1234567" required>
+            <input type="tel" class="form-control rounded-3 shadow-sm" id="phone" name="phone"
+              placeholder="Ej: +54 9 261 1234567" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="birthdate" class="form-label">Fecha de nacimiento</label>
+            <input type="date" class="form-control rounded-3 shadow-sm" id="birthdate" name="birthdate" required>
+          </div>
         </div>
 
         <div class="mb-3">
-            <label for="nationality" class="form-label">Nacionalidad</label>
-            <input type="text" class="form-control" id="nationality_input" name="nationality"
-                placeholder="Ingrese su nacionalidad" required>
+          <label for="countrySelect" class="form-label">País</label>
+          <select class="form-select rounded-3 shadow-sm" id="countrySelect" name="nationality" required>
+            <option value="" disabled selected>Seleccione un país</option>
+          </select>
         </div>
 
         <div class="mb-3">
-            <label for="province" class="form-label">Provincia</label>
-            <input type="text" class="form-control" id="province_input" name="province"
-                placeholder="Ingrese su provincia" required>
+          <label for="stateSelect" class="form-label">Provincia</label>
+          <select class="form-select rounded-3 shadow-sm" id="stateSelect" name="province" required>
+            <option value="" disabled selected>Seleccione una provincia</option>
+          </select>
         </div>
 
-        <div class="mb-3">
-            <label for="gender" class="form-label">Seleccione su género</label>
-            <select class="form-select" id="gender_input" name="gender" required>
-                <option value="" disabled selected>Seleccione una opción</option>
-                <option value="masculino">Masculino</option>
-                <option value="femenino">Femenino</option>
-                <option value="prefiero no decirlo">Prefiero no decirlo</option>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="gender" class="form-label">Género</label>
+            <select class="form-select rounded-3 shadow-sm" id="gender" name="gender" required>
+              <option value="" disabled selected>Seleccione una opción</option>
+              <option value="masculino">Masculino</option>
+              <option value="femenino">Femenino</option>
+              <option value="prefiero no decirlo">Prefiero no decirlo</option>
             </select>
-        </div>
+          </div>
 
-        <div class="mb-3">
-            <label for="role" class="form-label">Seleccione el rol</label>
-            <select class="form-select" id="role_input" name="role" required>
-                <option value="" disabled selected>Seleccione una opción</option>
-                <option value="admin">Administrador</option>
-                <option value="tourist">Turista</option>
-                <option value="receptionist">Recepcionista</option>
+          <div class="col-md-6 mb-3">
+            <label for="role" class="form-label">Rol</label>
+            <select class="form-select rounded-3 shadow-sm" id="role" name="role" required>
+              <option value="" disabled selected>Seleccione una opción</option>
+              <option value="admin">Administrador</option>
+              <option value="receptionist">Recepcionista</option>
+              <option value="tourist">Turista</option>
             </select>
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Registrar</button>
-        <a href="{{ url_for('admin_bp.users_page') }}" class="btn btn-secondary ms-2">Cancelar</a>
-    </form>
+        <div class="mb-4 text-center">
+          <label for="photo" class="form-label">Foto de perfil (opcional)</label><br>
+          <input class="form-control rounded-3 shadow-sm w-75 mx-auto" type="file" id="photo" name="photo" accept="image/*">
+        </div>
+
+        <div id="emailStatus" class="text-center mb-3 fw-bold" style="font-size: 1.1em;"></div>
+
+        <div class="d-flex justify-content-center gap-3">
+          <button type="submit" class="btn btn-success px-4 shadow-sm">Registrar</button>
+          <a href="{{ url_for('admin_bp.users_page') }}" class="btn btn-secondary px-4 shadow-sm">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Mensaje</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
 </div>
 
 <script src="/static/new_user_admin.js" defer></script>

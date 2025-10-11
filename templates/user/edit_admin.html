@@ -1,94 +1,130 @@
 {% include "head.html" %}
 {% include "partials/navbar.html" %}
 
-<div class="container mt-4">
-    <h2 class="mb-4">Editar Usuario</h2>
+<div class="container mt-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4">
+      <h2 class="mb-4 text-center text-primary fw-bold">Editar Usuario</h2>
 
-    <form id="editUserForm" data-user-id="{{ user.id_user }}" enctype="multipart/form-data">
+      <!-- ✅ Se agregan data-nationality y data-province -->
+      <form id="editUserForm"
+            data-user-id="{{ user.id_user }}"
+            data-nationality="{{ user.nationality }}"
+            data-province="{{ user.province }}"
+            enctype="multipart/form-data">
 
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="first_name" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="first_name" name="first_name" 
-                   value="{{ user.first_name }}" required minlength="2" maxlength="50">
-        </div>
-
-        <div class="mb-3">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="first_name" name="first_name"
+              value="{{ user.first_name }}" required minlength="2" maxlength="50">
+          </div>
+          <div class="col-md-6 mb-3">
             <label for="last_name" class="form-label">Apellido</label>
-            <input type="text" class="form-control" id="last_name" name="last_name" 
-                   value="{{ user.last_name }}" required minlength="2" maxlength="50">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="last_name" name="last_name"
+              value="{{ user.last_name }}" required minlength="2" maxlength="50">
+          </div>
         </div>
 
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="email" class="form-label">Correo electrónico</label>
-            <input type="email" class="form-control" id="email" name="email" 
-                   value="{{ user.email }}" required>
-        </div>
-
-        <div class="mb-3">
+            <input type="email" class="form-control rounded-3 shadow-sm" id="email" name="email"
+              value="{{ user.email }}" required>
+          </div>
+          <div class="col-md-6 mb-3">
             <label for="username" class="form-label">Nombre de usuario</label>
-            <input type="text" class="form-control" id="username" name="username" 
-                   value="{{ user.username }}" required minlength="3">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="username" name="username"
+              value="{{ user.username }}" required minlength="3">
+          </div>
         </div>
 
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="rol" class="form-label">Rol</label>
-            <select class="form-select" id="rol" name="role" required>
-                <option value="">Seleccione un rol</option>
-                <option value="admin" {% if user.role and user.role.lower() == 'admin' %}selected{% endif %}>Administrador</option>
-                <option value="tourist" {% if user.role and user.role.lower() == 'tourist' %}selected{% endif %}>Turista</option>
-                <option value="receptionist" {% if user.role and user.role.lower() == 'receptionist' %}selected{% endif %}>Recepcionista</option>
+            <select class="form-select rounded-3 shadow-sm" id="rol" name="role" required>
+              <option value="">Seleccione un rol</option>
+              <option value="admin" {% if user.role and user.role.lower() == 'admin' %}selected{% endif %}>Administrador</option>
+              <option value="tourist" {% if user.role and user.role.lower() == 'tourist' %}selected{% endif %}>Turista</option>
+              <option value="receptionist" {% if user.role and user.role.lower() == 'receptionist' %}selected{% endif %}>Recepcionista</option>
             </select>
-        </div>
+          </div>
 
-        <div class="mb-3">
+          <div class="col-md-6 mb-3">
             <label for="dni" class="form-label">DNI</label>
-            <input type="text" class="form-control" id="dni" name="dni" 
-                   value="{{ user.dni }}" required minlength="7" maxlength="20">
+            <input type="text" class="form-control rounded-3 shadow-sm" id="dni" name="dni"
+              value="{{ user.dni }}" required minlength="7" maxlength="20">
+          </div>
         </div>
 
-        <input type="date" class="form-control" id="birthdate" name="birthdate" 
-       value="{{ user.birthdate }}">
-
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="birthdate" class="form-label">Fecha de nacimiento</label>
+            <input type="date" class="form-control rounded-3 shadow-sm" id="birthdate" name="birthdate"
+              value="{{ user.birthdate }}">
+          </div>
+          <div class="col-md-6 mb-3">
             <label for="age" class="form-label">Edad</label>
-            <input type="text" id="age" class="form-control" value="{{ user.age }}" disabled>
+            <input type="text" id="age" class="form-control rounded-3 shadow-sm bg-light" 
+              value="{{ user.age }}" disabled>
+          </div>
         </div>
 
-
-        <div class="mb-3">
-            <label for="photo" class="form-label">Foto de perfil</label><br>
-            {% if user.photo and user.photo|length > 0 %}
-                <img src="/static/uploads/{{ user.photo }}" alt="Foto de perfil" width="100" class="mb-2">
-            {% else %}
-                <small class="text-muted">No tiene foto de perfil</small>
-            {% endif %}
-            <input class="form-control" type="file" id="photo" name="photo" accept="image/*">
+        <div class="mb-4 text-center">
+          <label for="photo" class="form-label">Foto de perfil</label><br>
+          {% if user.photo and user.photo|length > 0 %}
+            <img src="/static/uploads/{{ user.photo }}" alt="Foto de perfil"
+                 class="rounded-circle shadow-sm mb-3" width="120" height="120" style="object-fit: cover;">
+          {% else %}
+            <p class="text-muted fst-italic">No tiene foto de perfil</p>
+          {% endif %}
+          <input class="form-control rounded-3 shadow-sm mt-2" type="file" id="photo" name="photo" accept="image/*">
         </div>
 
-        <div class="mb-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
             <label for="phone" class="form-label">Teléfono</label>
-            <input type="tel" class="form-control" id="phone" name="phone" 
-                   value="{{ user.phone }}">
-        </div>
+            <input type="tel" class="form-control rounded-3 shadow-sm" id="phone" name="phone"
+              value="{{ user.phone }}">
+          </div>
 
-        <div class="mb-3">
+          <div class="col-md-6 mb-3">
             <label for="nationality" class="form-label">Nacionalidad</label>
-            <input type="text" class="form-control" id="nationality" name="nationality" 
-                   value="{{ user.nationality }}">
+            <select class="form-select rounded-3 shadow-sm" id="nationality" name="nationality" required>
+              <option value="" disabled>Seleccione un país</option>
+              <!-- Opciones se llenan desde JS -->
+            </select>
+          </div>
         </div>
 
-        <div class="mb-3">
-            <label for="province" class="form-label">Provincia</label>
-            <input type="text" class="form-control" id="province" name="province" 
-                   value="{{ user.province }}">
+        <div class="col-md-6 mb-3">
+          <label for="province" class="form-label">Provincia</label>
+          <select class="form-select rounded-3 shadow-sm" id="province" name="province" required>
+            <option value="" disabled>Seleccione una provincia</option>
+            <!-- Opciones se llenan desde JS -->
+          </select>
         </div>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-success">Guardar cambios</button>
-            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
+        <div class="d-flex justify-content-center gap-3">
+          <button type="submit" class="btn btn-success px-4 shadow-sm">💾 Guardar cambios</button>
+          <button type="button" class="btn btn-secondary px-4 shadow-sm" onclick="window.history.back()">Cancelar</button>
         </div>
-    </form>
+      </form>
+    </div>
+  </div>
 </div>
 
+<!-- Toast para mensajes -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Mensaje</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Tu script corregido -->
 <script src="/static/edit_user_admin.js" defer></script>
+
 {% include "scripts.html" %}

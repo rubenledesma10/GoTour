@@ -61,7 +61,16 @@ def add_user(current_user):
     #todos los campos de texto vienen en request.form y no en get_json
     data = request.form.to_dict() #convierte los datos enviados  en un diccionario
     file = request.files.get("photo")  #obtenemos la foto si se subio un archivo
+    
+        # Limpiamos el DNI: quitamos puntos, guiones y espacios
+    dni = data.get('dni', '').replace('.', '').replace('-', '').replace(' ', '')
 
+    # Validamos que solo contenga números
+    if not dni.isdigit():
+        return jsonify({"error": "DNI inválido, solo números"}), 400
+
+    # Reemplazamos el valor limpio en data
+    data['dni'] = dni
     #aca guardamos la foto en el servidir (nuestro proyecto)
     photo_filename = None
     if file:
@@ -104,7 +113,17 @@ def add_user(current_user):
         return jsonify({'error':'Invalid data type'}), 400
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+        db.session.rollback()
+        if "email" in str(e.orig):
+            return jsonify({"error": "Email ya registrado"}), 400
+        elif "dni" in str(e.orig):
+            return jsonify({"error": "DNI ya registrado"}), 400
+        elif "username" in str(e.orig):
+            return jsonify({"error": "Nombre de usuario ya usado"}), 400
+        elif "phone" in str(e.orig):
+            return jsonify({"error": "Número de telefono ya usado"}), 400
+        else:
+            return jsonify({"error": "Ya existe un registro con estos datos"}), 400
     except Exception as e:
         db.session.rollback()
         print(f"Unexpected error: {e}")
@@ -167,7 +186,16 @@ def edit_user(current_user, id_user):
 
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+        if "email" in str(e.orig):
+            return jsonify({"error": "Email ya registrado"}), 400
+        elif "dni" in str(e.orig):
+            return jsonify({"error": "DNI ya registrado"}), 400
+        elif "username" in str(e.orig):
+            return jsonify({"error": "Nombre de usuario ya usado"}), 400
+        elif "phone" in str(e.orig):
+            return jsonify({"error": "Número de telefono ya usado"}), 400
+        else:
+            return jsonify({"error": "Ya existe un registro con estos datos"}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

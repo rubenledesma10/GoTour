@@ -9,7 +9,7 @@ from schemas.user_register_schema import user_schema #aca traemos la instancia q
 from schemas.user_login_schema import user_login_schema
 from marshmallow import Schema, fields, ValidationError
 import jwt 
-from utils.email_service import send_welcome_email, send_reset_password_email
+from utils.email_service import send_welcome_email, send_reset_password_email, send_reactivated_email
 import random, string
 import os, uuid
 
@@ -158,8 +158,7 @@ def reactivate_account_post():
     db.session.commit()
 
     
-    send_welcome_email(user.email, user.username) #enviar email de bienvenida + nueva contraseña
-    send_reset_password_email(user.email, new_password)
+    send_reactivated_email(user.email,new_password )
     
     return jsonify({"message": "Your account has been reactivated. Check your email for the new password."}), 200
 
