@@ -14,7 +14,6 @@
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="/">Inicio</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">CIT</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{url_for('feedback_bp.get_feedback_view')}}">Comentarios</a>
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">Sitios turisticos</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('about') }}">Acerca de GoTour</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('tourist_site.tourist_sites_view') }}">Sitios turisticos</a>
                     <!--privados para administrador-->
@@ -23,6 +22,7 @@
                 <div class="ms-auto d-flex align-items-center gap-2">
                 <!--privados para turista y recepcionista que se loguea-->
                     <a class="btn btn-warning btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Usuarios</a>
+                    <a class="btn btn-warning btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Bitacora</a>
                 <a id="myDataBtn" class="btn btn-warning btn-sm px-3 py-2 d-none">
                 Mis datos
                 </a>
