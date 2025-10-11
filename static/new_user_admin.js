@@ -78,13 +78,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  
+
   // === FORMULARIO DE REGISTRO ADMIN ===
   const registerAdminForm = document.getElementById("registerAdminForm");
   if (!registerAdminForm) return;
 
   registerAdminForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+     const password = document.getElementById("password").value;
+    const passwordRepeat = document.getElementById("password_repeat").value;
+    const passwordMsg = document.getElementById("passwordMatchMsg");
+
+    if (password !== passwordRepeat) {
+      passwordMsg.classList.remove("d-none");
+      return; // No enviamos el formulario
+    } else {
+      passwordMsg.classList.add("d-none");
+    }
     const formData = new FormData(registerAdminForm);
+    formData.delete("password_repeat")
     const statusEl = document.getElementById("emailStatus");
 
     if (statusEl) {

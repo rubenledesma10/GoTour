@@ -74,9 +74,21 @@
           </select>
         </div>
 
+        <!-- Campos de contraseña -->
         <div class="mb-3">
-          <label for="password" class="form-label">Nueva contraseña (opcional)</label>
-          <input type="password" class="form-control rounded-3 shadow-sm" id="password" name="password" minlength="6">
+          <label for="current_password" class="form-label">Contraseña actual</label>
+          <input type="password" class="form-control" id="current_password" name="current_password">
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Nueva contraseña</label>
+          <input type="password" class="form-control" id="password" name="password" minlength="6">
+        </div>
+
+        <div class="mb-3">
+          <label for="repeat_password" class="form-label">Repetir nueva contraseña</label>
+          <input type="password" class="form-control" id="repeat_password" name="repeat_password" minlength="6">
+          <div id="passwordMatchMsg" class="text-danger d-none">Las contraseñas no coinciden</div>
         </div>
 
         <div class="mb-4 text-center">

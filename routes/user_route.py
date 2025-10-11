@@ -29,6 +29,16 @@ def register_user():
     data = request.form.to_dict() #convierte los datos enviados  en un diccionario
     file = request.files.get("photo")  #obtenemos la foto si se subio un archivo
 
+     # Limpiamos el DNI: quitamos puntos, guiones y espacios
+    dni = data.get('dni', '').replace('.', '').replace('-', '').replace(' ', '')
+
+    # Validamos que solo contenga números
+    if not dni.isdigit():
+        return jsonify({"error": "DNI inválido, solo números"}), 400
+
+    # Reemplazamos el valor limpio en data
+    data['dni'] = dni
+
     #aca guardamos la foto en el servidir (nuestro proyecto)
     photo_filename = None
     if file:
@@ -40,7 +50,11 @@ def register_user():
     try:
         validated_data = user_schema.load(data) #valida que los datos tengan el formato correcto
     except ValidationError as err:
-        return jsonify(err.messages), 400
+        errors = []
+        for field, msgs in err.messages.items():
+            errors.append(f"{field}: {msgs.join(', ')}")
+        return jsonify({"error": errors.join(' | ')}), 400
+
 
     user = User(
         first_name=validated_data['first_name'],

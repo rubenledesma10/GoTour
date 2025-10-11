@@ -70,7 +70,26 @@ def edit_my_data(current_user):
     # Obtener datos de texto y archivo de FormData
     data = request.form.to_dict()
     file = request.files.get("photo")
+    current_password = data.pop("current_password", None)
+    new_password = data.get("password")
+    if new_password: # El campo 'Nueva contraseña' fue llenado, implica intento de cambio.
+        
+        # 2a. Verificar si el usuario proporcionó la contraseña actual
+        if not current_password:
+             # Este error se evita mayormente en el frontend, pero la validación en el backend es obligatoria.
+            return jsonify({"error": "Debe ingresar la contraseña actual para cambiarla."}), 400
 
+        # 2b. Verificar la contraseña actual contra el hash almacenado
+        # ASUMIMOS que user.check_password() está implementado en tu modelo User (por ejemplo, usando Werkzeug o bcrypt)
+        if not user.check_password(current_password):
+            # Este es el error 400 más probable si el usuario se equivocó al escribir su contraseña actual.
+            return jsonify({"error": "La contraseña actual ingresada es incorrecta."}), 400
+            
+    else:
+        # Si NO hay nueva contraseña, aseguramos que el campo 'password' no llegue a Marshmallow 
+        # con un valor vacío, lo que podría generar un error de validación o actualizarlo a None.
+        if "password" in data:
+            data.pop("password")
     try:
         # 2. Validar datos de texto con Marshmallow
         validated_data = user_schema.load(data, partial=True)

@@ -68,9 +68,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (registerForm) {
         registerForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const formData = new FormData(registerForm);
-            formData.set("role", "tourist");
+
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm_password").value;
             const statusEl = document.getElementById("emailStatus");
+
+            if (password !== confirmPassword) {
+                if (statusEl) {
+                    statusEl.innerText = "Las contraseñas no coinciden ❌";
+                    statusEl.style.color = "red";
+                }
+                return; // no enviar el formulario
+            }
+            const formData = new FormData(registerForm);
+            formData.delete("confirm_password");
+            formData.set("role", "tourist");
             if (statusEl) {
                 statusEl.innerText = "Enviando correo...";
                 statusEl.style.color = "orange";
@@ -80,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     method: "POST",
                     body: formData
                 });
-                
+
                 const result = await res.json();
                 if (res.ok) {
                     if (statusEl) {

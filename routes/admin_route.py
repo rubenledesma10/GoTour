@@ -7,7 +7,7 @@ from datetime import datetime, date
 from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
-from utils.email_service import send_welcome_email
+from utils.email_service import send_welcome_email, send_welcome_email_admin
 from utils.decorators import role_required
 import os, uuid
 
@@ -102,7 +102,7 @@ def add_user(current_user):
         )
         db.session.add(new_user)
         db.session.commit()
-        send_welcome_email(new_user.email, new_user.username)
+        send_welcome_email_admin(new_user.email, new_user.username)
         return jsonify({
             'message':'User successfully created',
             'user': user_schema.dump(new_user)

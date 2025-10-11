@@ -11,6 +11,15 @@ def send_welcome_email(to_email, username):
     msg.body = f"Hola {username}, gracias por registrarte en GoTour!"
     mail.send(msg)
 
+def send_welcome_email_admin(to_email, username):
+    msg = Message(
+        subject="Bienvenido a GoTour 🎉",
+        sender=current_app.config['MAIL_USERNAME'],
+        recipients=[to_email]
+    )
+    msg.body = f"Hola {username}, gracias por registrarte en GoTour! Recuerda que tu contraseña es la misma que tu DNI. Recuerda cambiarla!"
+    mail.send(msg)
+
 def send_reset_password_email(to_email, new_password):
     msg = Message(
         subject="Recuperación de contraseña - GoTour 🔑",

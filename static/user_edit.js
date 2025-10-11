@@ -26,6 +26,21 @@ function showToastReload(message, redirectUrl = null) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+    // --- TOGGLE PASSWORD ---
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener("click", () => {
+            const type = passwordInput.type === "password" ? "text" : "password";
+            passwordInput.type = type;
+            togglePassword.innerHTML = type === "password"
+                ? '<i class="bi bi-eye fs-5"></i>'
+                : '<i class="bi bi-eye-slash fs-5"></i>';
+        });
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/";
@@ -40,6 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const form = document.getElementById("editUserForm");
     const nationalitySelect = document.getElementById("nationality");
     const provinceSelect = document.getElementById("province");
+    const passwordMsg = document.getElementById("passwordMatchMsg");
 
     // Cargar JSON de países
     const countriesData = await fetch("/static/countries+states.json").then(res => res.json());
@@ -57,14 +73,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         provinceSelect.innerHTML = '<option value="" disabled>Seleccione una provincia</option>';
         const country = countriesData.find(c => c.name === countryName);
         if (!country) return;
-
         country.states.forEach(state => {
             const option = document.createElement("option");
             option.value = state;
             option.textContent = state;
             provinceSelect.appendChild(option);
         });
-
         if (selectedProvince) provinceSelect.value = selectedProvince;
     }
 
@@ -81,7 +95,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     form.gender.value = user.gender || "";
     form.age.value = user.age || "";
 
-    // Nacionalidad + provincia
     if (user.nationality) {
         nationalitySelect.value = user.nationality;
         fillProvinces(user.nationality, user.province);
@@ -91,28 +104,85 @@ document.addEventListener("DOMContentLoaded", async () => {
         form.email.setAttribute("disabled", "true");
     }
 
-    // Cambiar provincias al cambiar país
     nationalitySelect.addEventListener("change", () => fillProvinces(nationalitySelect.value));
 
     // Envío del formulario
-    form.addEventListener("submit", async e => {
-        e.preventDefault();
+ // Envío del formulario
+form.addEventListener("submit", async e => {
+    e.preventDefault();
 
-        const formData = new FormData(form);
-        if (!formData.get("password")) formData.delete("password");
+    const currentPassword = document.getElementById("current_password")?.value;
+    const newPassword = document.getElementById("password")?.value;
+    const repeatPassword = document.getElementById("repeat_password")?.value;
+    
+    // Crear FormData solo con campos válidos
+    const formData = new FormData(form);
 
+    // Lógica para el cambio de contraseña
+    if (newPassword || repeatPassword || currentPassword) {
+        // Al menos uno de los campos de contraseña está siendo tocado
+        
+        // 1. Validar que se ingrese la contraseña actual
+        if (!currentPassword) {
+            showToastReload("Debe ingresar la **contraseña actual** para cambiarla.");
+            return;
+        }
+
+        // 2. Validar que la nueva contraseña y su repetición estén presentes
+        if (!newPassword || !repeatPassword) {
+            showToastReload("Debe ingresar la **nueva contraseña** y **repetirla**.");
+            return;
+        }
+
+        // 3. Validar que la nueva contraseña coincida con la repetición
+        if (newPassword !== repeatPassword) {
+            passwordMsg.classList.remove("d-none"); // Muestra el mensaje de error
+            return;
+        } else {
+            passwordMsg.classList.add("d-none"); // Oculta el mensaje si coinciden
+        }
+
+        // Si todas las validaciones pasan, se incluye 'password' y 'current_password' en formData.
+        // formData ya contiene 'current_password', 'password' y 'repeat_password' de la estructura del formulario.
+        // Solo necesitamos eliminar 'repeat_password'.
+        formData.delete("repeat_password");
+
+        // Nota: El backend será el encargado de validar si 'current_password' es correcta.
+
+    } else {
+        // NO se está cambiando la contraseña, solo otros datos.
+        
+        // Eliminamos todos los campos relacionados con la contraseña para que el backend NO intente procesarlos.
+        formData.delete("current_password");
+        formData.delete("password");
+        formData.delete("repeat_password");
+        
+        // Importante: Si el campo 'password' está vacío, algunos frameworks de backend pueden
+        // intentar establecer un hash de una cadena vacía, lo cual no es lo deseado.
+        // Asegurémonos de que solo se envíen si hay un valor válido.
+    }
+
+    try {
         const res = await fetch(editEndpoint, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` },
             body: formData
         });
-
         const data = await res.json();
+
         if (!res.ok || data.error) {
-            showToastReload("Error: " + (data.error || "No se pudo actualizar"));
+            // Manejo de error específico si el backend indica que la contraseña actual es incorrecta
+            if (data.error && data.error.includes("contraseña actual")) {
+                showToastReload("Error: La **contraseña actual** ingresada es incorrecta.");
+            } else {
+                showToastReload("Error: " + (data.error || "No se pudo actualizar."));
+            }
         } else {
+            // Redirección o recarga tras el éxito.
             showToastReload("Perfil actualizado correctamente ✅", usersPage);
         }
-
-    });
+    } catch (error) {
+        showToastReload("Error de conexión: " + error.message);
+    }
+});
 });
