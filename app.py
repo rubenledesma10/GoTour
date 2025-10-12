@@ -10,7 +10,7 @@ from routes.admin_route import admin_bp
 from routes.tourist_route import tourist_bp
 from routes.receptionist_route import recepcionist_bp
 from routes.tourist_site_route import tourist_site
-from routes.routes_touristinfo import touristinfo_bp
+from routes.routes_admin_touristinfo import touristinfo_bp
 from routes.routes_cit import cit_bp
 from routes.feedBack_route import feedback_bp
 from models.user import User
