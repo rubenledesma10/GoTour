@@ -39,15 +39,6 @@ app.register_blueprint(touristinfo_bp)
 app.register_blueprint(cit_bp)
 #app.register_blueprint(feedback_bp)
 
-# Login Manager
-# login_manager = LoginManager()
-# login_manager.init_app(app)
-# login_manager.login_view = "user_bp.login"
-
-# @login_manager.user_loader
-# def load_user(user_id):
-#     return User.query.get(user_id)
-
 # Rutas
 @app.route("/")
 def home():
@@ -58,16 +49,6 @@ def home():
 @app.route('/about')
 def about():
     return render_template('about.html')
-
-
-# @app.route("/feedback")
-# def feedback_page():
-#     """Página de comentarios (pública: cualquiera puede ver).
-#        Solo los logueados podrán comentar (lo valida el backend)."""
-#     sites = TouristSite.query.all()
-#     return render_template("feedBack/usuario.html", sites=sites)
-
-
 
 
 # Crear tablas si no existen

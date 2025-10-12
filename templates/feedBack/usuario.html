@@ -1,264 +1,375 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoTour - Feedback</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoTour - Feedback</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+  
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <img src="{{ url_for('static', filename='images/logo_2.png') }}" alt="GoTour" width="80" height="50">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
-                    <a class="nav-link active" href="/">Inicio</a>
-                    <a class="nav-link" href="#" onclick="event.preventDefault();">CIT</a>
-                    <a class="nav-link" href="/feedback">Comentarios</a>
-                    <a class="nav-link" href="#" onclick="event.preventDefault();">Sitios turísticos</a>
-                    <a class="nav-link" href="#" onclick="event.preventDefault();">Acerca de GoTour</a>
-                </div>
-                <span class="navbar-text ms-auto">
-                    <a id="authButton" class="btn">
-                        Registrarse/Iniciar Sesión
-                    </a>
-                </span>
-            </div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">
+        <img src="{{ url_for('static', filename='images/logo_2.png') }}" alt="GoTour" width="80" height="50">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-link active" href="/">Inicio</a>
+          <a class="nav-link" href="{{ url_for('feedback_bp.feedback_view') }}">Comentarios</a>
         </div>
-    </nav>
-
-    <!-- Contenido -->
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">Feedback</h1>
-
-        <!-- Formulario de Feedback (solo usuario logueado NO admin) -->
-        <div id="feedbackFormCard" class="card shadow-sm mb-4 d-none">
-            <div class="card-body">
-                <h5 class="mb-3">Dejá tu comentario</h5>
-                <form id="feedbackForm">
-                    <div class="mb-3">
-                        <label for="touristSiteId" class="form-label">Lugar Turístico</label>
-                        <select id="touristSiteId" class="form-control" required>
-                            <option value="">-- Selecciona un sitio --</option>
-                            {% for s in sites %}
-                            <option value="{{ s.id_tourist_site }}">{{ s.name }} - {{ s.description }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="qualification" class="form-label">Calificación (1-5)</label>
-                        <input type="number" id="qualification" class="form-control" min="1" max="5" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="comment" class="form-label">Comentario</label>
-                        <textarea id="comment" class="form-control" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Usuario</label>
-                        <input type="text" class="form-control" value="{{ current_user.first_name }} {{ current_user.last_name }}" readonly>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Enviar</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Lista de feedbacks -->
-        <h2 class="mb-3">Últimos comentarios</h2>
-        <div class="row row-cols-1 row-cols-md-2 g-4" id="latestFeedbacks"></div>
+        <span class="navbar-text ms-auto">
+          <a id="authButton" class="btn"></a>
+        </span>
+      </div>
     </div>
+  </nav>
 
-    <!-- Modal edición (solo admin) -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Editar Feedback</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <!-- Contenido -->
+  <div class="container mt-4">
+    <h1 class="text-center mb-4">Feedback</h1>
+
+    <!-- Formulario de Feedback -->
+    <div id="feedbackFormCard" class="card shadow-sm mb-4 d-none">
+      <div class="card-body">
+        <h5 class="mb-3">Dejá tu comentario</h5>
+        <form id="feedbackForm">
+          <div class="mb-3">
+            <label for="touristSiteId" class="form-label">Lugar Turístico</label>
+            <select id="touristSiteId" class="form-control" required>
+              <option value="">-- Selecciona un sitio --</option>
+              {% for s in sites %}
+              <option value="{{ s.id_tourist_site }}">{{ s.name }} - {{ s.description }}</option>
+              {% endfor %}
+            </select>
           </div>
-          <div class="modal-body">
-            <form id="editForm">
-              <input type="hidden" id="editId">
-              <div class="mb-3">
-                <label for="editComment" class="form-label">Comentario</label>
-                <textarea id="editComment" class="form-control"></textarea>
-              </div>
-              <div class="mb-3">
-                <label for="editQualification" class="form-label">Calificación</label>
-                <input type="number" id="editQualification" min="1" max="5" class="form-control" required>
-              </div>
-              <button type="submit" class="btn btn-primary">Guardar cambios</button>
-            </form>
+          <div class="mb-3">
+            <label for="qualification" class="form-label">Calificación (1-5)</label>
+            <input type="number" id="qualification" class="form-control" min="1" max="5" required>
           </div>
-        </div>
+          <div class="mb-3">
+            <label for="comment" class="form-label">Comentario</label>
+            <textarea id="comment" class="form-control" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="photos" class="form-label">Subí tus fotos</label>
+            <input type="file" id="photos" class="form-control" accept="image/*" multiple>
+            <small class="text-muted">Podés seleccionar hasta 10 imágenes.</small>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Promedio general -->
+    <h2 class="mb-3">Últimos comentarios</h2>
+    <div id="avgRating" class="avg-rating">⭐ Promedio general: - / 5</div>
+    <div class="row row-cols-1 row-cols-md-2 g-4" id="latestFeedbacks"></div>
+  </div>
 
-    <script>
-        const API_URL = "/api/feedback";
-        const userRole = localStorage.getItem("role");
-        const username = localStorage.getItem("username");
-        const token = localStorage.getItem("access_token");
-        const role = (userRole || "").toUpperCase();
+  <!-- Modal edición -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Feedback</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm">
+            <input type="hidden" id="editId">
+            <div class="mb-3">
+              <label for="editComment" class="form-label">Comentario</label>
+              <textarea id="editComment" class="form-control"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editQualification" class="form-label">Calificación</label>
+              <input type="number" id="editQualification" min="1" max="5" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // Mostrar formulario solo si es usuario (no admin) y está logueado
-        if (token && role !== "ADMIN") {
-            document.getElementById("feedbackFormCard").classList.remove("d-none");
-        }
+  <!-- Modal respuesta -->
+  <div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Responder al Comentario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="replyForm">
+            <input type="hidden" id="replyId">
+            <div class="mb-3">
+              <label class="form-label">Comentario del Usuario</label>
+              <textarea id="replyOriginalComment" class="form-control" readonly></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="adminResponse" class="form-label">Tu Respuesta</label>
+              <textarea id="adminResponse" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // Navbar login/logout corregido ✅
-        const authButton = document.getElementById("authButton");
-        if (username && token) {
-            authButton.textContent = `Cerrar Sesión (${username})`;
-            authButton.classList.add("btn-danger");
-            authButton.href = "/api/gotour/logout"; // 👉 logout real
-            authButton.onclick = () => {
-                localStorage.clear();
-            };
+  <!-- 🖼️ Modal para ampliar imágenes -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0">
+        <img id="modalImage" src="" class="img-fluid rounded shadow" alt="Foto feedback ampliada">
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_URL = "/api/feedback";
+    const userRole = localStorage.getItem("role");
+    const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
+    const role = (userRole || "").toUpperCase();
+
+    if (token && role !== "ADMIN") {
+      document.getElementById("feedbackFormCard").classList.remove("d-none");
+    }
+
+    const authButton = document.getElementById("authButton");
+    if (username && token) {
+      authButton.textContent = `Cerrar Sesión (${username})`;
+      authButton.classList.add("btn-danger");
+      authButton.href = "#";
+      authButton.onclick = () => {
+        localStorage.clear();
+        window.location.href = "/";
+      };
+    } else {
+      authButton.textContent = "Registrarse/Iniciar Sesión";
+      authButton.classList.add("btn-warning");
+      authButton.href = "/api/gotour/login";
+    }
+
+    function renderStars(qualification) {
+      return "⭐".repeat(qualification) + "☆".repeat(5 - qualification);
+    }
+
+    function calcularPromedio(data) {
+      if (!data.length) return 0;
+      const promedio = data.reduce((a, b) => a + b.qualification, 0) / data.length;
+      return promedio.toFixed(1);
+    }
+
+    async function loadFeedbacks() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        const avg = calcularPromedio(data);
+        const avgElement = document.getElementById("avgRating");
+        avgElement.innerText = `⭐ Promedio general: ${avg} / 5`;
+        avgElement.style.color = avg >= 4 ? "green" : avg >= 2.5 ? "orange" : "red";
+
+        const container = document.getElementById("latestFeedbacks");
+        container.innerHTML = "";
+
+        data.forEach(f => {
+          const card = document.createElement("div");
+          card.className = "col";
+          card.innerHTML = `
+            <div class="card shadow-sm border-0">
+              <div class="card-body">
+                <div class="feedback-header">
+                  <img src="${f.user?.photo 
+                  ? `/static/uploads/${f.user.photo}` 
+                  : '/static/uploads/default_user.png'}" 
+                  alt="usuario" class="profile-photo">
+                  <div>
+                    <strong>${f.user?.username || "Usuario"}</strong><br>
+                    <small class="text-muted">📍 ${f.tourist_site?.name || "Sitio"}</small>
+                  </div>
+                </div>
+
+                <h5 class="card-title mt-2">${renderStars(f.qualification)}</h5>
+                <p class="card-text">${f.comment}</p>
+
+                ${f.photos && f.photos.length ? `
+                  <div class="feedback-photos">
+                    ${f.photos.map(p => `<img src="${p.url}" alt="foto feedback" onclick="openImageModal('${p.url}')">`).join('')}
+                  </div>
+                ` : ""}
+
+                <div class="text-end text-muted small mb-2">
+                  <span>📅 ${f.date_hour ? new Date(f.date_hour).toLocaleDateString() : ""}</span>
+                </div>
+
+                ${f.admin_response ? `
+                  <div class="admin-reply">
+                    <div class="feedback-header">
+                      <img src="${f.admin_photo 
+                      ? `/static/uploads/${f.admin_photo}` 
+                      : '/static/uploads/default_user.png'}" 
+                      alt="admin" class="profile-photo">
+                      <div>
+                        <strong>${f.admin_name ? f.admin_name : "Administrador"}</strong><br>
+                        <small class="text-muted">${f.response_date ? new Date(f.response_date).toLocaleString() : ""}</small>
+                      </div>
+                    </div>
+                    <p class="mb-0">${f.admin_response}</p>
+                  </div>
+                ` : ""}
+
+                ${role === "ADMIN" ? `
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-success me-2" onclick="openEditModal('${f.id_feedback}', \`${f.comment}\`, ${f.qualification})">Editar</button>
+                    <button class="btn btn-sm btn-danger me-2" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button>
+                    <button class="btn btn-sm btn-primary" onclick="openReplyModal('${f.id_feedback}', \`${f.comment}\`)">Responder</button>
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Error cargando feedbacks:", err);
+      }
+    }
+
+    function openImageModal(url) {
+      const img = document.getElementById("modalImage");
+      img.src = url;
+      const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+      modal.show();
+    }
+
+    window.openEditModal = function(id, comment, qualification) {
+      document.getElementById("editId").value = id;
+      document.getElementById("editComment").value = comment;
+      document.getElementById("editQualification").value = qualification;
+      new bootstrap.Modal(document.getElementById("editModal")).show();
+    };
+
+    window.openReplyModal = function(id, comment) {
+      document.getElementById("replyId").value = id;
+      document.getElementById("replyOriginalComment").value = comment;
+      document.getElementById("adminResponse").value = "";
+      new bootstrap.Modal(document.getElementById("replyModal")).show();
+    };
+
+    document.getElementById("editForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("editId").value;
+      const payload = {
+        comment: document.getElementById("editComment").value.trim(),
+        qualification: Number(document.getElementById("editQualification").value)
+      };
+      try {
+        const res = await fetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { "Authorization": "Bearer " + token } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+          loadFeedbacks();
         } else {
-            authButton.textContent = "Registrarse/Iniciar Sesión";
-            authButton.classList.add("btn-warning");
-            authButton.href = "/api/gotour/login"; // 👉 login real
+          const err = await res.json();
+          alert("Error: " + (err.error || "No se pudo actualizar"));
         }
+      } catch (err) {
+        console.error("Error actualizando feedback:", err);
+      }
+    });
 
-        function renderStars(qualification) {
-            let stars = "";
-            for (let i = 0; i < qualification; i++) stars += "⭐";
-            for (let i = qualification; i < 5; i++) stars += "☆";
-            return stars;
-        }
+    document.getElementById("replyForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("replyId").value;
+      const response = document.getElementById("adminResponse").value.trim();
+      if (!response) return alert("La respuesta no puede estar vacía.");
 
-        async function loadFeedbacks() {
-            try {
-                const res = await fetch(API_URL, { credentials: "include" });
-                const data = await res.json();
-                const container = document.getElementById("latestFeedbacks");
-                container.innerHTML = "";
-
-                data.forEach(f => {
-                    const card = document.createElement("div");
-                    card.className = "col";
-                    card.innerHTML = `
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="card-title">${renderStars(f.qualification)}</h5>
-                                <p class="card-text">${f.comment}</p>
-                                <div class="d-flex justify-content-between text-muted small">
-                                    <span>👤 ${f.user?.username || "Usuario"}</span>
-                                    <span>📍 ${f.tourist_site?.name || "Sitio"}</span>
-                                    <span>📅 ${f.date_hour ? new Date(f.date_hour).toLocaleDateString() : ""}</span>
-                                </div>
-                                ${role === "ADMIN" ? `
-                                  <div class="mt-2">
-                                    <button class="btn btn-sm btn-success me-2" onclick="openEditModal('${f.id_feedback}', \`${f.comment}\`, ${f.qualification})">Editar</button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button>
-                                  </div>
-                                ` : ""}
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                console.error("Error cargando feedbacks:", err);
-            }
-        }
-
-        // Form enviar feedback
-        document.getElementById("feedbackForm")?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const touristSiteValue = document.getElementById("touristSiteId").value;
-            const newFeedback = {
-                comment: document.getElementById("comment").value.trim(),
-                qualification: Number(document.getElementById("qualification").value),
-                id_tourist_site: touristSiteValue || null
-            };
-
-            try {
-                await fetch(API_URL, {
-                    method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json",
-                        ...(token ? { "Authorization": "Bearer " + token } : {})
-                    },
-                    body: JSON.stringify(newFeedback),
-                    credentials: "include"
-                });
-                loadFeedbacks();
-                e.target.reset();
-            } catch (err) {
-                console.error("Error enviando feedback:", err);
-            }
+      try {
+        const res = await fetch(`${API_URL}/${id}/reply`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { "Authorization": "Bearer " + token } : {})
+          },
+          body: JSON.stringify({ response })
         });
-
-        // Modal edición
-        function openEditModal(id, comment, qualification) {
-            document.getElementById("editId").value = id;
-            document.getElementById("editComment").value = comment;
-            document.getElementById("editQualification").value = qualification;
-            new bootstrap.Modal(document.getElementById("editModal")).show();
+        if (res.ok) {
+          bootstrap.Modal.getInstance(document.getElementById("replyModal")).hide();
+          loadFeedbacks();
+        } else {
+          const err = await res.json();
+          alert("Error: " + (err.error || "No se pudo responder"));
         }
+      } catch (err) {
+        console.error("Error respondiendo feedback:", err);
+      }
+    });
 
-        document.getElementById("editForm")?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const id = document.getElementById("editId").value;
-
-            const updatedFeedback = {};
-            const comment = document.getElementById("editComment").value.trim();
-            const qualificationValue = document.getElementById("editQualification").value;
-
-            if (comment.length > 0) {
-                updatedFeedback.comment = comment;
-            }
-
-            if (qualificationValue && !isNaN(qualificationValue)) {
-                updatedFeedback.qualification = Number(qualificationValue);
-            }
-
-            try {
-                const res = await fetch(API_URL + "/" + id, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(updatedFeedback),
-                    credentials: "include"
-                });
-
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    console.error("Error en el PUT:", errorData);
-                    return;
-                }
-
-                loadFeedbacks();
-                bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
-            } catch (err) {
-                console.error("Error actualizando feedback:", err);
-            }
+    async function deleteFeedback(id) {
+      if (!confirm("¿Seguro que deseas eliminar este feedback?")) return;
+      try {
+        await fetch(`${API_URL}/${id}`, {
+          method: "DELETE",
+          headers: token ? { "Authorization": "Bearer " + token } : {}
         });
-
-        async function deleteFeedback(id) {
-            if (!confirm("¿Seguro que deseas eliminar este feedback?")) return;
-            try {
-                await fetch(API_URL + "/" + id, { 
-                    method: "DELETE",
-                    headers: token ? { "Authorization": "Bearer " + token } : {},
-                    credentials: "include"
-                });
-                loadFeedbacks();
-            } catch (err) {
-                console.error("Error eliminando feedback:", err);
-            }
-        }
-
         loadFeedbacks();
-    </script>
+      } catch (err) {
+        console.error("Error eliminando feedback:", err);
+      }
+    }
+
+    document.getElementById("feedbackForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("comment", document.getElementById("comment").value.trim());
+      formData.append("qualification", Number(document.getElementById("qualification").value));
+      formData.append("id_tourist_site", document.getElementById("touristSiteId").value);
+
+      const files = document.getElementById("photos").files;
+      if (files.length > 10) {
+        alert("Podés subir como máximo 10 fotos.");
+        return;
+      }
+      for (let i = 0; i < files.length; i++) formData.append("photos", files[i]);
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: token ? { "Authorization": "Bearer " + token } : {},
+          body: formData
+        });
+        if (res.ok) {
+          e.target.reset();
+          loadFeedbacks();
+        } else {
+          const err = await res.json();
+          alert("Error: " + (err.error || "No se pudo enviar el comentario"));
+        }
+      } catch (err) {
+        console.error("Error enviando feedback:", err);
+      }
+    });
+
+    loadFeedbacks();
+  </script>
 </body>
 </html>
