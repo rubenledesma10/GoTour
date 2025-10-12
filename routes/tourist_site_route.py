@@ -429,4 +429,3 @@ def edit_tourist_site_form():
 def delete_tourist_site_form():
     sites = TouristSite.query.all()
     return render_template('tourist_site/delete_tourist_sites.html', sites=sites)
-
