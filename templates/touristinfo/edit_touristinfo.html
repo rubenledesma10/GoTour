@@ -1,0 +1,93 @@
+<!-- {% include "head.html" %}
+    {% include "partials/navbar.html" %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Información Turística</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body data-role="{{ role }}">
+<div class="container mt-4">
+    <h2>Editar Información Turística</h2>
+
+    <table class="table table-striped table-bordered mt-3 align-middle">
+        <thead class="table-dark text-center">
+            <tr>
+                <th>Nacionalidad</th>
+                <th>Provincia</th>
+                <th>Cantidad</th>
+                <th>Movilidad</th>
+                <th>Personas con discapacidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tourist in tourists %}
+            <tr data-id="{{ tourist.id_turist }}">
+                <td><input type="text" class="form-control form-control-sm" value="{{ tourist.nationality }}"></td>
+                <td><input type="text" class="form-control form-control-sm" value="{{ tourist.province }}"></td>
+                <td><input type="number" class="form-control form-control-sm" value="{{ tourist.quantity }}"></td>
+                <td><input type="text" class="form-control form-control-sm" value="{{ tourist.mobility }}"></td>
+                <td><input type="number" class="form-control form-control-sm" value="{{ tourist.person_with_disability }}"></td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-warning btnSaveEdit">Guardar</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('touristinfo_bp.touristinfo_planilla') }}" class="btn btn-secondary mt-3">Volver</a>
+</div>
+
+<
+!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    
+    
+    const buttons = document.querySelectorAll(".btnSaveEdit");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const row = e.target.closest("tr");
+            const id = row.dataset.id;
+
+            const data = {
+                nationality: row.children[0].querySelector("input").value,
+                province: row.children[1].querySelector("input").value,
+                quantity: row.children[2].querySelector("input").value,
+                mobility: row.children[3].querySelector("input").value,
+                person_with_disability: row.children[4].querySelector("input").value,
+            };
+
+            try {
+                const response = await fetch(`/api/touristinfo/${id}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token") || ""}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("✅ Registro actualizado correctamente");
+                } else {
+                    const err = await response.json();
+                    alert("❌ Error: " + (err.error || "No se pudo actualizar"));
+                }
+            } catch (error) {
+                console.error("Error al editar:", error);
+                alert("❌ Error al conectar con el servidor");
+            }
+        });
+    });
+});
+</script> -->
+
+</body>
+</html> -->

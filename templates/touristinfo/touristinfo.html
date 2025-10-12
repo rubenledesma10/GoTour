@@ -91,7 +91,7 @@
         const role = localStorage.getItem('role');
         const protectedBody = document.getElementById('protectedBody');
 
-        if (!token || role !== 'admin') {
+        if (!token || role !== 'admin' && role !== 'recepcionist') {
             protectedBody.innerHTML = '<div class="container mt-5"><h3>No tenés permisos para ver esta página.</h3></div>';
             protectedBody.style.display = 'block';
             return;
