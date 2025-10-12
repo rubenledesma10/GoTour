@@ -12,12 +12,12 @@
                 <div class="navbar-nav">
                     <!--enlaces publicos-->
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="/">Inicio</a>
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="#">CIT</a>
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{url_for('feedback_bp.get_feedback_view')}}">Comentarios</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('cit_bp.cits_view') }}">CIT</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('feedback_bp.feedback_view') }}">Comentarios</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('about') }}">Acerca de GoTour</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('tourist_site.tourist_sites_view') }}">Sitios turisticos</a>
                     <!--privados para administrador-->
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="{{ url_for('touristinfo_bp.touristinfo_planilla') }}" data-role="admin">Información Turística</a>
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none" href="{{ url_for('touristinfo_bp.list_tourists_page') }}" data-role="admin">Información Turística
                 </div>
                 <div class="ms-auto d-flex align-items-center gap-2">
                 <!--privados para turista y recepcionista que se loguea-->
