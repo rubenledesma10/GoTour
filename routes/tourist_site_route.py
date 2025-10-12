@@ -22,18 +22,51 @@ tourist_site = Blueprint('tourist_site', __name__)
 # --------------------------------------------------------------------------------- #
     # Estos son los endpoint para el CRUD de sitios turísticos.
         # Crear, editar y eliminar sitios turísticos.
+
+
+
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
 @role_required("admin")
 def get_tourist_sites(current_user):
-    tourist_sites = TouristSite.query.all()
+    query = request.args.get('q', '').strip().lower()
+    category = request.args.get('category', '').strip().lower()
+    is_active = request.args.get('is_active', '').strip().lower()
 
-    # Verificamos si hay sitios turísticos activos
+    sites_query = TouristSite.query
+
+    if query:
+        sites_query = sites_query.filter(
+            db.or_(
+                db.func.lower(TouristSite.name).like(f"%{query}%"),
+                db.func.lower(TouristSite.description).like(f"%{query}%"),
+                db.func.lower(TouristSite.address).like(f"%{query}%")
+            )
+        )
+
+    if category:
+        sites_query = sites_query.filter(TouristSite.category.ilike(f"%{category}%"))
+
+    if is_active:
+        if is_active == 'true':
+            sites_query = sites_query.filter_by(is_activate=True)
+        elif is_active == 'false':
+            sites_query = sites_query.filter_by(is_activate=False)
+
+    tourist_sites = sites_query.all()
+
     if not tourist_sites:
-        return jsonify({'message': 'No tourist sites registered.', 'data': []}), 200
+        return jsonify({'message': 'No tourist sites found', 'data': []}), 200
 
-    serialized_sites = [site.serialize() for site in tourist_sites]
+    serialized_sites = []
+    for site in tourist_sites:
+        data = site.serialize()
+        # 🖼️ Agregamos la URL completa del archivo
+        if site.photo:
+            data["photo"] = url_for('static', filename=f"tourist_sites_images/{site.photo}", _external=False)
+        serialized_sites.append(data)
 
     return jsonify(serialized_sites), 200
+
 
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['GET'])

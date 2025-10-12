@@ -1,79 +1,218 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const body = document.getElementById('protectedBody');
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ tourist_sites_view.js cargado correctamente");
 
-    // 🔹 Mostrar siempre el contenido principal (todos pueden ver los sitios)
-    body.style.display = 'block';
+    // Autenticación y roles
 
-    // 🔹 Si no hay token → usuario no logueado
+    const body = document.getElementById("protectedBody");
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (body) body.style.display = "block";
+
     if (!token) {
-        console.log("Usuario no autenticado → solo puede visualizar los sitios.");
-        // Ocultar botones de comentar y admin
-        document.querySelectorAll('.btn-send-comment, .admin-only').forEach(el => el.style.display = 'none');
-        return;
-    }
-
-    // 🔹 Usuario logueado
-    console.log("Usuario autenticado con rol:", role);
-
-    // 🔹 Ocultar accesos admin si no es administrador
-    if (role !== 'admin') {
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-    }
-
-    // ✅ Mostrar botón de comentar solo si es turista
-    if (role === 'tourist') {
-        document.querySelectorAll('.btn-send-comment').forEach(el => el.style.display = 'inline-block');
+        console.log("Usuario no autenticado → solo visualiza sitios.");
+        document.querySelectorAll(".btn-send-comment, .admin-only").forEach(el => el.style.display = "none");
     } else {
-        // Admin, recepcionista u otros → sin botón de comentar
-        document.querySelectorAll('.btn-send-comment').forEach(el => el.style.display = 'none');
+        console.log("Usuario autenticado con rol:", role);
+        if (role !== "admin") {
+            document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+        }
+        if (role === "tourist") {
+            document.querySelectorAll(".btn-send-comment").forEach(el => el.style.display = "inline-block");
+        } else {
+            document.querySelectorAll(".btn-send-comment").forEach(el => el.style.display = "none");
+        }
     }
-});
 
+    //  Búsqueda y filtros
 
-// ==========================
-// 🔹 Reactivar sitio (solo admin)
-// ==========================
-async function reactivateSite(id) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert("⚠️ Debes iniciar sesión como administrador para reactivar sitios.");
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const statusFilter = document.getElementById("statusFilter");
+    const searchBtn = document.getElementById("btnSearch");
+    const container = document.querySelector(".row.row-cols-1");
+
+    if (!container) {
+        console.error("❌ No se encontró el contenedor principal de sitios");
         return;
     }
 
-    if (!confirm("¿Deseas reactivar este sitio turístico?")) return;
+    // Renderizar sitios turísticos
+    function renderSites(sites) {
+        container.innerHTML = "";
 
-    try {
-        const response = await fetch(`/api/tourist_sites/${id}/reactivate`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` }
+        if (!sites || sites.length === 0) {
+            container.innerHTML = `<p class="text-center text-muted mt-3">No se encontraron resultados.</p>`;
+            return;
+        }
+
+        sites.forEach(site => {
+            let imagePath = "/static/img/no-image.png";
+            if (site.photo) {
+                if (site.photo.startsWith("/static/")) {
+                    imagePath = site.photo;
+                } else if (site.photo.includes("/")) {
+                    imagePath = `/static/${site.photo.replace(/^\/?static\//, "")}`;
+                } else {
+                    imagePath = `/static/tourist_sites_images/${site.photo}`;
+                }
+            }
+
+            let statusBadge = "";
+            if (site.is_activate) {
+                statusBadge = `<span class="badge bg-success">Activo</span>`;
+            } else {
+                statusBadge = `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary">Inactivo</span>
+                        ${role === "admin" && token ? `
+                            <button class="btn btn-success btn-sm btn-reactivate" data-id="${site.id_tourist_site}">
+                                <i class="bi bi-arrow-clockwise"></i> Reactivar
+                            </button>` : ""}
+                    </div>`;
+            }
+
+            const card = `
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="${imagePath}"
+                             class="card-img-top site-photo"
+                             alt="${site.name}"
+                             style="height:200px; object-fit:cover; cursor:pointer;"
+                             onerror="this.src='/static/img/no-image.png';"
+                             data-bs-toggle="modal"
+                             data-bs-target="#imageModal"
+                             data-img-src="${imagePath}"
+                             data-img-name="${site.name}">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">${site.name}</h5>
+                            <p><strong>Descripción:</strong> ${site.description}</p>
+                            <p class="text-muted"><i class="bi bi-geo-alt-fill"></i> ${site.address}</p>
+                            <p class="text-muted"><i class="bi bi-tag-fill"></i> ${site.category}</p>
+                            <p class="text-muted"><i class="bi bi-clock"></i> ${site.opening_hours} - ${site.closing_hours}</p>
+                            <p class="text-muted"><i class="bi bi-bar-chart-line"></i> Promedio visitas:
+                                <strong>${site.average?.toFixed(2) || "0.00"}</strong>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                            ${site.url ? `
+                                <a href="${site.url}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-box-arrow-up-right"></i> Ver sitio
+                                </a>` : ""}
+                            ${statusBadge}
+                        </div>
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML("beforeend", card);
         });
 
-        const result = await response.json();
-        console.log("Respuesta del servidor:", result);
-
-        if (response.ok) {
-            alert("✅ Sitio turístico reactivado con éxito");
-            window.location.reload();
-        } else {
-            alert("⚠️ " + (result.error || result.message));
-        }
-    } catch (error) {
-        console.error("Error al reactivar el sitio:", error);
-        alert("❌ Error inesperado al intentar reactivar el sitio.");
+        // Modal de imagen
+        document.querySelectorAll(".site-photo").forEach(img => {
+            img.addEventListener("click", () => {
+                const modalImage = document.getElementById("modalImage");
+                const modalTitle = document.getElementById("imageModalLabel");
+                modalImage.src = img.getAttribute("data-img-src");
+                modalTitle.textContent = `Vista ampliada - ${img.getAttribute("data-img-name")}`;
+            });
+        });
     }
-}
+
+    // Reactivar sitio turístico (solo admin)
+    container.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".btn-reactivate");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const token = localStorage.getItem("token");
+
+        // Prevenimos doble confirmación por clicks repetidos
+        if (btn.dataset.processing === "true") return;
+        btn.dataset.processing = "true";
+
+        if (!confirm("¿Deseas reactivar este sitio turístico?")) {
+            btn.dataset.processing = "false";
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/tourist_sites/${id}/reactivate`, {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            const result = await res.json();
+            if (res.ok) {
+                alert("✅ Sitio turístico reactivado con éxito");
+                searchSites(); // recargar lista actual
+            } else {
+                alert("⚠️ " + (result.error || result.message));
+            }
+        } catch (err) {
+            console.error("❌ Error al reactivar el sitio:", err);
+            alert("Error al intentar reactivar el sitio.");
+        } finally {
+            btn.dataset.processing = "false";
+        }
+    });
 
 
-// ==========================
-// 🔹 Manejador de botón Reactivar (admin)
-// ==========================
-document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-reactivate');
-    if (!btn) return;
+    // Buscar sitios con filtros
+    async function searchSites() {
+        const query = searchInput?.value.trim() || "";
+        const category = categoryFilter?.value || "";
+        const is_active = statusFilter?.value || "";
+        const token = localStorage.getItem("token");
 
-    const id = btn.dataset.id;
-    console.log("🟢 Click en botón Reactivar ID:", id);
-    reactivateSite(id);
+        const params = new URLSearchParams();
+        if (query) params.append("q", query);
+        if (category) params.append("category", category);
+        if (is_active !== "") params.append("is_active", is_active);
+
+        console.log("🔎 Buscando sitios con:", Object.fromEntries(params.entries()));
+
+        container.innerHTML = `
+            <div class="text-center mt-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Buscando sitios turísticos...</p>
+            </div>`;
+
+        try {
+            const res = await fetch(`/api/tourist_sites?${params.toString()}`, {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
+
+            if (!res.ok) {
+                console.error("❌ Error de red o autorización:", res.status);
+                container.innerHTML = `<p class="text-danger text-center mt-3">Error al obtener sitios turísticos.</p>`;
+                return;
+            }
+
+            const data = await res.json();
+            renderSites(data.data || data);
+        } catch (error) {
+            console.error("❌ Error al buscar sitios:", error);
+            container.innerHTML = `<p class="text-danger text-center mt-3">Error de conexión al buscar sitios.</p>`;
+        }
+    }
+
+
+    //  Eventos de búsqueda y filtros
+    if (searchBtn) {
+        searchBtn.addEventListener("click", e => {
+            e.preventDefault();
+            searchSites();
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("keyup", e => {
+            if (e.key === "Enter") searchSites();
+        });
+    }
+
+    if (categoryFilter) categoryFilter.addEventListener("change", searchSites);
+    if (statusFilter) statusFilter.addEventListener("change", searchSites);
+
+    // Carga inicial
+    searchSites();
 });
