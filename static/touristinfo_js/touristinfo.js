@@ -1,19 +1,33 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const body = document.getElementById('protectedBody');
-    const token = localStorage.getItem('token');
 
-    if (!token) {
-        alert("⚠️ Debes iniciar sesión o registrarte para acceder a los sitios turísticos.");
-        window.location.replace('/');
-        return;
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const protectedBody = document.getElementById('protectedBody');
 
-    body.style.display = 'block';
+        if (!token || role !== 'admin') {
+            protectedBody.innerHTML = '<div class="container mt-5"><h3>No tenés permisos para ver esta página.</h3></div>';
+            protectedBody.style.display = 'block';
+            return;
+        }
 
-    const role = localStorage.getItem('role');
-    console.log("Rol detectado:", role);
+        protectedBody.style.display = 'block';
+    });
+        
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnShowAdd = document.getElementById('btnShowAdd');
+        const addFormContainer = document.getElementById('addFormContainer');
+        const btnCancelAdd = document.getElementById('btnCancelAdd');
 
-    if (role !== 'admin') {
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-    }
-});
+        if (btnShowAdd && addFormContainer && btnCancelAdd) {
+            btnShowAdd.addEventListener('click', () => {
+                addFormContainer.classList.remove('d-none');
+                window.scrollTo({ top: addFormContainer.offsetTop, behavior: 'smooth' });
+            });
+
+            btnCancelAdd.addEventListener('click', () => {
+                addFormContainer.classList.add('d-none');
+            });
+        }
+    });
+
+    

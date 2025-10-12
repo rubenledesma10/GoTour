@@ -10,7 +10,7 @@ from marshmallow import ValidationError
 from datetime import datetime
 import jwt, os, uuid
 
-feedback_bp = Blueprint("feedback_bp", __name__, url_prefix="/api/feedback")
+feedback_bp = Blueprint("feedback_bp", __name__, url_prefix="/api/feedback") 
 
 #Carpeta donde se guardan las fotos subidas
 UPLOAD_FOLDER = "static/uploads"

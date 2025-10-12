@@ -1,69 +1,31 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("formAddTourist.js cargado correctamente");
+document.getElementById('formAddTourist').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
     const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+    const data = {
+        nationality: document.getElementById('nationality').value,
+        province: document.getElementById('province').value,
+        quantity: document.getElementById('quantity').value,
+        person_with_disability: document.getElementById('person_with_disability').value,
+        mobility: document.getElementById('mobility').value
+    };
 
-    if (!token) {
-        alert("⚠️ Debes iniciar sesión para agregar turistas");
-        window.location.href = "/login";
-        return;
-    }
-
-    // Solo admin puede agregar turistas
-    if (role !== 'admin') {
-        alert("❌ Acceso denegado. Solo los administradores pueden agregar turistas.");
-        window.location.href = "/";
-        return;
-    }
-
-    const formAdd = document.getElementById('formAddTourist');
-    if (!formAdd) return;
-
-    // Botón cancelar (si existe)
-    const cancelButton = document.getElementById('cancelButton');
-    if (cancelButton) {
-        cancelButton.addEventListener('click', () => {
-            window.location.href = '/touristinfo/';
+    try {
+        const res = await fetch('/api/touristinfo/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
         });
+
+        if (res.ok) location.reload();
+        else {
+            const err = await res.json();
+            alert(err.error || 'Error al agregar');
+        }
+    } catch (err) {
+        alert('Error al agregar');
     }
-
-    formAdd.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const formData = new FormData(formAdd);
-
-        // Validar campos requeridos
-        const requiredFields = ['name', 'description', 'address', 'phone', 'category'];
-        for (const field of requiredFields) {
-            const value = formData.get(field);
-            if (!value || String(value).trim() === '') {
-                alert(`El campo "${field}" es obligatorio.`);
-                return;
-            }
-        }
-
-        try {
-            const response = await fetch('/api/create', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${token}` // token enviado correctamente
-                    // Content-Type NO se agrega, FormData lo maneja solo
-                }
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alert('✅ Turista agregado correctamente');
-                window.location.href = '/touristinfo/';
-            } else {
-                alert('❌ Error al agregar turista: ' + (result.error || result.message));
-            }
-        } catch (error) {
-            console.error('❌ Error de red o servidor:', error);
-            alert('❌ Ocurrió un error al intentar agregar el turista');
-        }
-    });
 });
