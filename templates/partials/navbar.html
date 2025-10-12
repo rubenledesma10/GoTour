@@ -18,11 +18,20 @@
                 <a class="btn btn-light btn-sm px-3 py-2 text-dark"
                     href="{{ url_for('tourist_site.tourist_sites_view') }}">Sitios turisticos</a>
                 <!--privados para administrador-->
-                <a class="btn btn-light btn-sm px-3 py-2 text-dark d-none"
-                    href="{{ url_for('touristinfo_bp.list_tourists_page') }}" data-role="admin">Información Turística</a>
+                <a id="linkTouristInfoAdmin" class="btn btn-light btn-sm px-3 py-2 text-dark d-none"
+                    href="{{ url_for('touristinfo_bp.list_tourists_page') }}" data-role="admin">Información
+                    Turística</a>
+                <a id="linkTouristInfoRecep" class="btn btn-light btn-sm px-3 py-2 text-dark d-none"
+                    href="{{ url_for('touristinfo_recep_bp.list_tourists_page_recep') }}"
+                    data-role="receptionist">Información Turística</a>
+
+
             </div>
             <div class="ms-auto d-flex align-items-center gap-2">
                 <!--privados para turista y recepcionista que se loguea-->
+
+
+
                 <a class="btn btn-warning btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}"
                     data-role="admin">Usuarios</a>
                 <a id="btnAuditLogs" class="btn btn-success btn-sm px-3 py-2 text-white d-none"

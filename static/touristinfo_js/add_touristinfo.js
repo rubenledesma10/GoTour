@@ -2,6 +2,7 @@ document.getElementById('formAddTourist').addEventListener('submit', async (e) =
     e.preventDefault();
 
     const token = localStorage.getItem('token');
+    const baseApiUrl = localStorage.getItem('baseApiUrl'); // 👈
     const data = {
         nationality: document.getElementById('nationality').value,
         province: document.getElementById('province').value,
@@ -11,7 +12,7 @@ document.getElementById('formAddTourist').addEventListener('submit', async (e) =
     };
 
     try {
-        const res = await fetch('/api/touristinfo/', {
+        const res = await fetch(`${baseApiUrl}/`, {  // 👈 usa la ruta según el rol
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
