@@ -16,9 +16,14 @@ from routes.feedBack_route import feedback_bp
 from models.user import User
 from models.tourist_site import TouristSite
 from utils.utils import log_action
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'tourist_sites_images')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 
 # Inicializaciones
 jwt = JWTManager(app)

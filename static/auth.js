@@ -217,4 +217,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+
+// --- Mostrar/Ocultar contraseñas en registro y en login---
+const passwordInput = document.getElementById("password");
+const confirmPasswordInput = document.getElementById("confirm_password");
+const togglePassword = document.getElementById("togglePassword");
+const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
+
+if (togglePassword && passwordInput) {
+  const icon = togglePassword.querySelector("i");
+  togglePassword.addEventListener("click", () => {
+    const isHidden = passwordInput.type === "password";
+    passwordInput.type = isHidden ? "text" : "password";
+    icon.classList.toggle("bi-eye", !isHidden);
+    icon.classList.toggle("bi-eye-slash", isHidden);
+  });
+}
+
+if (toggleConfirmPassword && confirmPasswordInput) {
+  const icon = toggleConfirmPassword.querySelector("i");
+  toggleConfirmPassword.addEventListener("click", () => {
+    const isHidden = confirmPasswordInput.type === "password";
+    confirmPasswordInput.type = isHidden ? "text" : "password";
+    icon.classList.toggle("bi-eye", !isHidden);
+    icon.classList.toggle("bi-eye-slash", isHidden);
+  });
+}
+
+
 });
