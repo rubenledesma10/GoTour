@@ -1,208 +1,130 @@
-{% include "partials/header.html" %}
+{% include "head.html" %}
+
+<body>
     {% include "partials/navbar.html" %}
 
-</head>
-<body id="protectedBody" data-role="{{ role }}">
+    <!-- Contenedor protegido -->
+    <div id="protectedBody" style="display: none;">
 
-<div class="container mt-4">
-    <h2>Información Turística</h2>
+        <div class="container mt-4">
+            <h2>Información Turística</h2>
 
-    <!-- Botones admin/recepcionist -->
-    <div class="mb-3 {% if role not in ['admin','receptionist'] %}d-none{% endif %}">
-        <button id="btnShowAdd" class="btn btn-primary">Agregar</button>
-    </div>
-
-    <!-- Formulario agregar -->
-    <div class="form-container d-none" id="addFormContainer">
-        <h2>Agregar Información Turística</h2>
-        <form id="formAddTourist">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="nationality" class="form-label">Nacionalidad</label>
-                    <input type="text" class="form-control" id="nationality" name="nationality" placeholder="Ej: Argentina" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="province" class="form-label">Provincia</label>
-                    <input type="text" class="form-control" id="province" name="province" placeholder="Ej: Mendoza" required>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="quantity" class="form-label">Cantidad de Personas</label>
-                    <input type="number" class="form-control" id="quantity" name="quantity" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="person_with_disability" class="form-label">Personas con Discapacidad</label>
-                    <input type="number" class="form-control" id="person_with_disability" name="person_with_disability" required>
-                </div>
-            </div>
+            <!-- Botón agregar solo visible para admin -->
             <div class="mb-3">
-                <label for="mobility" class="form-label">Movilidad</label>
-                <input type="text" class="form-control" id="mobility" name="mobility" required>
+                <button id="btnShowAdd" class="btn btn-primary">Agregar</button>
             </div>
-            <div class="d-flex justify-content-between mt-4">
-                <button type="button" id="btnCancelAdd" class="btn btn-secondary">Volver</button>
-                <button type="submit" class="btn btn-primary">Guardar</button>
+
+            <!-- Formulario agregar -->
+            <div class="form-container d-none" id="addFormContainer">
+                <h2>Agregar Información Turística</h2>
+                <form id="formAddTourist">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nationality" class="form-label">Nacionalidad</label>
+                            <input type="text" class="form-control" id="nationality" name="nationality" placeholder="Ej: Argentina" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="province" class="form-label">Provincia</label>
+                            <input type="text" class="form-control" id="province" name="province" placeholder="Ej: Mendoza" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label">Cantidad de Personas</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="person_with_disability" class="form-label">Personas con Discapacidad</label>
+                            <input type="number" class="form-control" id="person_with_disability" name="person_with_disability" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mobility" class="form-label">Movilidad</label>
+                        <input type="text" class="form-control" id="mobility" name="mobility" required>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" id="btnCancelAdd" class="btn btn-secondary">Volver</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
             </div>
-        </form>
+
+            <!-- Tabla información -->
+            <table class="table table-striped table-bordered mt-3">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>Nacionalidad</th>
+                        <th>Provincia</th>
+                        <th>Cantidad</th>
+                        <th>Movilidad</th>
+                        <th>Personas con discapacidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tourist in tourists %}
+                    <tr data-id="{{ tourist.id_turist }}">
+                        <td>{{ tourist.nationality }}</td>
+                        <td>{{ tourist.province }}</td>
+                        <td>{{ tourist.quantity }}</td>
+                        <td>{{ tourist.mobility }}</td>
+                        <td>{{ tourist.person_with_disability }}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-warning btnEdit">Editar</button>
+                            <button class="btn btn-sm btn-danger btnDelete">Eliminar</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6">No hay turistas cargados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Tabla información -->
-    <table class="table table-striped table-bordered mt-3">
-        <thead class="table-dark text-center">
-            <tr>
-                <th>Nacionalidad</th>
-                <th>Provincia</th>
-                <th>Cantidad</th>
-                <th>Movilidad</th>
-                <th>Personas con discapacidad</th>
-                {% if role in ['admin','receptionist'] %}<th>Acciones</th>{% endif %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for tourist in tourists %}
-            <tr data-id="{{ tourist.id_turist }}">
-                <td>{{ tourist.nationality }}</td>
-                <td>{{ tourist.province }}</td>
-                <td>{{ tourist.quantity }}</td>
-                <td>{{ tourist.mobility }}</td>
-                <td>{{ tourist.person_with_disability }}</td>
-                {% if role in ['admin','receptionist'] %}
-                <td class="text-center">
-                    <button class="btn btn-sm btn-warning btnEdit">Editar</button>
-                    <button class="btn btn-sm btn-danger btnDelete">Eliminar</button>
-                </td>
-                {% endif %}
-            </tr>
-            {% else %}
-            <tr><td colspan="6">No hay turistas cargados</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+    <!-- Verificación de rol y mostrar contenido -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const protectedBody = document.getElementById('protectedBody');
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const role = document.body.dataset.role;
-    const token = localStorage.getItem("token");
-    if (!token) {
-        window.location.href = "/";
-        return;
-    }
-    // Función para manejar errores de autenticación
-    function handleAuthError(response) {
-        if (response.status === 401) {
-            alert('Sesión expirada. Redirigiendo al login...');
-            window.location.href = '/login';
-            return true;
+        if (!token || role !== 'admin') {
+            protectedBody.innerHTML = '<div class="container mt-5"><h3>No tenés permisos para ver esta página.</h3></div>';
+            protectedBody.style.display = 'block';
+            return;
         }
-        if (response.status === 403) {
-            alert('No tienes permisos para esta acción');
-            return true;
-        }
-        return false;
-    }
 
-    // Mostrar formulario agregar
-    const btnShowAdd = document.getElementById('btnShowAdd');
-    const addFormContainer = document.getElementById('addFormContainer');
-    const btnCancelAdd = document.getElementById('btnCancelAdd');
+        protectedBody.style.display = 'block';
+    });
+    </script>   
 
-    btnShowAdd?.addEventListener('click', () => addFormContainer.classList.remove('d-none'));
-    btnCancelAdd?.addEventListener('click', () => addFormContainer.classList.add('d-none'));
+    <!-- Mostrar/ocultar formulario Agregar -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnShowAdd = document.getElementById('btnShowAdd');
+        const addFormContainer = document.getElementById('addFormContainer');
+        const btnCancelAdd = document.getElementById('btnCancelAdd');
 
-    // Submit agregar
-    document.getElementById('formAddTourist')?.addEventListener('submit', async e => {
-        e.preventDefault();
-        const data = {
-            nationality: e.target.nationality.value,
-            province: e.target.province.value,
-            quantity: e.target.quantity.value,
-            person_with_disability: e.target.person_with_disability.value,
-            mobility: e.target.mobility.value
-        };
-        try {
-            const res = await fetch('/touristinfo/api/create', {
-                method:'POST',
-                headers:{ 'Content-Type':'application/json' },
-                body: JSON.stringify(data),
-                credentials: 'include'
+        if (btnShowAdd && addFormContainer && btnCancelAdd) {
+            btnShowAdd.addEventListener('click', () => {
+                addFormContainer.classList.remove('d-none');
+                window.scrollTo({ top: addFormContainer.offsetTop, behavior: 'smooth' });
             });
-            
-            if (handleAuthError(res)) return;
-            
-            if(res.ok) {
-                location.reload();
-            } else { 
-                const err = await res.json(); 
-                alert(err.error); 
-            }
-        } catch(err){ 
-            alert('Error al conectar con el servidor'); 
+
+            btnCancelAdd.addEventListener('click', () => {
+                addFormContainer.classList.add('d-none');
+            });
         }
     });
+    </script>
 
-    // Editar
-    document.querySelectorAll('.btnEdit').forEach(btn => {
-        btn.addEventListener('click', async e => {
-            const row = e.target.closest('tr');
-            const id = row.dataset.id;
-            const data = {
-                nationality: prompt('Nacionalidad', row.children[0].innerText),
-                province: prompt('Provincia', row.children[1].innerText),
-                quantity: prompt('Cantidad', row.children[2].innerText),
-                mobility: prompt('Movilidad', row.children[3].innerText),
-                person_with_disability: prompt('Personas con discapacidad', row.children[4].innerText)
-            };
-            try {
-                const res = await fetch(`/touristinfo/api/${id}`, {
-                    method:'PATCH',
-                    headers:{ 'Content-Type':'application/json' },
-                    body: JSON.stringify(data),
-                    credentials: 'include'
-                });
-                
-                if (handleAuthError(res)) return;
-                
-                if(res.ok) {
-                    location.reload();
-                } else { 
-                    const err = await res.json(); 
-                    alert(err.error); 
-                }
-            } catch(err){ 
-                alert('Error al actualizar'); 
-            }
-        });
-    });
+    <!-- JS específicos -->
+    <script src="/static/touristinfo_js/add_touristinfo.js"></script>
+    <script src="/static/touristinfo_js/delete_touristinfo.js"></script>
+    <script src="/static/touristinfo_js/edit_touristinfo.js"></script>
 
-    // Eliminar
-    document.querySelectorAll('.btnDelete').forEach(btn => {
-        btn.addEventListener('click', async e => {
-            if(!confirm('¿Seguro que querés eliminar?')) return;
-            const row = e.target.closest('tr');
-            const id = row.dataset.id;
-            try {
-                const res = await fetch(`/touristinfo/api/${id}`, {
-                    method:'DELETE',
-                    credentials: 'include'
-                });
-                
-                if (handleAuthError(res)) return;
-                
-                if(res.ok) {
-                    location.reload();
-                } else { 
-                    const err = await res.json(); 
-                    alert(err.error); 
-                }
-            } catch(err){ 
-                alert('Error al eliminar'); 
-            }
-        });
-    });
-});
-</script>
+    {% include "scripts.html" %}
 </body>
-</html>
