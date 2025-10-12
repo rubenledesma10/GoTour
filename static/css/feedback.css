@@ -1,191 +1,112 @@
-/* 🌤️ Estilo base */
-body {
-  background-color: #f8fafc;
-  color: #222;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-
-/* 🧩 Tarjetas */
+/* ======== Card principal ======== */
 .card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-radius: 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
-/* 💬 Comentario */
-.card-body {
-  position: relative;
-  padding: 1.25rem;
-  animation: fadeIn 0.5s ease;
-}
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(10px);}
-  to {opacity: 1; transform: translateY(0);}
-}
-
-/* ⭐ Estrellas */
-.card-title {
-  font-size: 1.25rem;
-  color: #fbbf24;
-}
-
-/* 👤 Datos inferiores */
-.card-text {
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
-}
-.text-muted.small span {
-  display: inline-flex;
+/* ======== Cabecera del feedback ======== */
+.feedback-header {
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
 }
 
-/* 👑 Respuesta del admin */
+.profile-photo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+/* ======== Estrellas ======== */
+.card-title {
+  font-size: 1.3rem;
+  color: #f4c542;
+  letter-spacing: 2px;
+}
+
+/* ======== Comentario ======== */
+.card-text {
+  color: #333;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ======== Galería de fotos ======== */
+.feedback-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.feedback-photos img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-photos img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* ======== Respuesta del administrador ======== */
 .admin-reply {
-  background: rgba(13, 110, 253, 0.1); /* leve fondo azul */
+  background-color: #f9f9f9;
   border-left: 4px solid #0d6efd;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  margin-top: 0.75rem;
-  color: #f8f9fa; /* texto claro para fondo oscuro */
-}
-
-.admin-reply strong {
-  color: #0d6efd; /* azul admin */
+  padding: 10px 15px;
+  margin-top: 15px;
+  border-radius: 10px;
 }
 
 .admin-reply p {
-  margin-bottom: 0.3rem;
-  color: #020e1a; /* texto ligeramente grisáceo */
+  margin: 5px 0 0;
+  color: #333;
 }
 
-.admin-reply small {
-  color: #adb5bd;
+.admin-reply .feedback-header {
+  margin-bottom: 5px;
 }
 
-@keyframes slideIn {
-  from {opacity: 0; transform: translateX(-10px);}
-  to {opacity: 1; transform: translateX(0);}
+/* ======== Modal de imagen ======== */
+#imageModal img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
 }
 
-
-/* 🎨 Botones */
-.btn {
-  transition: transform 0.15s ease;
-}
-.btn:hover {
-  transform: scale(1.05);
+#imageModal .btn-close {
+  background-color: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  padding: 10px;
 }
 
-/* 💟 Animación de entrada del feedback nuevo */
-@keyframes pop {
-  from {transform: scale(0.95); opacity: 0;}
-  to {transform: scale(1); opacity: 1;}
-}
-.new-feedback {
-  animation: pop 0.4s ease;
-}
-
-/* 📊 Promedio de calificación (opcional futuro) */
+/* ======== Promedio general ======== */
 .avg-rating {
-  text-align: center;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #0d6efd;
-  margin: 1rem 0;
-}
-
-.avg-rating {
-  text-align: center;
-  font-weight: 600;
-  font-size: 1.2rem;
+  font-weight: bold;
   margin-bottom: 1rem;
-  transition: color 0.3s ease;
+  font-size: 1.1rem;
+  color: #333;
 }
 
-/* fotos subida por el usuario */
-
-    .admin-reply {
-      background-color: #f8f9fa;
-      border-left: 4px solid #0d6efd;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      margin-top: 0.75rem;
-    }
-
-    .avg-rating {
-      text-align: center;
-      font-weight: 600;
-      font-size: 1.3rem;
-      margin-bottom: 1.5rem;
-      transition: color 0.3s ease;
-    }
-
-    .feedback-photos img {
-      max-width: 100px;
-      border-radius: 8px;
-      margin: 3px;
-      transition: transform 0.2s;
-      cursor: pointer;
-    }
-
-    .feedback-photos img:hover {
-      transform: scale(1.1);
-    }
-
-  /* foto de perfil */
-
-  .card-body img.rounded-circle {
-  object-fit: cover;
-  border: 1px solid #ddd;
+/* ======== Botones de acciones admin ======== */
+.card .btn-sm {
+  border-radius: 20px;
+  font-size: 0.8rem;
+  padding: 4px 10px;
 }
 
-    .admin-reply {
-      background-color: #f8f9fa;
-      border-left: 4px solid #0d6efd;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      margin-top: 0.75rem;
-    }
-
-    .avg-rating {
-      text-align: center;
-      font-weight: 600;
-      font-size: 1.3rem;
-      margin-bottom: 1.5rem;
-      transition: color 0.3s ease;
-    }
-
-    .feedback-photos img {
-      max-width: 100px;
-      border-radius: 8px;
-      margin: 3px;
-      transition: transform 0.2s;
-      cursor: pointer;
-    }
-
-    .feedback-photos img:hover {
-      transform: scale(1.1);
-    }
-
-    /* 👇 nuevos estilos */
-    .profile-photo {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 10px;
-      border: 2px solid #dee2e6;
-    }
-
-    .feedback-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
- 
+.card .btn-sm:hover {
+  opacity: 0.9;
+}
