@@ -137,7 +137,7 @@ def add_user(current_user):
 @admin_bp.route('/newUser')
 def new_user_page():
     return render_template("user/register_admin.html")   
- 
+
 @admin_bp.route('/edit/<string:id_user>')
 def edit_user_page(id_user):
     user = User.query.get(id_user)
