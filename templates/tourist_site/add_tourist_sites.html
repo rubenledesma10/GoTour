@@ -64,10 +64,21 @@
                 <input type="time" class="form-control" id="closing_hours" name="closing_hours" required>
             </div>
 
+            <div class="mb-3">
+                <label for="photo" class="form-label">Imagen del sitio turístico</label>
+                <input type="file" class="form-control" id="photo" name="photo" accept=".jpg,.jpeg,.png,.gif" required>
+                <div class="form-text">Formatos permitidos: JPG, PNG, GIF (máx. recomendado: 2 MB).</div>
+            </div>
+
+            <div class="mb-3 text-center">
+                <img id="previewImage" src="#" alt="Vista previa" class="img-fluid rounded shadow-sm" style="max-height: 250px; display:none;">
+            </div>
+
+
             <button type="submit" class="btn btn-primary">Agregar sitio</button>
             <button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
         </form>
     </div>
 
-<script src="/static/tourist_site.js"></script>
+<script src="/static/tourist_sites/tourist_site_add.js"></script>
 {% include "scripts.html"%}

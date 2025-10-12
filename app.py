@@ -10,14 +10,18 @@ from routes.admin_route import admin_bp
 from routes.tourist_route import tourist_bp
 from routes.receptionist_route import recepcionist_bp
 from routes.tourist_site_route import tourist_site
-from routes.routes_touristinfo import touristinfo_bp
+from routes.routes_admin_touristinfo import touristinfo_bp
 from routes.routes_cit import cit_bp
-from routes.feedBack_route import feedback_bp
+#from routes.feedBack_route import feedback_bp
 from models.user import User
 from models.tourist_site import TouristSite
+import os   
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'tourist_sites_images')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Inicializaciones
 jwt = JWTManager(app)
@@ -33,7 +37,7 @@ app.register_blueprint(recepcionist_bp)
 app.register_blueprint(tourist_site)
 app.register_blueprint(touristinfo_bp)
 app.register_blueprint(cit_bp)
-app.register_blueprint(feedback_bp)
+#app.register_blueprint(feedback_bp)
 
 # Login Manager
 # login_manager = LoginManager()
