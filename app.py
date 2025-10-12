@@ -13,7 +13,7 @@ from routes.tourist_site_route import tourist_site
 from routes.routes_admin_touristinfo import touristinfo_bp
 # from routes.routes__recep_touristinfo import touristinfo_recep_bp
 from routes.routes_cit import cit_bp
-#from routes.feedBack_route import feedback_bp
+from routes.feedBack_route import feedback_bp
 from models.user import User
 from models.tourist_site import TouristSite
 import os   
@@ -39,7 +39,7 @@ app.register_blueprint(tourist_site)
 app.register_blueprint(touristinfo_bp)
 # app.register_blueprint(touristinfo_recep_bp)
 app.register_blueprint(cit_bp)
-#app.register_blueprint(feedback_bp)
+app.register_blueprint(feedback_bp)
 
 # Rutas
 @app.route("/")
