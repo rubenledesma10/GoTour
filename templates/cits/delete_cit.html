@@ -1,54 +1,29 @@
-{% include "partials/navbar.html" %}
+{% include "head.html" %}
+    {% include "partials/navbar.html" %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Eliminar CIT</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
 <div class="container mt-4">
-    <h2>Eliminar CIT</h2>
-    <p>¿Seguro que deseas eliminar el CIT <strong>{{ cit.number_cit }}</strong> del distrito <strong>{{ cit.district }}</strong>?</p>
+    <h2 class="mb-3 text-center text-danger">Eliminar Centro de Información Turística</h2>
 
-    <form id="deleteForm" method="POST" action="{{ url_for('cit_bp.delete_cit', id_cit=cit.id_cit) }}">
-        <button type="submit" class="btn btn-danger">Eliminar</button>
-        <a href="{{ url_for('cit_bp.list_cits_admin') }}" class="btn btn-secondary">Cancelar</a>
-    </form>
+    <div class="alert alert-warning">
+        <p class="mb-0">
+            ¿Seguro que deseas eliminar el CIT 
+            <strong>{{ cit.number_cit }}</strong> del distrito 
+            <strong>{{ cit.district }}</strong>?
+        </p>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        <button type="button" id="btnConfirmDelete" 
+                class="btn btn-danger px-4"
+                data-id="{{ cit.id_cit }}">
+            Eliminar
+        </button>
+        <a href="{{ url_for('cit_bp.cits_view') }}" class="btn btn-secondary px-4">
+            Cancelar
+        </a>
+    </div>
 </div>
-</body>
-</html>
 
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-
-    if (role !== 'admin') {
-        alert("❌ No tienes permisos para eliminar CITs.");
-        window.location.replace("/cit");
-        return;
-    }
-
-    document.getElementById('btnConfirmDelete').addEventListener('click', async () => {
-        try {
-            const response = await fetch(`/api/cit/{{ cit.id_cit }}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                alert("🗑️ CIT eliminado correctamente.");
-                window.location.replace("/cit");
-            } else {
-                alert("❌ Error: " + (data.error || data.message));
-            }
-        } catch (error) {
-            alert("⚠️ Error al eliminar: " + error.message);
-        }
-    });
-});
-</script>
+<script src="/static/Cits/delete_cit.js"></script>
+{% include "scripts.html" %}
