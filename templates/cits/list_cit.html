@@ -4,71 +4,198 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de CITs</title>
+    <title>Información Turística</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-4">
-    <h2>Centros de Información Turística (CIT)</h2>
 
-    <!-- Tabla de CITs -->
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .form-container {
+            max-width: 700px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; margin-bottom: 25px; }
+    </style>
+</head>
+<body id="protectedBody" data-role="{{ role }}">
+
+<div class="container mt-4">
+    <h2>Información Turística</h2>
+
+    <!-- Botones admin/recepcionist -->
+    <div class="mb-3 {% if role not in ['admin','recepcionist'] %}d-none{% endif %}">
+        <button id="btnShowAdd" class="btn btn-primary">Agregar</button>
+    </div>
+
+    <!-- Formulario agregar -->
+    <div class="form-container d-none" id="addFormContainer">
+        <h2>Agregar Información Turística</h2>
+        <form id="formAddTourist">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="nationality" class="form-label">Nacionalidad</label>
+                    <input type="text" class="form-control" id="nationality" name="nationality" placeholder="Ej: Argentina" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="province" class="form-label">Provincia</label>
+                    <input type="text" class="form-control" id="province" name="province" placeholder="Ej: Mendoza" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="quantity" class="form-label">Cantidad de Personas</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="person_with_disability" class="form-label">Personas con Discapacidad</label>
+                    <input type="number" class="form-control" id="person_with_disability" name="person_with_disability" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="mobility" class="form-label">Movilidad</label>
+                <input type="text" class="form-control" id="mobility" name="mobility" required>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" id="btnCancelAdd" class="btn btn-secondary">Volver</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla información -->
     <table class="table table-striped table-bordered mt-3">
-        <thead class="table-dark">
+        <thead class="table-dark text-center">
             <tr>
-                <th>Distrito</th>
-                <th>Dirección</th>
-                <th>Número CIT</th>
-                <th>Activo</th>
-                <th>QR Map Activo</th>
+                <th>Nacionalidad</th>
+                <th>Provincia</th>
+                <th>Cantidad</th>
+                <th>Movilidad</th>
+                <th>Personas con discapacidad</th>
+                {% if role in ['admin','recepcionist'] %}
                 <th>Acciones</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
-            {% for cit in cits %}
-            <tr>
-                <td>{{ cit.district }}</td>
-                <td>{{ cit.address }}</td>
-                <td>{{ cit.number_cit }}</td>
-                <td><input type="checkbox" disabled {% if cit.is_activate %}checked{% endif %}></td>
-                <td><input type="checkbox" disabled {% if cit.is_activate_qr_map %}checked{% endif %}></td>
-                <td>
-                    <!-- Formulario para ELIMINAR -->
-                    <form action="{{ url_for('cit_bp.delete_cit', id_cit=cit.id_cit) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-danger">Eliminar CIT</button>
-                    </form>
+            {% for tourist in tourists %}
+            <tr data-id="{{ tourist.id_turist }}">
+                <td>{{ tourist.nationality }}</td>
+                <td>{{ tourist.province }}</td>
+                <td>{{ tourist.quantity }}</td>
+                <td>{{ tourist.mobility }}</td>
+                <td>{{ tourist.person_with_disability }}</td>
+                {% if role in ['admin','recepcionist'] %}
+                <td class="text-center">
+                    <button class="btn btn-sm btn-warning btnEdit">Editar</button>
+                    <button class="btn btn-sm btn-danger btnDelete">Eliminar</button>
                 </td>
+                {% endif %}
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No hay turistas cargados</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-
-    <!-- Formulario para agregar nuevo CIT -->
-    <h3 class="mt-5">Agregar nuevo CIT</h3>
-    <form action="{{ url_for('cit_bp.create_cit') }}" method="POST" class="row g-3">
-        <div class="col-md-4">
-            <label for="district" class="form-label">Distrito</label>
-            <input type="text" class="form-control" id="district" name="district" required>
-        </div>
-        <div class="col-md-4">
-            <label for="address" class="form-label">Dirección</label>
-            <input type="text" class="form-control" id="address" name="address" required>
-        </div>
-        <div class="col-md-2">
-            <label for="number_cit" class="form-label">Número CIT</label>
-            <input type="number" class="form-control" id="number_cit" name="number_cit" required>
-        </div>
-        <div class="col-md-2 form-check mt-3">
-            <input class="form-check-input" type="checkbox" id="is_activate" name="is_activate">
-            <label class="form-check-label" for="is_activate">Activo</label>
-        </div>
-        <div class="col-md-2 form-check mt-3">
-            <input class="form-check-input" type="checkbox" id="is_activate_qr_map" name="is_activate_qr_map">
-            <label class="form-check-label" for="is_activate_qr_map">QR Map Activo</label>
-        </div>
-        <div class="col-12 mt-3">
-            <button type="submit" class="btn btn-success">Agregar CIT</button>
-        </div>
-    </form>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Scripts unificados -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const body = document.getElementById('protectedBody');
+
+    // Bloquea acceso si no hay token o rol incorrecto
+    if (!token || !['admin','recepcionist'].includes(role)) {
+        body.innerHTML = '<div class="container mt-5"><h3>No tenés permisos para ver esta página.</h3></div>';
+        return;
+    }
+
+    // Mostrar formulario agregar
+    const btnShowAdd = document.getElementById('btnShowAdd');
+    const addFormContainer = document.getElementById('addFormContainer');
+    const btnCancelAdd = document.getElementById('btnCancelAdd');
+
+    btnShowAdd?.addEventListener('click', () => addFormContainer.classList.remove('d-none'));
+    btnCancelAdd?.addEventListener('click', () => addFormContainer.classList.add('d-none'));
+
+    // Submit agregar
+    document.getElementById('formAddTourist')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            nationality: e.target.nationality.value,
+            province: e.target.province.value,
+            quantity: e.target.quantity.value,
+            person_with_disability: e.target.person_with_disability.value,
+            mobility: e.target.mobility.value
+        };
+        try {
+            const res = await fetch('/touristinfo/api/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(data)
+            });
+            if(res.ok) location.reload();
+            else { const err = await res.json(); alert(err.error) }
+        } catch(err) { alert('Error al conectar con el servidor'); }
+    });
+
+    // Editar
+    document.querySelectorAll('.btnEdit').forEach(btn => {
+        btn.addEventListener('click', async e => {
+            const row = e.target.closest('tr');
+            const id = row.dataset.id;
+            const data = {
+                nationality: prompt('Nacionalidad', row.children[0].innerText),
+                province: prompt('Provincia', row.children[1].innerText),
+                quantity: prompt('Cantidad', row.children[2].innerText),
+                mobility: prompt('Movilidad', row.children[3].innerText),
+                person_with_disability: prompt('Personas con discapacidad', row.children[4].innerText)
+            };
+            try {
+                const res = await fetch(`/touristinfo/api/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) location.reload();
+                else { const err = await res.json(); alert(err.error) }
+            } catch(err){ alert('Error al actualizar'); }
+        });
+    });
+
+    // Eliminar
+    document.querySelectorAll('.btnDelete').forEach(btn => {
+        btn.addEventListener('click', async e => {
+            if(!confirm('¿Seguro que querés eliminar?')) return;
+            const row = e.target.closest('tr');
+            const id = row.dataset.id;
+            try {
+                const res = await fetch(`/touristinfo/api/${id}`, {
+                    method:'DELETE',
+                    headers:{ 'Authorization':'Bearer '+token }
+                });
+                if(res.ok) location.reload();
+                else { const err = await res.json(); alert(err.error) }
+            } catch(err){ alert('Error al eliminar'); }
+        });
+    });
+
+});
+</script>
+
 </body>
 </html>
