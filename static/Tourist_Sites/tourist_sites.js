@@ -1,34 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
     const body = document.getElementById('protectedBody');
     const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
 
-    // Si no hay token → redirige al inicio
+    // 🔹 Mostrar siempre el contenido principal (todos pueden ver los sitios)
+    body.style.display = 'block';
+
+    // 🔹 Si no hay token → usuario no logueado
     if (!token) {
-        alert("⚠️ Debes iniciar sesión o registrarte para acceder a los sitios turísticos.");
-        window.location.replace('/'); 
+        console.log("Usuario no autenticado → solo puede visualizar los sitios.");
+        // Ocultar botones de comentar y admin
+        document.querySelectorAll('.btn-send-comment, .admin-only').forEach(el => el.style.display = 'none');
         return;
     }
 
-    
-    // Mostrar contenido protegido
-    body.style.display = 'block';
+    // 🔹 Usuario logueado
+    console.log("Usuario autenticado con rol:", role);
 
-    // Verificamos rol
-    const role = localStorage.getItem('role');
-    console.log("Rol detectado:", role);
-
-    // Ocultar accesos admin si no es administrador
+    // 🔹 Ocultar accesos admin si no es administrador
     if (role !== 'admin') {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+    }
+
+    // ✅ Mostrar botón de comentar solo si es turista
+    if (role === 'tourist') {
+        document.querySelectorAll('.btn-send-comment').forEach(el => el.style.display = 'inline-block');
+    } else {
+        // Admin, recepcionista u otros → sin botón de comentar
+        document.querySelectorAll('.btn-send-comment').forEach(el => el.style.display = 'none');
     }
 });
 
 
-// Función para reactivar un sitio turístico
+// ==========================
+// 🔹 Reactivar sitio (solo admin)
+// ==========================
 async function reactivateSite(id) {
     const token = localStorage.getItem('token');
     if (!token) {
-        alert("No hay token de acceso válido. Por favor, inicia sesión.");
+        alert("⚠️ Debes iniciar sesión como administrador para reactivar sitios.");
         return;
     }
 
@@ -55,63 +65,15 @@ async function reactivateSite(id) {
     }
 }
 
-// Manejador de eventos para el botón de reactivar
+
+// ==========================
+// 🔹 Manejador de botón Reactivar (admin)
+// ==========================
 document.addEventListener('click', (e) => {
-    // Detecta clics en el botón o dentro del ícono del botón
     const btn = e.target.closest('.btn-reactivate');
-    if (!btn) return; // si no es el botón, salir
+    if (!btn) return;
 
     const id = btn.dataset.id;
     console.log("🟢 Click en botón Reactivar ID:", id);
     reactivateSite(id);
-});
-
-
-
-
-
-// Enviar comentario
-document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.btn-send-comment');
-    if (!btn) return;
-
-    const siteId = btn.dataset.id;
-    const textarea = document.querySelector(`.comment-input[data-id="${siteId}"]`);
-    const content = textarea.value.trim();
-
-    if (!content) {
-        alert("⚠️ El comentario no puede estar vacío.");
-        return;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert("Debes iniciar sesión como turista para comentar.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`/api/tourist_sites/${siteId}/comments`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ content })
-        });
-
-        const result = await response.json();
-        console.log("Resultado comentario:", result);
-
-        if (response.ok) {
-            alert("✅ Comentario agregado con éxito");
-            textarea.value = "";
-        } else {
-            alert("⚠️ " + (result.error || result.message));
-        }
-
-    } catch (error) {
-        console.error("Error al enviar comentario:", error);
-        alert("❌ Error inesperado al agregar comentario.");
-    }
 });
