@@ -10,7 +10,7 @@ from flask_login import current_user
 from models.tourist_site import TouristSite
 from flask import current_app
 
-feedback_bp = Blueprint("feedback_bp", __name__, url_prefix="/api/feedback")
+feedback_bp = Blueprint("feedback_bp", __name__, url_prefix="/api/feedback") 
 
 @feedback_bp.route("/")
 def get_feedback_view():
