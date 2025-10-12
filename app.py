@@ -1,5 +1,5 @@
-from flask import Flask, render_template, redirect, url_for, flash
-from flask_login import LoginManager, login_required, logout_user, current_user # <--- 🔑 DESCOMENTAR E IMPORTAR
+from flask import Flask, render_template, redirect, url_for
+#from flask_login import LoginManager, login_required, logout_user, current_user
 from config.config import Config
 from models.db import db
 from flask_migrate import Migrate
@@ -13,16 +13,16 @@ from routes.tourist_site_route import tourist_site
 from routes.routes_admin_touristinfo import touristinfo_bp
 # from routes.routes__recep_touristinfo import touristinfo_recep_bp
 from routes.routes_cit import cit_bp
-from routes.feedBack_route import feedback_bp
+#from routes.feedBack_route import feedback_bp
 from models.user import User
-from models.tourist_site import TouristSite  
-
-
-
+from models.tourist_site import TouristSite
+import os   
 
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'tourist_sites_images')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Inicializaciones
 jwt = JWTManager(app)
@@ -39,32 +39,18 @@ app.register_blueprint(tourist_site)
 app.register_blueprint(touristinfo_bp)
 # app.register_blueprint(touristinfo_recep_bp)
 app.register_blueprint(cit_bp)
-app.register_blueprint(feedback_bp) 
-
-
-
-# Login Manager <--- 🔑 ESTA ES LA SECCIÓN CLAVE
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "user_bp.login" # Redirige aquí si se requiere login
-
-@login_manager.user_loader
-def load_user(user_id):
-    # Función que dice a Flask-Login cómo encontrar al usuario por su ID
-    return User.query.get(user_id) 
+#app.register_blueprint(feedback_bp)
 
 # Rutas
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# ... (resto de tus rutas) ...
 
 
 @app.route('/about')
 def about():
     return render_template('about.html')
-
 
 
 # Crear tablas si no existen

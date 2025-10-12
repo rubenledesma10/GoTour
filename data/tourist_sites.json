@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Bodega Trapiche",
+    "description": "Una de las bodegas más emblemáticas de Maipú, que combina historia, arquitectura y una experiencia de degustación única.",
+    "address": "Av. Miter 937, Maipú, Mendoza, Argentina",
+    "phone": "+54 261 520-7605",
+    "category": "Bodegas",
+    "url": "https://www.trapiche.com.ar",
+    "average": 33.3,
+    "opening_hours": "09:00",
+    "closing_hours": "18:00",
+    "photo": "bodega_trapiche.png"
+  },
+  {
+    "name": "Olivícola Laur",
+    "description": "Premiada olivícola que ofrece recorridos guiados, catas de aceite de oliva y productos regionales.",
+    "address": "Ozamis Sur 2243, Maipú, Mendoza, Argentina",
+    "phone": "+54 261 497-2013",
+    "category": "Olivícolas",
+    "url": "https://www.laur.com.ar",
+    "average": 85.7,
+    "opening_hours": "09:30",
+    "closing_hours": "17:30",
+    "photo": "olivicola_laur.jpg"
+  },
+  {
+    "name": "Club Tapiz Hotel & Restaurante",
+    "description": "Hotel boutique rodeado de viñedos, con restaurante gourmet y actividades enoturísticas.",
+    "address": "Ruta 60 s/n, Maipú, Mendoza, Argentina",
+    "phone": "+54 261 499-3377",
+    "category": "Alojamiento/Hotelería",
+    "url": "https://www.clubtapiz.com",
+    "average": 53.0,
+    "opening_hours": "00:00",
+    "closing_hours": "23:59",
+    "photo": "club_tapiz.jpg"
+  },
+  {
+    "name": "Restaurante Casa Vigil - El Enemigo",
+    "description": "Experiencia gastronómica de autor creada por Alejandro Vigil, con platos regionales y vinos de alta gama.",
+    "address": "Videla Aranda 7008, Chachingo, Maipú, Mendoza, Argentina",
+    "phone": "+54 261 610-0101",
+    "category": "Gastronomía",
+    "url": "https://www.casaelenemigo.com",
+    "average": 23.2,
+    "opening_hours": "12:00",
+    "closing_hours": "23:00",
+    "photo": "casa_el_enemigo.jpg"
+  },
+  {
+    "name": "Maipú Travel Tours",
+    "description": "Agencia de turismo local que organiza visitas guiadas a bodegas, olivares y sitios históricos del departamento.",
+    "address": "San Martín 850, Maipú, Mendoza, Argentina",
+    "phone": "+54 261 496-1583",
+    "category": "Servicios Turísticos",
+    "url": "https://www.maiputravel.com.ar",
+    "average": 41.5,
+    "opening_hours": "08:00",
+    "closing_hours": "19:00",
+    "photo": "maipu_travel.jpg"
+  },
+  {
+    "name": "Posada Verde Oliva",
+    "description": "Alojamiento rural rodeado de olivares, ideal para el descanso y el turismo en contacto con la naturaleza.",
+    "address": "Montecaseros 2223, Maipú, Mendoza, Argentina",
+    "phone": "+54 261 497-2223",
+    "category": "Turismo Rural",
+    "url": "https://www.posadaverdeoliva.com",
+    "average": 33.8,
+    "opening_hours": "07:00",
+    "closing_hours": "22:00",
+    "photo": "posada_verde_oliva.jpg"
+  }
+]

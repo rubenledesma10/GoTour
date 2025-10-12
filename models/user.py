@@ -22,6 +22,7 @@ class User (db.Model):
     province=db.Column(db.String(50), nullable=False)
     is_activate=db.Column(db.Boolean, default=True, nullable=False) 
     gender=db.Column(db.String(50), nullable=False)
+    
 
 
     def set_password(self, password): #con esta funcion hasheamos y guardamos la contraseña 
