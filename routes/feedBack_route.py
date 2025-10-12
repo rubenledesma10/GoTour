@@ -12,14 +12,14 @@ import jwt, os, uuid
 
 feedback_bp = Blueprint("feedback_bp", __name__, url_prefix="/api/feedback")
 
+#Carpeta donde se guardan las fotos subidas
 UPLOAD_FOLDER = "static/uploads"
 
-# 🧩 Helper interno
 def get_identity_from_header():
-    auth_header = request.headers.get("Authorization")
+    auth_header = request.headers.get("Authorization") # Busca el header Authorization
     if not auth_header:
         return None, {"error": "Token no proporcionado"}, 401
-    try:
+    try:                                                #  # Extrae y decodifica el token JWT
         token = auth_header.split(" ")[1]
         decoded = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
         return decoded["id_user"], None, None
@@ -29,7 +29,7 @@ def get_identity_from_header():
         return None, {"error": "Token inválido"}, 401
 
 
-# 👉 Vista
+# Vista
 @feedback_bp.route("/view")
 def feedback_view():
     usuario = None
@@ -42,7 +42,7 @@ def feedback_view():
     return render_template("feedBack/usuario.html", usuario=usuario, sites=sites)
 
 
-# 👉 Crear nuevo feedback con fotos
+# Crear nuevo feedback con fotos
 @feedback_bp.route("/", methods=["POST"])
 def create_feedback():
     identity, err, code = get_identity_from_header()
@@ -86,7 +86,7 @@ def create_feedback():
         db.session.add(new_feedback)
         db.session.flush()
 
-        for file in files:
+        for file in files:              #Guarda cada foto en static/uploads con un nombre único (uuid).
             if file:
                 filename = f"{uuid.uuid4()}_{file.filename}"
                 upload_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -104,7 +104,7 @@ def create_feedback():
     return jsonify({"feedback": new_feedback.serialize()}), 201
 
 
-# 👉 Obtener todos los feedbacks
+# Obtener todos los feedbacks
 @feedback_bp.route("/", methods=["GET"])
 def get_feedbacks():
     try:
@@ -114,7 +114,7 @@ def get_feedbacks():
         return jsonify({"error": str(e)}), 500
 
 
-# 👉 Actualizar feedback (solo admin)
+# Actualizar feedback (solo admin)
 @feedback_bp.route("/<int:id>", methods=["PUT"])
 def update_feedback(id):
     identity, err, code = get_identity_from_header()
@@ -157,7 +157,7 @@ def update_feedback(id):
         return jsonify({"error": str(e)}), 500
 
 
-# 👉 Eliminar feedback
+# Eliminar feedback
 @feedback_bp.route("/<int:id>", methods=["DELETE"])
 def delete_feedback(id):
     identity, err, code = get_identity_from_header()
@@ -180,7 +180,7 @@ def delete_feedback(id):
         return jsonify({"error": str(e)}), 500
 
 
-# 👉 Responder feedback
+#  Responder feedback
 @feedback_bp.route("/<int:id>/reply", methods=["POST"])
 def reply_feedback(id):
     identity, err, code = get_identity_from_header()

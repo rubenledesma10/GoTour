@@ -144,3 +144,48 @@ body {
   object-fit: cover;
   border: 1px solid #ddd;
 }
+
+    .admin-reply {
+      background-color: #f8f9fa;
+      border-left: 4px solid #0d6efd;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .avg-rating {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.3s ease;
+    }
+
+    .feedback-photos img {
+      max-width: 100px;
+      border-radius: 8px;
+      margin: 3px;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .feedback-photos img:hover {
+      transform: scale(1.1);
+    }
+
+    /* 👇 nuevos estilos */
+    .profile-photo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+      border: 2px solid #dee2e6;
+    }
+
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+ 
