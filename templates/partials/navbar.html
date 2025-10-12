@@ -12,7 +12,7 @@
                 <div class="navbar-nav">
                     <!--enlaces publicos-->
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="/">Inicio</a>
-                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('cit_bp.list_cits_page') }}">CIT</a> 
+                    <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('cit_bp.cits_view') }}">CIT</a>  
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{url_for('feedback_bp.get_feedback_view')}}">Comentarios</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('about') }}">Acerca de GoTour</a>
                     <a class="btn btn-light btn-sm px-3 py-2 text-dark" href="{{ url_for('tourist_site.tourist_sites_view') }}">Sitios turisticos</a>
@@ -35,4 +35,5 @@
             </div>
         </div>
 
-    </nav>
+    </nav> 
+
