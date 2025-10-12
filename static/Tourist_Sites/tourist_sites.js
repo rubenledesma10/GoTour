@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    
     // Mostrar contenido protegido
     body.style.display = 'block';
 
