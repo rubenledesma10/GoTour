@@ -1,4 +1,6 @@
-// Mostrar toast personalizado
+// =============================
+// 🔹 Función para mostrar toast
+// =============================
 function showToastReload(message, redirectUrl = null) {
     const toastEl = document.getElementById('liveToast');
     const toastMessage = document.getElementById('toastMessage');
@@ -25,21 +27,10 @@ function showToastReload(message, redirectUrl = null) {
     });
 }
 
+// =============================
+// 🔹 Carga inicial del formulario
+// =============================
 document.addEventListener("DOMContentLoaded", async () => {
-
-    // --- TOGGLE PASSWORD (GENÉRICO LOGIN ANTIGUO) ---
-    const togglePassword = document.getElementById("togglePassword");
-    const passwordInput = document.getElementById("password");
-
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener("click", () => {
-            const type = passwordInput.type === "password" ? "text" : "password";
-            passwordInput.type = type;
-            togglePassword.innerHTML = type === "password"
-                ? '<i class="bi bi-eye fs-5"></i>'
-                : '<i class="bi bi-eye-slash fs-5"></i>';
-        });
-    }
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -57,10 +48,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const provinceSelect = document.getElementById("province");
     const passwordMsg = document.getElementById("passwordMatchMsg");
 
-    // Cargar JSON de países
+    // =============================
+    // 🔹 Cargar JSON de países
+    // =============================
     const countriesData = await fetch("/static/countries+states.json").then(res => res.json());
-    window.countriesData = countriesData;
-
     countriesData.forEach(country => {
         const option = document.createElement("option");
         option.value = country.name;
@@ -68,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         nationalitySelect.appendChild(option);
     });
 
-    // Función para llenar provincias
+    // 🔹 Función para llenar provincias
     function fillProvinces(countryName, selectedProvince = null) {
         provinceSelect.innerHTML = '<option value="" disabled>Seleccione una provincia</option>';
         const country = countriesData.find(c => c.name === countryName);
@@ -82,7 +73,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (selectedProvince) provinceSelect.value = selectedProvince;
     }
 
-    // Cargar datos del usuario
+    // =============================
+    // 🔹 Cargar datos del usuario
+    // =============================
     const user = await fetch(userEndpoint, { headers: { "Authorization": `Bearer ${token}` } }).then(r => r.json());
 
     form.first_name.value = user.first_name || "";
@@ -94,19 +87,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     form.phone.value = user.phone || "";
     form.gender.value = user.gender || "";
     form.age.value = user.age || "";
+    if (role === "receptionist") {
+    form.email.disabled = true; // no editable ni enviable
+}
 
     if (user.nationality) {
         nationalitySelect.value = user.nationality;
         fillProvinces(user.nationality, user.province);
     }
 
-    if (role === "receptionist") {
-        form.email.setAttribute("disabled", "true");
-    }
-
     nationalitySelect.addEventListener("change", () => fillProvinces(nationalitySelect.value));
 
-    // Envío del formulario
+    // =============================
+    // 🔹 Envío del formulario
+    // =============================
     form.addEventListener("submit", async e => {
         e.preventDefault();
 
@@ -116,13 +110,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const formData = new FormData(form);
 
+        // 🔸 Validaciones simples
         if (newPassword || repeatPassword || currentPassword) {
             if (!currentPassword) {
-                showToastReload("Debe ingresar la **contraseña actual** para cambiarla.");
+                showToastReload("⚠️ Debe ingresar la contraseña actual.");
                 return;
             }
             if (!newPassword || !repeatPassword) {
-                showToastReload("Debe ingresar la **nueva contraseña** y **repetirla**.");
+                showToastReload("⚠️ Debe ingresar y repetir la nueva contraseña.");
                 return;
             }
             if (newPassword !== repeatPassword) {
@@ -131,7 +126,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             } else {
                 passwordMsg.classList.add("d-none");
             }
-
             formData.delete("repeat_password");
         } else {
             formData.delete("current_password");
@@ -139,60 +133,40 @@ document.addEventListener("DOMContentLoaded", async () => {
             formData.delete("repeat_password");
         }
 
+        // =============================
+        // 🔹 Enviar al backend (Fetch)
+        // =============================
         try {
-            const res = await fetch(editEndpoint, {
-                method: "PUT",
-                headers: { "Authorization": `Bearer ${token}` },
-                body: formData
-            });
-            const data = await res.json();
-
-            if (!res.ok || data.error) {
-                if (data.error && data.error.includes("contraseña actual")) {
-                    showToastReload("Error: La **contraseña actual** ingresada es incorrecta.");
-                } else {
-                    showToastReload("Error: " + (data.error || "No se pudo actualizar."));
-                }
-            } else {
-                showToastReload("Perfil actualizado correctamente ✅", usersPage);
-            }
-        } catch (error) {
-            showToastReload("Error de conexión: " + error.message);
-        }
+    const res = await fetch(editEndpoint, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
     });
 
-    // --- NUEVO BLOQUE: Mostrar/Ocultar contraseñas en edición de perfil ---
-    const currentPasswordInput = document.getElementById("current_password");
-    const newPasswordInput = document.getElementById("password");
-    const repeatPasswordInput = document.getElementById("repeat_password");
-
-    const toggleCurrent = document.getElementById("toggleCurrentPassword");
-    const toggleNew = document.getElementById("toggleNewPassword");
-    const toggleRepeat = document.getElementById("toggleRepeatPassword");
-
-    function toggleVisibility(input, icon) {
-        const isHidden = input.type === "password";
-        input.type = isHidden ? "text" : "password";
-        icon.classList.toggle("bi-eye", !isHidden);
-        icon.classList.toggle("bi-eye-slash", isHidden);
+    let data = {};
+    try {
+        data = await res.json();
+    } catch {
+        showToastReload("⚠️ Respuesta inválida del servidor.");
+        return;
     }
 
-    if (toggleCurrent && currentPasswordInput) {
-        toggleCurrent.addEventListener("click", () => {
-            toggleVisibility(currentPasswordInput, toggleCurrent.querySelector("i"));
-        });
+    // Si el servidor devolvió error HTTP (400, 500, etc.)
+    if (!res.ok) {
+        const msg = data.error 
+            ? data.error 
+            : Object.values(data).flat().join(", ") || "No se pudo actualizar.";
+        showToastReload("⚠️ " + msg);
+        return;
     }
 
-    if (toggleNew && newPasswordInput) {
-        toggleNew.addEventListener("click", () => {
-            toggleVisibility(newPasswordInput, toggleNew.querySelector("i"));
-        });
-    }
+    // Si la respuesta es correcta pero no contiene "message"
+    const message = data.message || "Perfil actualizado correctamente.";
+    showToastReload("✅ " + message, usersPage);
 
-    if (toggleRepeat && repeatPasswordInput) {
-        toggleRepeat.addEventListener("click", () => {
-            toggleVisibility(repeatPasswordInput, toggleRepeat.querySelector("i"));
-        });
-    }
+} catch (error) {
+    showToastReload("❌ Error de conexión: " + error.message);
+}
 
+    });
 });

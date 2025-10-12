@@ -54,6 +54,22 @@
         <div class="toast-body" id="toastMessage"></div>
     </div>
 </div>
+<!-- Modal de sesión expirada -->
+<div class="modal fade" id="sessionExpiredModal" tabindex="-1" aria-labelledby="sessionExpiredLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="sessionExpiredLabel">Sesión expirada</h5>
+      </div>
+      <div class="modal-body">
+        Tu sesión ha expirado. Por favor, inicia sesión nuevamente.
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="sessionExpiredBtn" class="btn btn-primary">Ir al login</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="/static/admin.js"></script>
 {% include "scripts.html"%}

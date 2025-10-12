@@ -5,8 +5,11 @@ document.querySelectorAll('.btnDelete').forEach(btn => {
         const id = row.dataset.id;
         const token = localStorage.getItem('token');
 
+        // 🔹 Tomamos la URL base del rol (guardada en localStorage)
+        const baseApiUrl = localStorage.getItem('baseApiUrl') || '/api/touristinfo';
+
         try {
-            const res = await fetch(`/api/touristinfo/${id}`, {
+            const res = await fetch(`${baseApiUrl}/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': 'Bearer ' + token

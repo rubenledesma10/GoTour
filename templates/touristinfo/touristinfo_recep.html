@@ -5,17 +5,16 @@
 
     <!-- Contenedor protegido -->
     <div id="protectedBody" style="display: none;">
-
         <div class="container mt-4">
-            <h2>Información Turística</h2>
+            <h2>Información Turística - Receptionist</h2>
 
-            <!-- Botón agregar solo visible para admin -->
+            <!-- Botón agregar solo visible para receptionist -->
             <div class="mb-3">
-                <button id="btnShowAdd" class="btn btn-primary">Agregar</button>
+                <button id="btnShowAdd" class="btn btn-primary d-none" data-role="receptionist">Agregar</button>
             </div>
 
             <!-- Formulario agregar -->
-            <div class="form-container d-none" id="addFormContainer">
+            <div class="form-container d-none" id="addFormContainer" data-role="receptionist">
                 <h2>Agregar Información Turística</h2>
                 <form id="formAddTourist">
                     <div class="row mb-3">
@@ -70,8 +69,8 @@
                         <td>{{ tourist.mobility }}</td>
                         <td>{{ tourist.person_with_disability }}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-warning btnEdit">Editar</button>
-                            <button class="btn btn-sm btn-danger btnDelete">Eliminar</button>
+                            <button class="btn btn-sm btn-warning btnEdit d-none" data-role="receptionist">Editar</button>
+                            <button class="btn btn-sm btn-danger btnDelete d-none" data-role="receptionist">Eliminar</button>
                         </td>
                     </tr>
                     {% else %}
@@ -83,13 +82,32 @@
             </table>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        const role = (localStorage.getItem('role') || '').toLowerCase();
+        const protectedBody = document.getElementById('protectedBody');
 
-<!-- JS específicos -->
-<script src="/static/touristinfo_js/add_touristinfo.js"></script>
-<script src="/static/touristinfo_js/touristinfo.js"></script>
-<script src="/static/touristinfo_js/delete_touristinfo.js"></script>
-<script src="/static/touristinfo_js/edit_touristinfo.js"></script>
+        // Solo "receptionist" puede ver esta página
+        if (!token || role !== 'receptionist') {
+            protectedBody.innerHTML = '<div class="container mt-5"><h3>No tenés permisos para ver esta página.</h3></div>';
+            protectedBody.style.display = 'block';
+            return;
+        }
 
-{% include "scripts.html" %}
+        // Mostrar contenido protegido
+        protectedBody.style.display = 'block';
+
+        // Mostrar botón del navbar solo para receptionist
+        const linkTouristInfoRecep = document.getElementById('linkTouristInfoRecep');
+        if (linkTouristInfoRecep) linkTouristInfoRecep.classList.remove('d-none');
+    });
+    </script>
+    <!-- JS específicos -->
+    <script src="/static/recep_touristinfo.js/touristinfo_recep.js"></script>
+    <script src="/static/recep_touristinfo.js/touristinfo_add_recep.js"></script>
+    <script src="/static/recep_touristinfo.js/touristinfo_edit_recep.js"></script>
+    <script src="/static/recep_touristinfo.js/touristinfo_delete_recep.js"></script>
+
+    {% include "scripts.html" %}
 </body>
-

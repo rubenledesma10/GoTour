@@ -154,25 +154,35 @@ def edit_user_page(id_user):
 def edit_user(current_user, id_user):
     user = User.query.get(id_user)
     if not user:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'Usuario no encontrado'}), 404
 
     data = request.form.to_dict()
     file = request.files.get("photo")
 
-    try:
-        validated_data = user_schema.load(data, partial=True)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
+    # ✅ Limpiar DNI como en register
+    dni = data.get('dni', '').replace('.', '').replace('-', '').replace(' ', '')
+    if dni and not dni.isdigit():
+        return jsonify({"error": "DNI inválido, solo números"}), 400
+    data['dni'] = dni
 
     try:
-        # Guardar foto si se subió
+        # ✅ Igual que register: validación uniforme
+        validated_data = user_schema.load(data, partial=True)
+    except ValidationError as err:
+        errors = []
+        for field, msgs in err.messages.items():
+            errors.append(f"{field}: {', '.join(msgs)}")
+        return jsonify({"error": " | ".join(errors)}), 400
+
+    try:
+        # ✅ Guardar foto si se subió
         if file:
             filename = f"{uuid.uuid4()}_{file.filename}"
             upload_path = os.path.join("static/uploads", filename)
             file.save(upload_path)
             user.photo = filename
 
-        # Actualizar campos
+        # ✅ Actualizar campos igual que en register
         for field, value in validated_data.items():
             if field == "email":
                 value = value.lower()
@@ -181,12 +191,12 @@ def edit_user(current_user, id_user):
             else:
                 setattr(user, field, value)
 
-        log_action(current_user.id_user, f"Edited user {id_user}")
-
         db.session.commit()
+        log_action(current_user.id_user, f"Editó el usuario {id_user}")
+
         return jsonify({
-            'message': 'User edited correctly',
-            'user': user_schema.dump(user)
+            "message": "Usuario editado correctamente ✅",
+            "user": user_schema.dump(user)
         }), 200
 
     except IntegrityError as e:
@@ -198,12 +208,13 @@ def edit_user(current_user, id_user):
         elif "username" in str(e.orig):
             return jsonify({"error": "Nombre de usuario ya usado"}), 400
         elif "phone" in str(e.orig):
-            return jsonify({"error": "Número de telefono ya usado"}), 400
+            return jsonify({"error": "Número de teléfono ya usado"}), 400
         else:
             return jsonify({"error": "Ya existe un registro con estos datos"}), 400
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Error en el servidor: {str(e)}'}), 500
 
     
     

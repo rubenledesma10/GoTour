@@ -1,4 +1,6 @@
-// Función para mostrar un toast que recarga/redirige al cerrarse
+// =======================================
+// Función para mostrar un toast con recarga/redirección
+// =======================================
 function showToastReload(message, redirectUrl = null) {
     const toastEl = document.getElementById('liveToast');
     const toastMessage = document.getElementById('toastMessage');
@@ -10,7 +12,7 @@ function showToastReload(message, redirectUrl = null) {
         </div>
     `;
 
-    // Fondo blanco, texto negro y borde
+    // Estilos visuales
     toastEl.className = `toast align-items-center border border-secondary`;
     toastEl.style.backgroundColor = "#ffffff";
     toastEl.style.color = "#000000";
@@ -30,7 +32,9 @@ function showToastReload(message, redirectUrl = null) {
     });
 }
 
-// Script de edición de usuario
+// =======================================
+// Script de edición de usuario (adaptado como register)
+// =======================================
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("editUserForm");
     if (!form) return;
@@ -40,12 +44,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nationalitySelect = document.getElementById("nationality");
     const provinceSelect = document.getElementById("province");
-
-    // ✅ Traemos los valores del usuario desde el HTML (data attributes)
     const currentNationality = form.dataset.nationality;
     const currentProvince = form.dataset.province;
 
-    // Función para llenar provincias según país
+    // Cargar países y provincias
+    fetch("/static/countries+states.json")
+        .then(res => res.json())
+        .then(data => {
+            window.countriesData = data;
+            data.forEach(country => {
+                const option = document.createElement("option");
+                option.value = country.name;
+                option.textContent = country.name;
+                nationalitySelect.appendChild(option);
+            });
+
+            nationalitySelect.value = currentNationality;
+            fillProvinces(currentNationality, currentProvince);
+        })
+        .catch(err => console.error("Error cargando países:", err));
+
     function fillProvinces(countryName, selectedProvince = null) {
         provinceSelect.innerHTML = '<option value="" disabled>Seleccione una provincia</option>';
         const country = window.countriesData.find(c => c.name === countryName);
@@ -58,32 +76,9 @@ document.addEventListener("DOMContentLoaded", () => {
             provinceSelect.appendChild(option);
         });
 
-        if (selectedProvince) {
-            provinceSelect.value = selectedProvince;
-        }
+        if (selectedProvince) provinceSelect.value = selectedProvince;
     }
 
-    // Cargar JSON de países y provincias
-    fetch("/static/countries+states.json")
-        .then(res => res.json())
-        .then(data => {
-            window.countriesData = data;
-
-            // Llenar select de países
-            data.forEach(country => {
-                const option = document.createElement("option");
-                option.value = country.name;
-                option.textContent = country.name;
-                nationalitySelect.appendChild(option);
-            });
-
-            // ✅ Seleccionar automáticamente los valores del usuario
-            nationalitySelect.value = currentNationality;
-            fillProvinces(currentNationality, currentProvince);
-        })
-        .catch(err => console.error("Error cargando países:", err));
-
-    // Cuando cambia el país, actualizar provincias
     nationalitySelect.addEventListener("change", () => {
         fillProvinces(nationalitySelect.value);
     });
@@ -102,16 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
-            if (!res.ok) {
-                let mensaje = data.error || "Ocurrió un error";
-                showToastReload(mensaje);
-                return;
+            if (res.ok) {
+                showToastReload(data.message || "Usuario editado correctamente ✅", "/api/admin/users_page");
+            } else {
+                showToastReload(data.error || "Error al editar el usuario ❌");
             }
-
-            showToastReload("Usuario editado correctamente", "/api/admin/users_page");
-        } catch (err) {
-            console.error("Error en edición:", err);
-            showToastReload("Error: " + err.message);
+        } catch (error) {
+            console.error("Error:", error);
+            showToastReload("Error en el servidor ❌");
         }
     });
 });

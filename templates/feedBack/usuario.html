@@ -1,5 +1,5 @@
 {% include "head.html" %}
-
+  
     {% include "partials/navbar.html" %}
 
   <!-- Contenido -->
@@ -10,15 +10,13 @@
     <div id="feedbackFormCard" class="card shadow-sm mb-4 d-none">
       <div class="card-body">
         <h5 class="mb-3">Dejá tu comentario</h5>
-        <form id="feedbackForm">
+        <form id="feedbackForm"></form>
           <div class="mb-3">
-            <label for="touristSiteId" class="form-label">Lugar Turístico</label>
-            <select id="touristSiteId" class="form-control" required>
-              <option value="">-- Selecciona un sitio --</option>
-              {% for s in sites %}
-              <option value="{{ s.id_tourist_site }}">{{ s.name }} - {{ s.description }}</option>
-              {% endfor %}
-            </select>
+            <div>
+            <label for="touristSiteName" class="form-label">Lugar Turístico</label>
+            <input type="text" id="touristSiteName" class="form-control" value="{{ site_name }}" readonly>
+          <input type="hidden" id="touristSiteId" name="id_tourist_site" value="{{ site_id }}">
+          </div>
           </div>
           <div class="mb-3">
             <label for="qualification" class="form-label">Calificación (1-5)</label>
@@ -45,7 +43,7 @@
   </div>
 
   <!-- Modal edición -->
-  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -96,14 +94,16 @@
     </div>
   </div>
 
-  <!-- 🖼️ Modal para ampliar imágenes -->
-  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content bg-transparent border-0">
-        <img id="modalImage" src="" class="img-fluid rounded shadow" alt="Foto feedback ampliada">
-      </div>
+<!-- 🖼️ Modal para ampliar imágenes -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content border-0 bg-transparent">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      <img id="modalImage" src="" alt="Foto feedback ampliada">
     </div>
   </div>
+</div>
+
 
  {% include "scripts.html"%}
   <script>
@@ -177,7 +177,7 @@
 
                 ${f.photos && f.photos.length ? `
                   <div class="feedback-photos">
-                    ${f.photos.map(p => `<img src="${p.url}" alt="foto feedback" onclick="openImageModal('${p.url}')">`).join('')}
+                   ${f.photos.map(p => `<img src="${p.url}" alt="foto feedback" onclick="openImageModal('${p.url}')">`).join('')}
                   </div>
                 ` : ""}
 
