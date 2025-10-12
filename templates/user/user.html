@@ -48,5 +48,12 @@
         <div class="toast-body" id="toastMessageConfirm"></div>
     </div>
 </div>
+<!-- Contenedor de toast arriba derecha -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <div id="liveToast" class="toast align-items-center border border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
 <script src="/static/admin.js"></script>
 {% include "scripts.html"%}

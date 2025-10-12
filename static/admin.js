@@ -1,45 +1,18 @@
-/// Toast normal (solo mensaje)
+// Toast normal / éxito
 function showToast(message, duration = 5000) {
-    const toastEl = document.getElementById('liveToastNormal');
-    const toastMessage = document.getElementById('toastMessageNormal');
+    const toastEl = document.getElementById('liveToast');
+    const toastMessage = document.getElementById('toastMessage');
 
     toastMessage.textContent = message;
 
-    // Bootstrap toast
     const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: true, delay: duration });
     toast.show();
 }
 
-// -----------------------------
-// Toast de confirmación con callback
-function showConfirmToast(message, callback) {
-    const toastEl = document.getElementById('liveToastConfirm');
-    const toastMessage = document.getElementById('toastMessageConfirm');
-
-    toastMessage.innerHTML = `
-        ${message}
-        <div class="mt-2 text-center">
-            <button id="confirmYes" class="btn btn-sm btn-success me-2">Sí</button>
-            <button id="confirmNo" class="btn btn-sm btn-secondary">No</button>
-        </div>
-    `;
-
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
-    toast.show();
-
-    // Limpiamos listeners previos y asignamos nuevos con once:true
-    const yesBtn = document.getElementById('confirmYes');
-    const noBtn = document.getElementById('confirmNo');
-
-    yesBtn.addEventListener('click', () => { toast.hide(); callback(true); }, { once: true });
-    noBtn.addEventListener('click', () => { toast.hide(); callback(false); }, { once: true });
-}
-
-// -----------------------------
-// Toast de éxito que recarga al aceptar
-function showToastConfirm(message) {
-    const toastEl = document.getElementById('liveToastNormal');
-    const toastMessage = document.getElementById('toastMessageNormal');
+// Toast que recarga al aceptar
+function showToastReload(message, redirectUrl = "/") {
+    const toastEl = document.getElementById('liveToast');
+    const toastMessage = document.getElementById('toastMessage');
 
     toastMessage.innerHTML = `
         ${message}
@@ -54,23 +27,44 @@ function showToastConfirm(message) {
     const acceptBtn = document.getElementById('toastAccept');
     acceptBtn.addEventListener('click', () => {
         toast.hide();
-        location.reload();
+        location.href = redirectUrl;
     }, { once: true });
 }
 
-// Función para desactivar usuario
-function deleteUser(userId) { 
+// Toast de confirmación con callback
+function showConfirmToast(message, callback) {
+    const toastEl = document.getElementById('liveToast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    toastMessage.innerHTML = `
+        ${message}
+        <div class="mt-2 text-center">
+            <button id="confirmYes" class="btn btn-sm btn-success me-2">Sí</button>
+            <button id="confirmNo" class="btn btn-sm btn-secondary">No</button>
+        </div>
+    `;
+
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+    toast.show();
+
+    const yesBtn = document.getElementById('confirmYes');
+    const noBtn = document.getElementById('confirmNo');
+
+    yesBtn.addEventListener('click', () => { toast.hide(); callback(true); }, { once: true });
+    noBtn.addEventListener('click', () => { toast.hide(); callback(false); }, { once: true });
+}
+
+// -----------------------------
+// Funciones para usuarios
+function deleteUser(userId) {
     const token = localStorage.getItem("token");
-    if (!token) { 
-        showToast("No token found, please login");
-        return;
-    }
+    if (!token) { showToastReload("Session expired. Please login again.", "/"); return; }
 
     showConfirmToast("¿Estás seguro que quieres desactivar este usuario?", confirmed => {
         if (!confirmed) return;
 
         fetch(`/api/admin/delete/${userId}`, { 
-            method: "DELETE", 
+            method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` } 
         })
         .then(async res => {
@@ -80,20 +74,14 @@ function deleteUser(userId) {
             if (!res.ok) throw new Error(data.message || "Error al desactivar usuario");
             return data;
         })
-        .then(() => showToastConfirm("Usuario desactivado"))
-        .catch(err => {
-            console.error(err); 
-            showToast(err.message || "Error al desactivar usuario. Revisa la consola.");
-        });
+        .then(() => showToastReload("Usuario desactivado"))
+        .catch(err => showToast(err.message || "Error al desactivar usuario"));
     });
 }
 
 function activatedUser(userId) {
     const token = localStorage.getItem("token");
-    if (!token) { 
-        showToast("No token found, please login"); 
-        return; 
-    }
+    if (!token) { showToastReload("Session expired. Please login again.", "/"); return; }
 
     showConfirmToast("¿Estás seguro que quieres activar este usuario?", confirmed => {
         if (!confirmed) return;
@@ -109,16 +97,26 @@ function activatedUser(userId) {
             if (!res.ok) throw new Error(data.message || "Error al activar usuario");
             return data;
         })
-        .then(() => showToastConfirm("Usuario activado"))
-        .catch(err => {
-            console.error(err);
-            showToast(err.message || "Error al activar usuario. Revisa la consola.");
-        });
+        .then(() => showToastReload("Usuario activado"))
+        .catch(err => showToast(err.message || "Error al activar usuario"));
     });
 }
 function editUser(userId) { //nos lleva a la vista de edicion 
     window.location.href = `/api/admin/edit/${userId}`;
 }
+
+// function showSessionExpired() {
+//     const modalEl = document.getElementById('sessionModal');
+//     const modal = new bootstrap.Modal(modalEl);
+//     modal.show();
+
+//     const btn = document.getElementById('sessionAccept');
+//     btn.onclick = () => {
+//         modal.hide();
+//         window.location.href = "/";
+//     };
+// }
+
 
 //esto es lo que se inicializa al cargar la pagina
 document.addEventListener("DOMContentLoaded", () => {
