@@ -30,10 +30,19 @@
                     
                 
                 </div>
-                <span class="navbar-text ms-auto">
-                    <a  id="authButton"  href="{{url_for('user_bp.login')}}" class="btn"
-                        style="background-color: orange; color: white;">Registrarse/Iniciar Sesion</a>
-                </span>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                <!--privados para turista y recepcionista que se loguea-->
+                    <a class="btn btn-warning btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Usuarios</a>
+                    <a class="btn btn-warning btn-sm px-3 py-2 text-dark d-none" href="{{url_for('admin_bp.users_page')}}" data-role="admin">Bitacora</a>
+                <a id="myDataBtn" class="btn btn-warning btn-sm px-3 py-2 d-none">
+                Mis datos
+                </a>
+                <!--boton de registrarse y loguearse-->
+                <a id="authButton" href="{{url_for('user_bp.login')}}" class="btn"
+                style="background-color: orange; color: white;">
+                    Registrarse/Iniciar Sesión
+                </a>
+            </div>
             </div>
         </div>
 
