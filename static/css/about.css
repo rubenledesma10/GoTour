@@ -1,0 +1,41 @@
+/* --- Sección Acerca de GoTour --- */
+#aboutGoTourContainer {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+#aboutGoTourContainer:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+#aboutGoTourContainer h1 {
+    color: #ff9800;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+#aboutGoTourContainer p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+#aboutGoTourContainer .btn {
+    background-color: #ff9800;
+    color: #fff;
+    border-radius: 25px;
+    padding: 0.5rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#aboutGoTourContainer .btn:hover {
+    background-color: #e68900;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}

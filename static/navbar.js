@@ -4,15 +4,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const username = localStorage.getItem("username");
     const role = localStorage.getItem("role");
     const myDataBtn = document.getElementById("myDataBtn");
+    const btnAuditLogs = document.getElementById("btnAuditLogs");
 
+    // --- Configuración de usuario y roles ---
     if (username && role) {
-        //mostrar u ocultar links según rol
+        // Mostrar u ocultar links según rol
         roleLinks.forEach(link => {
             const allowedRoles = link.dataset.role.split(",");
             link.classList.toggle("d-none", !allowedRoles.includes(role));
         });
 
-        //esta validacion es para el boton "Mis datos".
+        // Configurar botón "Mis datos"
         if (role === "tourist") {
             myDataBtn.href = "/api/tourist/users_page";
             myDataBtn.classList.remove("d-none");
@@ -23,22 +25,49 @@ document.addEventListener("DOMContentLoaded", () => {
             myDataBtn.classList.add("d-none");
         }
 
-        //configurar botón de cerrar sesión
+        // Configurar botón cerrar sesión
         authButton.textContent = `Cerrar Sesión (${username})`;
         authButton.style.backgroundColor = "red";
         authButton.style.color = "white";
         authButton.href = "#";
-
         authButton.onclick = (e) => {
             e.preventDefault();
             localStorage.clear();
             window.location.href = "/";
         };
+
+        // Mostrar botón Bitácora solo para admin
+        if (btnAuditLogs && role === "admin") {
+            btnAuditLogs.classList.remove("d-none");
+            // El href ya apunta a la página /audit-logs-page
+        }
     } else {
         // Usuario no logueado
         roleLinks.forEach(link => link.classList.add("d-none"));
         authButton.textContent = "Registrarse/Iniciar Sesión";
         authButton.style.backgroundColor = "orange";
         authButton.style.color = "white";
+    }
+
+    // --- Función para mostrar toast con botón aceptar ---
+    function showToastReload(message, redirectUrl = null) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toastMessage.innerHTML = `
+            ${message}
+            <div class="mt-2 pt-2 border-top">
+                <button type="button" class="btn btn-primary btn-sm" id="toastAcceptBtn">Aceptar</button>
+            </div>
+        `;
+
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+
+        document.getElementById("toastAcceptBtn").onclick = () => {
+            toast.hide();
+            if (redirectUrl) window.location.href = redirectUrl;
+            else window.location.reload();
+        };
     }
 });

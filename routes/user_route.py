@@ -9,7 +9,7 @@ from schemas.user_register_schema import user_schema #aca traemos la instancia q
 from schemas.user_login_schema import user_login_schema
 from marshmallow import Schema, fields, ValidationError
 import jwt 
-from utils.email_service import send_welcome_email, send_reset_password_email
+from utils.email_service import send_welcome_email, send_reset_password_email, send_reactivated_email
 import random, string
 import os, uuid
 
@@ -29,6 +29,16 @@ def register_user():
     data = request.form.to_dict() #convierte los datos enviados  en un diccionario
     file = request.files.get("photo")  #obtenemos la foto si se subio un archivo
 
+     # Limpiamos el DNI: quitamos puntos, guiones y espacios
+    dni = data.get('dni', '').replace('.', '').replace('-', '').replace(' ', '')
+
+    # Validamos que solo contenga números
+    if not dni.isdigit():
+        return jsonify({"error": "DNI inválido, solo números"}), 400
+
+    # Reemplazamos el valor limpio en data
+    data['dni'] = dni
+
     #aca guardamos la foto en el servidir (nuestro proyecto)
     photo_filename = None
     if file:
@@ -40,7 +50,11 @@ def register_user():
     try:
         validated_data = user_schema.load(data) #valida que los datos tengan el formato correcto
     except ValidationError as err:
-        return jsonify(err.messages), 400
+        errors = []
+        for field, msgs in err.messages.items():
+            errors.append(f"{field}: {msgs.join(', ')}")
+        return jsonify({"error": errors.join(' | ')}), 400
+
 
     user = User(
         first_name=validated_data['first_name'],
@@ -129,3 +143,37 @@ def forgot_password_new_password():
     send_reset_password_email(user.email, new_password) #enviar correo con la nueva contraseña
 
     return jsonify({"message": "An email with the new password has been sent"}), 200
+
+@user_bp.route('/reactivate-account')
+def reactivate_account():
+    return render_template("auth/reactivate_account.html")
+
+@user_bp.route('/reactivate-account', methods=['POST'])
+def reactivate_account_post():
+    data = request.get_json()
+    email = data.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "No user found with that email"}), 404
+    
+    if user.role != "tourist":
+        return jsonify({"error": "Only tourist accounts can be reactivated"}), 403
+    
+    if user.is_activate:
+        return jsonify({"error": "User is already active"}), 400
+
+    
+    new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) #generamos nueva contraseña
+
+    
+    user.is_activate = True #reactivar cuenta
+    user.set_password(new_password)
+    db.session.commit()
+
+    
+    send_reactivated_email(user.email,new_password )
+    
+    return jsonify({"message": "Your account has been reactivated. Check your email for the new password."}), 200
+
+

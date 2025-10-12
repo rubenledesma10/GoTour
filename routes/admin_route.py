@@ -3,12 +3,14 @@ from flask import Blueprint, jsonify, request, render_template, redirect
 from flask import current_app as app
 from models.db import db
 from models.user import User
+from models.audit_log import AuditLog
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
 from schemas.user_register_schema import user_schema, users_schema
 from marshmallow import Schema, fields, ValidationError
-from utils.email_service import send_welcome_email
+from utils.email_service import send_welcome_email, send_welcome_email_admin
 from utils.decorators import role_required
+from utils.utils import log_action
 import os, uuid
 
 #ACA VAN A ESTAR TODAS LAS RUTAS EN LAS QUE EL ADMINISTRADOR PUEDE ACCEDER
@@ -61,7 +63,16 @@ def add_user(current_user):
     #todos los campos de texto vienen en request.form y no en get_json
     data = request.form.to_dict() #convierte los datos enviados  en un diccionario
     file = request.files.get("photo")  #obtenemos la foto si se subio un archivo
+    
+        # Limpiamos el DNI: quitamos puntos, guiones y espacios
+    dni = data.get('dni', '').replace('.', '').replace('-', '').replace(' ', '')
 
+    # Validamos que solo contenga números
+    if not dni.isdigit():
+        return jsonify({"error": "DNI inválido, solo números"}), 400
+
+    # Reemplazamos el valor limpio en data
+    data['dni'] = dni
     #aca guardamos la foto en el servidir (nuestro proyecto)
     photo_filename = None
     if file:
@@ -93,7 +104,8 @@ def add_user(current_user):
         )
         db.session.add(new_user)
         db.session.commit()
-        send_welcome_email(new_user.email, new_user.username)
+        send_welcome_email_admin(new_user.email, new_user.username)
+        log_action(current_user.id_user, f"Created user {new_user.id_user}")
         return jsonify({
             'message':'User successfully created',
             'user': user_schema.dump(new_user)
@@ -104,7 +116,17 @@ def add_user(current_user):
         return jsonify({'error':'Invalid data type'}), 400
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+        db.session.rollback()
+        if "email" in str(e.orig):
+            return jsonify({"error": "Email ya registrado"}), 400
+        elif "dni" in str(e.orig):
+            return jsonify({"error": "DNI ya registrado"}), 400
+        elif "username" in str(e.orig):
+            return jsonify({"error": "Nombre de usuario ya usado"}), 400
+        elif "phone" in str(e.orig):
+            return jsonify({"error": "Número de telefono ya usado"}), 400
+        else:
+            return jsonify({"error": "Ya existe un registro con estos datos"}), 400
     except Exception as e:
         db.session.rollback()
         print(f"Unexpected error: {e}")
@@ -121,7 +143,10 @@ def edit_user_page(id_user):
     user = User.query.get(id_user)
     if not user:
         return "Usuario no encontrado", 404
-    return render_template("user/edit_admin.html", user=user)
+
+    user_data = user_schema.dump(user)  #para que me incluya age 
+
+    return render_template("user/edit_admin.html", user=user_data)
     
 
 @admin_bp.route('/edit/<string:id_user>', methods=['PUT'])
@@ -156,6 +181,8 @@ def edit_user(current_user, id_user):
             else:
                 setattr(user, field, value)
 
+        log_action(current_user.id_user, f"Edited user {id_user}")
+
         db.session.commit()
         return jsonify({
             'message': 'User edited correctly',
@@ -164,7 +191,16 @@ def edit_user(current_user, id_user):
 
     except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'error': 'Database integrity error: ' + str(e)}), 400
+        if "email" in str(e.orig):
+            return jsonify({"error": "Email ya registrado"}), 400
+        elif "dni" in str(e.orig):
+            return jsonify({"error": "DNI ya registrado"}), 400
+        elif "username" in str(e.orig):
+            return jsonify({"error": "Nombre de usuario ya usado"}), 400
+        elif "phone" in str(e.orig):
+            return jsonify({"error": "Número de telefono ya usado"}), 400
+        else:
+            return jsonify({"error": "Ya existe un registro con estos datos"}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -174,13 +210,22 @@ def edit_user(current_user, id_user):
 @admin_bp.route('/delete/<string:id_user>', methods=['DELETE'])
 @role_required("admin")
 def delete_user(current_user, id_user):
+
+    if str(current_user.id_user) == id_user:
+        return jsonify({'message': 'You cannot deactivate your own account'}), 403
+    
     user = User.query.get(id_user)
     if not user:
         return jsonify({'message':'User not found'}), 404
+    
+    if not user.is_activate:
+        return jsonify({'message':'The user is already deactivate. '})
+
     try:
         user.is_activate = False  #eliminado lógico
         db.session.commit()
-        return jsonify({'message':'User deleted successfully'}), 200
+        log_action(current_user.id_user, f"Deactivated user {id_user}")
+        return jsonify({'message':'User deactivated successfully'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -189,17 +234,35 @@ def delete_user(current_user, id_user):
 @role_required("admin")
 def activate_user(current_user, id_user):
     user = User.query.get(id_user)
+
     if not user:
         return jsonify({'message': 'User not found'}), 404
+
+    if user.is_activate:
+        return jsonify({'message':'The user is already active. '})
 
     try:
         user.is_activate = True  #reactivar usuario
         db.session.commit()
+        log_action(current_user.id_user, f"Activated user {id_user}")
         return jsonify({'message': 'User activated successfully'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
     
+@admin_bp.route('/audit-logs', methods=['GET'])
+def get_audit_logs():
+    logs = db.session.query(AuditLog, User.username)\
+    .join(User, AuditLog.user_id == User.id_user)\
+    .order_by(AuditLog.timestamp.desc()).all()
+    return jsonify([
+        {"id": log.AuditLog.id,
+        "user": log.username,
+        "action": log.AuditLog.action,
+        "timestamp": log.AuditLog.timestamp}
+        for log in logs
+    ])
+
 
 # @admin_bp.route('/get/tourists')
 # @role_required("admin")
@@ -224,3 +287,6 @@ def activate_user(current_user, id_user):
 #     if not tourists:
 #         return jsonify({'message':'There are not tourists deactivated'}),404
 #     return jsonify (users_schema.dump(tourists)),200
+@admin_bp.route("/audit-logs-page")
+def audit_logs_page():
+    return render_template("user/audit_logs.html")

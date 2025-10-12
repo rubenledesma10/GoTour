@@ -10,19 +10,15 @@ from routes.admin_route import admin_bp
 from routes.tourist_route import tourist_bp
 from routes.receptionist_route import recepcionist_bp
 from routes.tourist_site_route import tourist_site
-from routes.routes_admin_touristinfo import touristinfo_bp
-# from routes.routes__recep_touristinfo import touristinfo_recep_bp
+from routes.routes_touristinfo import touristinfo_bp
 from routes.routes_cit import cit_bp
 from routes.feedBack_route import feedback_bp
 from models.user import User
 from models.tourist_site import TouristSite
-import os   
-
+from utils.utils import log_action
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'tourist_sites_images')
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Inicializaciones
 jwt = JWTManager(app)
@@ -37,20 +33,37 @@ app.register_blueprint(tourist_bp)
 app.register_blueprint(recepcionist_bp)
 app.register_blueprint(tourist_site)
 app.register_blueprint(touristinfo_bp)
-# app.register_blueprint(touristinfo_recep_bp)
 app.register_blueprint(cit_bp)
 app.register_blueprint(feedback_bp)
 
-# Rutas
+# Login Manager
+# login_manager = LoginManager()
+# login_manager.init_app(app)
+# login_manager.login_view = "user_bp.login"
+
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return User.query.get(user_id)
+
+#ruta principal
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+
+# @app.route("/feedback")
+# def feedback_page():
+#     """Página de comentarios (pública: cualquiera puede ver).
+#        Solo los logueados podrán comentar (lo valida el backend)."""
+#     sites = TouristSite.query.all()
+#     return render_template("feedBack/usuario.html", sites=sites)
+
+
 
 
 # Crear tablas si no existen
@@ -60,6 +73,7 @@ with app.app_context():
     from models.touristinfo import TouristInfo
     from models.feedBack import feedBack
     from models.tourist_site import TouristSite
+    from models.audit_log import AuditLog
     db.create_all()
 
 if __name__ == '__main__':

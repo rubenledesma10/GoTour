@@ -1,85 +1,135 @@
 {% include "head.html" %}
+{% include "partials/navbar.html" %}
 
-    {% include "partials/navbar.html" %}
-    <div class="container mt-4">
-        <h2 class="mb-4">Bienvenido a la familia de GoTour! 😎</h2>
-        <form id="registerForm" enctype="multipart/form-data">
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-body p-5">
+          <h2 class="text-center text-primary fw-bold mb-4">
+            👋 Bienvenido a la familia de GoTour! 😎
+          </h2>
 
-            <div class="mb-3">
+          <form id="registerForm" enctype="multipart/form-data">
+            <!-- Nombre y Apellido -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
                 <label for="first_name" class="form-label">Nombre</label>
-                <input type="text" class="form-control" id="first_name" name="first_name"
-                    placeholder="Ingrese su nombre" required minlength="2" maxlength="50" required>
-            </div>
-
-            <div class="mb-3">
+                <input type="text" class="form-control rounded-3 shadow-sm" id="first_name" name="first_name"
+                  placeholder="Ingrese su nombre" required minlength="2" maxlength="50">
+              </div>
+              <div class="col-md-6">
                 <label for="last_name" class="form-label">Apellido</label>
-                <input type="text" class="form-control" id="last_name" name="last_name"
-                    placeholder="Ingrese su apellido" required minlength="2" maxlength="50" required>
+                <input type="text" class="form-control rounded-3 shadow-sm" id="last_name" name="last_name"
+                  placeholder="Ingrese su apellido" required minlength="2" maxlength="50">
+              </div>
             </div>
 
-            <div class="mb-3">
+            <!-- Email y Usuario -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
                 <label for="email" class="form-label">Correo electrónico</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="ejemplo@correo.com"
-                    required>
-            </div>
-
-            <div class="mb-3">
-                <label for="password" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="password" name="password"
-                    placeholder="Mínimo 6 caracteres" required minlength="6" required>
-            </div>
-
-            <div class="mb-3">
+                <input type="email" class="form-control rounded-3 shadow-sm" id="email" name="email"
+                  placeholder="ejemplo@correo.com" required>
+              </div>
+              <div class="col-md-6">
                 <label for="username" class="form-label">Nombre de usuario</label>
-                <input type="text" class="form-control" id="username" name="username"
-                    placeholder="Ingrese un nombre de usuario" required minlength="3" required>
+                <input type="text" class="form-control rounded-3 shadow-sm" id="username" name="username"
+                  placeholder="Ingrese un nombre de usuario" required minlength="3">
+              </div>
             </div>
 
-            <div class="mb-3">
+            <!-- Contraseña y Repetir -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" class="form-control rounded-3 shadow-sm" id="password" name="password"
+                  placeholder="Mínimo 6 caracteres" required minlength="6">
+              </div>
+              <div class="col-md-6">
+                <label for="confirm_password" class="form-label">Repetir Contraseña</label>
+                <input type="password" class="form-control rounded-3 shadow-sm" id="confirm_password" name="confirm_password"
+                  placeholder="Repite tu contraseña" required minlength="6">
+              </div>
+            </div>
+
+            <!-- DNI y Teléfono -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
                 <label for="dni" class="form-label">DNI</label>
-                <input type="text" class="form-control" id="dni" name="dni" placeholder="Ingrese su DNI" required
-                    minlength="7" maxlength="20" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="birthdate" class="form-label">Fecha de nacimiento</label>
-                <input type="date" class="form-control" id="birthdate" name="birthdate" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="photo" class="form-label">Foto de perfil (opcional)</label>
-                <input class="form-control" type="file" id="photo" name="photo" accept="image/*">
-            </div>
-
-            <div class="mb-3">
+                <input type="text" class="form-control rounded-3 shadow-sm" id="dni" name="dni"
+                  placeholder="Ingrese su DNI" required minlength="7" maxlength="20">
+              </div>
+              <div class="col-md-6">
                 <label for="phone" class="form-label">Teléfono</label>
-                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Ej: +54 9 261 1234567"
-                    required>
+                <input type="tel" class="form-control rounded-3 shadow-sm" id="phone" name="phone"
+                  placeholder="Ej: +54 9 261 1234567" required>
+              </div>
             </div>
 
-            <div class="mb-3">
-                <label for="nationality" class="form-label">Nacionalidad</label>
-                <input type="text" class="form-control" id="nationality" name="nationality"
-                    placeholder="Ingrese su nacionalidad" required>
+            <!-- Fecha de nacimiento y Género -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="birthdate" class="form-label">Fecha de nacimiento</label>
+                <input type="date" class="form-control rounded-3 shadow-sm" id="birthdate" name="birthdate" required>
+              </div>
+              <div class="col-md-6">
+                <label for="gender" class="form-label">Género</label>
+                <select class="form-select rounded-3 shadow-sm" id="gender" name="gender" required>
+                  <option value="" disabled selected>Seleccione una opción</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="femenino">Femenino</option>
+                  <option value="prefiero no decirlo">Prefiero no decirlo</option>
+                </select>
+              </div>
             </div>
 
-            <div class="mb-3">
-                <label for="province" class="form-label">Provincia</label>
-                <input type="text" class="form-control" id="province" name="province" placeholder="Ingrese su provincia"
-                    required>
-            </div>
-            <div class="mb-3">
-            <label for="gender" class="form-label">Seleccione su género</label>
-            <select class="form-select" id="gender" name="gender" required>
-                <option value="" disabled selected>Seleccione una opción</option>
-                <option value="masculino">Masculino</option>
-                <option value="femenino">Femenino</option>
-                <option value="prefiero no decirlo">Prefiero no decirlo</option>
-            </select>
+            <!-- País y Provincia -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="countrySelect" class="form-label">País</label>
+                <select class="form-select rounded-3 shadow-sm" id="countrySelect" name="nationality" required>
+                  <option value="" disabled selected>Seleccione un país</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="stateSelect" class="form-label">Provincia</label>
+                <select class="form-select rounded-3 shadow-sm" id="stateSelect" name="province" required>
+                  <option value="" disabled selected>Seleccione una provincia</option>
+                </select>
+              </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Registrar</button>
-            <a href="{{ url_for('user_bp.login') }}" class="btn btn-secondary ms-2">Cancelar</a>
-        </form>
+            <!-- Foto de perfil -->
+            <div class="mb-4 text-center">
+              <label for="photo" class="form-label">Foto de perfil (opcional)</label><br>
+              <input class="form-control rounded-3 shadow-sm w-75 mx-auto" type="file" id="photo" name="photo"
+                accept="image/*">
+            </div>
+
+            <!-- Estado del correo -->
+            <div id="emailStatus" class="text-center mb-3 fw-bold" style="font-size: 1.1em; color: orange;"></div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-center gap-3">
+              <button type="submit" class="btn btn-success px-5 shadow-sm">Registrar</button>
+              <a href="{{ url_for('user_bp.login') }}" class="btn btn-secondary px-5 shadow-sm">Cancelar</a>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-{% include "scripts.html"%}
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Mensaje</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+{% include "scripts.html" %}
