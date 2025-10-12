@@ -34,9 +34,11 @@
             <div class="card-body">
 
                 <div class="comment-section tourist-only mt-3">
-                    <a href="/feedback/" class="btn btn-success btn-sm tourist-only">
-                        <i class="bi bi-chat-dots"></i> Comentar
+                    <a href="{{ url_for('feedback_bp.feedback_add_form') }}?site_id={{ site.id_tourist_site }}&name={{ site.name | urlencode }}"
+                    class="btn btn-success btn-sm tourist-only">
+                    <i class="bi bi-chat-dots"></i> Comentar
                     </a>
+
 
                 </div>
 
