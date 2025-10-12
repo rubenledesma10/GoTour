@@ -2,18 +2,16 @@
 
 <body id="protectedBody" style="display: none;">
 
-
     {% include "partials/navbar.html" %}
-
 
     <div class="container mt-4">
         <h2 class="mb-4 mt-3">Sitios Turísticos Creados</h2>
 
+        <!-- 🔹 Solo visible para administradores -->
         <h3 class="admin-only">¿Qué deseas hacer?</h3>
         <a href="/tourist_sites/add" class="btn btn-primary mb-2 admin-only">Agregar sitio turístico</a>
         <a href="/tourist_sites/edit" class="btn btn-warning mb-2 text-white admin-only">Editar sitio turístico</a>
         <a href="/tourist_sites/delete" class="btn btn-danger mb-2 admin-only">Eliminar sitio turístico</a>
-
 
         <div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
             {% for site in sites %}
@@ -29,36 +27,32 @@
                     {% else %}
                     <div class="bg-light text-muted text-center py-5">Sin imagen</div>
                     {% endif %}
+
                     <div class="card-body">
+
                         <a href="{{ url_for('feedback_bp.feedback_add_form', site_id=site.id_tourist_site) }}"
-                            class="btn btn-success btn-sm tourist-only">
+                            class="btn btn-success btn-sm btn-send-comment">
                             <i class="bi bi-chat-dots"></i> Comentar
                         </a>
 
-                        <h5 class="card-title text-primary">{{ site.name }}</h5>
+                        <h5 class="card-title text-primary mt-2">{{ site.name }}</h5>
 
-                        Descripcion:
-                        <p class="card-text">{{ site.description }}</p>
+                        <p class="mb-1"><strong>Descripción:</strong> {{ site.description }}</p>
 
                         <p class="text-muted mb-1">
-                            Direccion:
                             <i class="bi bi-geo-alt-fill"></i> {{ site.address }}
                         </p>
                         <p class="text-muted mb-1">
-                            Contacto/s:
                             <i class="bi bi-telephone-fill"></i> {{ site.phone }}
                         </p>
                         <p class="text-muted mb-1">
-                            Horarios:
                             <i class="bi bi-clock"></i> {{ site.opening_hours }} - {{ site.closing_hours }}
                         </p>
                         <p class="text-muted mb-1">
-                            <i class="bi bi-bar-chart-line"></i>
-                            Promedio visitas:
+                            <i class="bi bi-bar-chart-line"></i> Promedio visitas:
                             <strong>{{ "{:,.2f}".format(site.average or 0) }}</strong>
                         </p>
                         <p class="text-muted">
-                            Categoria:
                             <i class="bi bi-tag-fill"></i> {{ site.category }}
                         </p>
                     </div>
@@ -90,7 +84,7 @@
             {% endfor %}
         </div>
 
-        <!--  Modal Bootstrap para ver imagen ampliada -->
+        <!-- Modal para ver imagen ampliada -->
         <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
@@ -105,37 +99,24 @@
             </div>
         </div>
 
-        <!-- 🔹 Script JS del modal -->
+        <!-- Script para modal -->
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const modalImage = document.getElementById('modalImage');
                 const modalTitle = document.getElementById('imageModalLabel');
 
-                // Captura el click en cualquier imagen de la tabla
                 document.querySelectorAll('.site-photo').forEach(img => {
                     img.addEventListener('click', () => {
                         const imgSrc = img.getAttribute('data-img-src');
                         const imgName = img.getAttribute('data-img-name');
-
                         modalImage.src = imgSrc;
                         modalTitle.textContent = `Vista ampliada - ${imgName}`;
                     });
                 });
             });
         </script>
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const role = localStorage.getItem('role');
-                console.log("Rol detectado:", role);
 
-                // Ocultamos los accesos con la clase "admin-only" si el usuario no es administrador
-                if (role !== 'admin') {
-                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-                }
-            });
-        </script>
+    </div>
 
-</body>
-
-<script src="/static/tourist_sites/tourist_sites.js"></script>
-{% include "scripts.html" %}
+    <script src="/static/tourist_sites/tourist_sites.js"></script>
+    {% include "scripts.html" %}
