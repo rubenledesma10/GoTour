@@ -8,7 +8,7 @@ class TouristSite(db.Model):
     id_tourist_site = db.Column(db.String(50), primary_key=True, unique=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(50), unique=True, nullable=False)
     description = db.Column(db.String(250), nullable=False)
-    address = db.Column(db.String(50), unique=True, nullable=False)
+    address = db.Column(db.String(250), unique=True, nullable=False)
     phone = db.Column(db.String(50), nullable=False)
     category = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(250), unique=True, nullable=False)

@@ -1,6 +1,6 @@
 # routes/touristinfo_route.py
 from flask import Blueprint, request, jsonify, render_template
-from flask_login import login_required, current_user
+#from flask_login import login_required, current_user
 from models.db import db
 from models.touristinfo import TouristInfo
 from utils.decorators import role_required

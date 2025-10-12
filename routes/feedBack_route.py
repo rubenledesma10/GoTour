@@ -6,7 +6,7 @@ from schemas.feedBack_schema import feedback_schema
 from marshmallow import ValidationError
 from utils.decorators import role_required
 from enums.roles_enums import RoleEnum
-from flask_login import current_user
+#from flask_login import current_user
 from models.tourist_site import TouristSite
 from flask import current_app
 
