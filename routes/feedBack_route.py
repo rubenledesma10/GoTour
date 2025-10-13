@@ -41,6 +41,25 @@ def feedback_view():
     sites = TouristSite.query.all()
     return render_template("feedBack/usuario.html", usuario=usuario, sites=sites)
 
+# Formulario para dejar un nuevo comentario
+@feedback_bp.route("/add", methods=["GET"])
+def feedback_add_form():
+    site_id = request.args.get("site_id")
+    site_name = request.args.get("name")
+
+    # Buscar el sitio en la BD
+    site = TouristSite.query.get(site_id)
+    if not site:
+        return render_template("404.html"), 404
+
+    # Renderiza el formulario de comentarios (otra plantilla o la misma si querés)
+    return render_template(
+        "feedBack/usuario.html",  # o feedBack/add.html si lo tenés separado
+        site=site,
+        site_name=site_name,
+        site_id=site_id
+    )
+
 
 # Crear nuevo feedback con fotos
 @feedback_bp.route("/", methods=["POST"])
