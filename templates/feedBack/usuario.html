@@ -1,36 +1,39 @@
 {% include "head.html" %}
-  
-    {% include "partials/navbar.html" %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
 
-  <!-- Contenido -->
+<body>
+  {% include "partials/navbar.html" %}
+
   <div class="container mt-4">
     <h1 class="text-center mb-4">Feedback</h1>
 
     <!-- Formulario de Feedback -->
-    <div id="feedbackFormCard" class="card shadow-sm mb-4 d-none">
+    <div id="feedbackFormCard" class="feedback-card shadow-sm mb-4 d-none">
       <div class="card-body">
         <h5 class="mb-3">Dejá tu comentario</h5>
-        <form id="feedbackForm"></form>
+        <form id="feedbackForm">
           <div class="mb-3">
-            <div>
             <label for="touristSiteName" class="form-label">Lugar Turístico</label>
             <input type="text" id="touristSiteName" class="form-control" value="{{ site_name }}" readonly>
-          <input type="hidden" id="touristSiteId" name="id_tourist_site" value="{{ site_id }}">
+            <input type="hidden" id="touristSiteId" name="id_tourist_site" value="{{ site_id }}">
           </div>
-          </div>
+
           <div class="mb-3">
             <label for="qualification" class="form-label">Calificación (1-5)</label>
             <input type="number" id="qualification" class="form-control" min="1" max="5" required>
           </div>
+
           <div class="mb-3">
             <label for="comment" class="form-label">Comentario</label>
             <textarea id="comment" class="form-control" required></textarea>
           </div>
+
           <div class="mb-3">
             <label for="photos" class="form-label">Subí tus fotos</label>
             <input type="file" id="photos" class="form-control" accept="image/*" multiple>
             <small class="text-muted">Podés seleccionar hasta 10 imágenes.</small>
           </div>
+
           <button type="submit" class="btn btn-primary">Enviar</button>
         </form>
       </div>
@@ -38,7 +41,7 @@
 
     <!-- Promedio general -->
     <h2 class="mb-3">Últimos comentarios</h2>
-    <div id="avgRating" class="avg-rating">⭐ Promedio general: - / 5</div>
+    <div id="avgRating" class="feedback-avg-rating">⭐ Promedio general: - / 5</div>
     <div class="row row-cols-1 row-cols-md-2 g-4" id="latestFeedbacks"></div>
   </div>
 
@@ -94,18 +97,17 @@
     </div>
   </div>
 
-<!-- 🖼️ Modal para ampliar imágenes -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
-  <div class="modal-dialog modal-dialog-centered modal-xl">
-    <div class="modal-content border-0 bg-transparent">
-      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      <img id="modalImage" src="" alt="Foto feedback ampliada">
+  <!-- 🖼️ Modal para ampliar imágenes -->
+  <div class="modal fade" id="feedbackImageModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content border-0 bg-transparent">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <img id="modalImage" src="" alt="Foto feedback ampliada">
+      </div>
     </div>
   </div>
-</div>
 
-
- {% include "scripts.html"%}
+  {% include "scripts.html" %}
   <script>
     const API_URL = "/api/feedback";
     const userRole = localStorage.getItem("role");
@@ -159,13 +161,13 @@
           const card = document.createElement("div");
           card.className = "col";
           card.innerHTML = `
-            <div class="card shadow-sm border-0">
+            <div class="feedback-card shadow-sm border-0">
               <div class="card-body">
                 <div class="feedback-header">
                   <img src="${f.user?.photo 
-                  ? `/static/uploads/${f.user.photo}` 
-                  : '/static/uploads/default_user.png'}" 
-                  alt="usuario" class="profile-photo">
+                    ? `/static/uploads/${f.user.photo}` 
+                    : '/static/uploads/default_user.png'}" 
+                    alt="usuario" class="feedback-profile-photo">
                   <div>
                     <strong>${f.user?.username || "Usuario"}</strong><br>
                     <small class="text-muted">📍 ${f.tourist_site?.name || "Sitio"}</small>
@@ -173,11 +175,11 @@
                 </div>
 
                 <h5 class="card-title mt-2">${renderStars(f.qualification)}</h5>
-                <p class="card-text">${f.comment}</p>
+                <p class="feedback-text">${f.comment}</p>
 
                 ${f.photos && f.photos.length ? `
                   <div class="feedback-photos">
-                   ${f.photos.map(p => `<img src="${p.url}" alt="foto feedback" onclick="openImageModal('${p.url}')">`).join('')}
+                    ${f.photos.map(p => `<img src="${p.url}" alt="foto feedback" onclick="openImageModal('${p.url}')">`).join('')}
                   </div>
                 ` : ""}
 
@@ -186,12 +188,12 @@
                 </div>
 
                 ${f.admin_response ? `
-                  <div class="admin-reply">
+                  <div class="feedback-admin-reply">
                     <div class="feedback-header">
                       <img src="${f.admin_photo 
-                      ? `/static/uploads/${f.admin_photo}` 
-                      : '/static/uploads/default_user.png'}" 
-                      alt="admin" class="profile-photo">
+                        ? `/static/uploads/${f.admin_photo}` 
+                        : '/static/uploads/default_user.png'}" 
+                        alt="admin" class="feedback-profile-photo">
                       <div>
                         <strong>${f.admin_name ? f.admin_name : "Administrador"}</strong><br>
                         <small class="text-muted">${f.response_date ? new Date(f.response_date).toLocaleString() : ""}</small>
@@ -203,9 +205,9 @@
 
                 ${role === "ADMIN" ? `
                   <div class="mt-2">
-                    <button class="btn btn-sm btn-success me-2" onclick="openEditModal('${f.id_feedback}', \`${f.comment}\`, ${f.qualification})">Editar</button>
-                    <button class="btn btn-sm btn-danger me-2" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button>
-                    <button class="btn btn-sm btn-primary" onclick="openReplyModal('${f.id_feedback}', \`${f.comment}\`)">Responder</button>
+                    <button class="btn feedback-btn-sm btn-success me-2" onclick="openEditModal('${f.id_feedback}', \`${f.comment}\`, ${f.qualification})">Editar</button>
+                    <button class="btn feedback-btn-sm btn-danger me-2" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button>
+                    <button class="btn feedback-btn-sm btn-primary" onclick="openReplyModal('${f.id_feedback}', \`${f.comment}\`)">Responder</button>
                   </div>
                 ` : ""}
               </div>
@@ -221,7 +223,7 @@
     function openImageModal(url) {
       const img = document.getElementById("modalImage");
       img.src = url;
-      const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+      const modal = new bootstrap.Modal(document.getElementById("feedbackImageModal"));
       modal.show();
     }
 

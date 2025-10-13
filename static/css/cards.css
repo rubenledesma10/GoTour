@@ -1,133 +1,57 @@
-/* =============================
-   ESTILOS ESPECÍFICOS DE FEEDBACK
-   ============================= */
-
-/* Contenedor general */
-#latestFeedbacks {
-  margin-top: 1.5rem;
+/* Card container */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+    background-color: #fff;
 }
 
-/* Tarjeta de feedback */
-.feedback-card {
-  border-radius: 16px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  background: #fff;
-  overflow: hidden;
+/* Hover: se agranda y resalta */
+.card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.2);
 }
 
-.feedback-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+/* Imagen circular más grande */
+.card img {
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
 }
 
-/* Encabezado del feedback (usuario o admin) */
-.feedback-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.card img:hover {
+    transform: scale(1.1);
 }
 
-/* Foto de perfil */
-.feedback-card .profile-photo {
-  width: 55px;
-  height: 55px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid #f5f5f5;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* Card body */
+.card-body {
+    padding: 1rem 1.5rem;
 }
 
-/* Texto del nombre y lugar */
-.feedback-header strong {
-  font-size: 1rem;
-  color: #333;
-}
-.feedback-header small {
-  color: #888;
+/* Título centrado */
+.card-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
-/* Comentario */
-.feedback-card .card-text {
-  color: #555;
-  margin-top: 0.5rem;
-  line-height: 1.5;
-  font-size: 0.95rem;
+/* Textos internos */
+.card-text {
+    font-size: 0.9rem;
+    color: #555;
 }
 
-/* Calificación (estrellas) */
-.feedback-card .card-title {
-  font-size: 1.2rem;
-  color: #ffb400;
-  margin-top: 0.75rem;
+/* Botones */
+.card .btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Fecha */
-.feedback-card .text-muted small {
-  font-size: 0.8rem;
+.card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-/* Fotos dentro del feedback */
-.feedback-photos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 0.5rem;
-}
-
-.feedback-photos img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.feedback-photos img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-/* Respuesta del admin */
-.admin-reply {
-  margin-top: 1rem;
-  padding: 0.8rem 1rem;
-  background: #f1f8ff;
-  border-left: 4px solid #007bff;
-  border-radius: 8px;
-  font-size: 0.95rem;
-}
-
-.admin-reply p {
-  margin: 0.4rem 0 0;
-  color: #333;
-}
-
-/* Promedio general */
-.avg-rating {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-/* Botones admin */
-.feedback-card .btn {
-  font-size: 0.85rem;
-  padding: 4px 10px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.feedback-card .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-
-/* Modal de imagen ampliada */
-#modalImage {
-  width: 100%;
-  max-height: 85vh;
-  object-fit: contain;
-  border-radius: 12px;
+.row {
+    justify-content: center;
 }
