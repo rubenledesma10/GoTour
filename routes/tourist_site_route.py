@@ -26,8 +26,8 @@ tourist_site = Blueprint('tourist_site', __name__)
 
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
-@role_required("admin")
-def get_tourist_sites(current_user):
+
+def get_tourist_sites():
     query = request.args.get('q', '').strip().lower()
     category = request.args.get('category', '').strip().lower()
     is_active = request.args.get('is_active', '').strip().lower()
