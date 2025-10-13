@@ -1,10 +1,10 @@
-/* ======== Card principal ======== */
-.card {
+/* ======== Card principal de Feedback ======== */
+.feedback-card {
   border-radius: 15px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.card:hover {
+.feedback-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
@@ -16,7 +16,7 @@
   gap: 10px;
 }
 
-.profile-photo {
+.feedback-profile-photo {
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -24,15 +24,8 @@
   border: 2px solid #ddd;
 }
 
-/* ======== Estrellas ======== */
-.card-title {
-  font-size: 1.3rem;
-  color: #f4c542;
-  letter-spacing: 2px;
-}
-
 /* ======== Comentario ======== */
-.card-text {
+.feedback-text {
   color: #333;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -61,7 +54,7 @@
 }
 
 /* ======== Respuesta del administrador ======== */
-.admin-reply {
+.feedback-admin-reply {
   background-color: #f9f9f9;
   border-left: 4px solid #0d6efd;
   padding: 10px 15px;
@@ -69,31 +62,31 @@
   border-radius: 10px;
 }
 
-.admin-reply p {
+.feedback-admin-reply p {
   margin: 5px 0 0;
   color: #333;
 }
 
-.admin-reply .feedback-header {
+.feedback-admin-reply .feedback-header {
   margin-bottom: 5px;
 }
 
 /* ======== Modal de imagen ======== */
-#imageModal img {
+#feedbackImageModal img {
   width: 100%;
   height: auto;
   border-radius: 12px;
   box-shadow: 0 0 15px rgba(0,0,0,0.5);
 }
 
-#imageModal .btn-close {
+#feedbackImageModal .btn-close {
   background-color: rgba(255,255,255,0.8);
   border-radius: 50%;
   padding: 10px;
 }
 
 /* ======== Promedio general ======== */
-.avg-rating {
+.feedback-avg-rating {
   font-weight: bold;
   margin-bottom: 1rem;
   font-size: 1.1rem;
@@ -101,12 +94,12 @@
 }
 
 /* ======== Botones de acciones admin ======== */
-.card .btn-sm {
+.feedback-card .feedback-btn-sm {
   border-radius: 20px;
   font-size: 0.8rem;
   padding: 4px 10px;
 }
 
-.card .btn-sm:hover {
+.feedback-card .feedback-btn-sm:hover {
   opacity: 0.9;
 }
