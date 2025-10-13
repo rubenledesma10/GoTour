@@ -65,87 +65,73 @@ def edit_page():
 @recepcionist_bp.route("/my_data/edit", methods=['PUT'])
 @role_required("receptionist")
 def edit_my_data(current_user):
-   # 1. IDENTIFICACIÓN SEGURA: El usuario a editar ES el usuario logueado.
     user = current_user
-    
-    # Obtener datos de texto y archivo de FormData
     data = request.form.to_dict()
     file = request.files.get("photo")
+
     current_password = data.pop("current_password", None)
     new_password = data.get("password")
-    if new_password: # El campo 'Nueva contraseña' fue llenado, implica intento de cambio.
-        
-        # 2a. Verificar si el usuario proporcionó la contraseña actual
+
+    # 🔒 Validar cambio de contraseña
+    if new_password:
         if not current_password:
-             # Este error se evita mayormente en el frontend, pero la validación en el backend es obligatoria.
             return jsonify({"error": "Debe ingresar la contraseña actual para cambiarla."}), 400
-
-        # 2b. Verificar la contraseña actual contra el hash almacenado
-        # ASUMIMOS que user.check_password() está implementado en tu modelo User (por ejemplo, usando Werkzeug o bcrypt)
         if not user.check_password(current_password):
-            # Este es el error 400 más probable si el usuario se equivocó al escribir su contraseña actual.
             return jsonify({"error": "La contraseña actual ingresada es incorrecta."}), 400
-            
     else:
-        # Si NO hay nueva contraseña, aseguramos que el campo 'password' no llegue a Marshmallow 
-        # con un valor vacío, lo que podría generar un error de validación o actualizarlo a None.
-        if "password" in data:
-            data.pop("password")
+        data.pop("password", None)
+
     try:
-        # 2. Validar datos de texto con Marshmallow
         validated_data = user_schema.load(data, partial=True)
-        
     except ValidationError as err:
-        return jsonify(err.messages), 400
+        errors = []
+        for field, msgs in err.messages.items():
+            errors.append(f"{field}: {', '.join(msgs)}")
+        return jsonify({"error": " | ".join(errors)}), 400
 
     try:
-        # 3. Guardar foto si se subió (Lógica de Admin)
+        # 📷 Foto
         if file and file.filename:
-            
-            # Generar nombre único con UUID (como en tu admin)
             file_extension = os.path.splitext(file.filename)[1]
-            filename = f"{uuid.uuid4()}{file_extension}" 
+            filename = f"{uuid.uuid4()}{file_extension}"
             upload_path = os.path.join("static/uploads", filename)
-                 
-                    
             file.save(upload_path)
-            user.photo = filename # Actualiza el campo 'photo' del usuario
-            
-        # 4. ACTUALIZAR CAMPOS DE TEXTO
-        for field, value in validated_data.items():
-            
-            # 🚨 SEGURIDAD: Bloquear la edición de campos sensibles
-            if field in ["role", "is_activate", "id_user"]: # NO puede cambiar su rol o estado
-                continue
-                
-            if field == "email":
-                user.email = value.lower()
-            elif field == "password":
-                user.set_password(value) # Usar tu método de hashing
-            elif hasattr(user, field): 
-                 setattr(user, field, value)
+            user.photo = filename
 
-        log_action(user.id_user, "Updated their profile")
+        # ✏️ Actualizar datos
+        for field, value in validated_data.items():
+            if field in ["role", "is_activate", "id_user"]:
+                continue
+            # 🚫 Recepcionista no puede editar email
+            if field == "email":
+                continue
+            elif field == "password":
+                user.set_password(value)
+            elif hasattr(user, field):
+                setattr(user, field, value)
+
         db.session.commit()
-        
+        log_action(user.id_user, "Editó su perfil")
+
         return jsonify({
-            'message': 'Your profile has been successfully updated.',
-            'user': user_schema.dump(user)
+            "message": "Perfil actualizado correctamente ✅",
+            "user": user_schema.dump(user)
         }), 200
 
     except IntegrityError as e:
         db.session.rollback()
-        if "email" in str(e.orig):
+        msg = str(e.orig)
+        if "email" in msg:
             return jsonify({"error": "Email ya registrado"}), 400
-        elif "dni" in str(e.orig):
+        if "dni" in msg:
             return jsonify({"error": "DNI ya registrado"}), 400
-        elif "username" in str(e.orig):
+        elif "username" in msg:
             return jsonify({"error": "Nombre de usuario ya usado"}), 400
-        elif "phone" in str(e.orig):
-            return jsonify({"error": "Número de telefono ya usado"}), 400
-        else:
-            return jsonify({"error": "Ya existe un registro con estos datos"}), 400
+        elif "phone" in msg:
+            return jsonify({"error": "Número de teléfono ya usado"}), 400
+        return jsonify({"error": "Ya existe un registro con estos datos"}), 400
+
     except Exception as e:
         db.session.rollback()
         print(f"Update error: {e}")
-        return jsonify({'error': 'An internal server error occurred.'}), 500
+        return jsonify({"error": f"Error interno del servidor: {e}"}), 500
