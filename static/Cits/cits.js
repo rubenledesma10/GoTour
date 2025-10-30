@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const role = localStorage.getItem('role');
 
 
-    // VALIDACIÓN DE ACCESO
-    if (!token) {
-        alert("⚠️ Debes iniciar sesión o registrarte para acceder a los Centros de Información Turística.");
-        window.location.replace('/'); 
-        return;
-    }
+    // // VALIDACIÓN DE ACCESO
+    // if (!token) {
+    //     alert("⚠️ Debes iniciar sesión o registrarte para acceder a los Centros de Información Turística.");
+    //     window.location.replace('/'); 
+    //     return;
+    // }
 
     if (body) body.style.display = 'block';
 

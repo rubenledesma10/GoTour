@@ -28,23 +28,33 @@ def create_tourist(current_user):
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
 
     try:
+        quantity = int(data["quantity"])
+        person_with_disability = int(data["person_with_disability"])
+
+        # 🔹 Validación adicional
+        if person_with_disability > quantity:
+            return jsonify({"error": "La cantidad de personas con discapacidad no puede ser mayor al total de personas"}), 400
+
         new_tourist = TouristInfo(
             nationality=data["nationality"].strip(),
             province=data["province"].strip(),
-            quantity=int(data["quantity"]),
-            person_with_disability=int(data["person_with_disability"]),
+            quantity=quantity,
+            person_with_disability=person_with_disability,
             mobility=data["mobility"].strip(),
             id_user=current_user.id_user
         )
+
         db.session.add(new_tourist)
         db.session.commit()
         return jsonify(new_tourist.serialize()), 201
+
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({"error": "Data conflict", "details": str(e)}), 409
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
 
 
 # ---------------- Editar / actualizar TouristInfo (solo receptionist) ----------------
@@ -64,14 +74,25 @@ def update_tourist(current_user, tourist_id):
             setattr(tourist, field, data[field])
 
     try:
+        # 🔹 Convertir valores si fueron modificados
+        quantity = int(tourist.quantity)
+        person_with_disability = int(tourist.person_with_disability)
+
+        # 🔹 Validación lógica
+        if person_with_disability > quantity:
+            db.session.rollback()
+            return jsonify({"error": "La cantidad de personas con discapacidad no puede ser mayor al total de personas"}), 400
+
         db.session.commit()
         return jsonify(tourist.serialize()), 200
+
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({"error": "Data conflict", "details": str(e)}), 409
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
 
 
 # ---------------- Eliminar TouristInfo (solo receptionist) ----------------

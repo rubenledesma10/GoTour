@@ -1,6 +1,5 @@
 {% include "head.html" %}
-    {% include "partials/navbar.html" %}
-
+{% include "partials/navbar.html" %}
 
 <div class="container mt-4">
     <h2 class="text-center mb-4">Editar Centro de Información Turística</h2>
@@ -8,7 +7,20 @@
     <form id="editCitForm" data-id="{{ cit.id_cit }}">
         <div class="mb-3">
             <label for="district" class="form-label">Distrito</label>
-            <input type="text" id="district" name="district" class="form-control" value="{{ cit.district }}" required>
+            <select id="district" name="district" class="form-select" required>
+                <option value="">Seleccione un distrito</option>
+                <option value="Maipú Centro" {% if cit.district == "Maipú Centro" %}selected{% endif %}>Maipú Centro</option>
+                <option value="Coquimbito" {% if cit.district == "Coquimbito" %}selected{% endif %}>Coquimbito</option>
+                <option value="Luzuriaga" {% if cit.district == "Luzuriaga" %}selected{% endif %}>Luzuriaga</option>
+                <option value="Russell" {% if cit.district == "Russell" %}selected{% endif %}>Russell</option>
+                <option value="Lunlunta" {% if cit.district == "Lunlunta" %}selected{% endif %}>Lunlunta</option>
+                <option value="Cruz de Piedra" {% if cit.district == "Cruz de Piedra" %}selected{% endif %}>Cruz de Piedra</option>
+                <option value="Fray Luis Beltrán" {% if cit.district == "Fray Luis Beltrán" %}selected{% endif %}>Fray Luis Beltrán</option>
+                <option value="San Roque" {% if cit.district == "San Roque" %}selected{% endif %}>San Roque</option>
+                <option value="Barrancas" {% if cit.district == "Barrancas" %}selected{% endif %}>Barrancas</option>
+                <option value="General Gutiérrez" {% if cit.district == "General Gutiérrez" %}selected{% endif %}>General Gutiérrez</option>
+                <option value="Rodeo del Medio" {% if cit.district == "Rodeo del Medio" %}selected{% endif %}>Rodeo del Medio</option>
+            </select>
         </div>
 
         <div class="mb-3">
@@ -21,10 +33,10 @@
             <input type="number" id="number_cit" name="number_cit" class="form-control" value="{{ cit.number_cit }}" required>
         </div>
 
-        <div class="form-check mb-2">
+        <!-- <div class="form-check mb-2">
             <input type="checkbox" id="is_activate" name="is_activate" class="form-check-input" {% if cit.is_activate %}checked{% endif %}>
             <label for="is_activate" class="form-check-label">Activo</label>
-        </div>
+        </div> -->
 
         <div class="form-check mb-3">
             <input type="checkbox" id="is_activate_qr_map" name="is_activate_qr_map" class="form-check-input" {% if cit.is_activate_qr_map %}checked{% endif %}>
