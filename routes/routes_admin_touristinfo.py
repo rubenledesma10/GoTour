@@ -7,12 +7,6 @@ from utils.decorators import role_required
 
 touristinfo_bp = Blueprint("touristinfo_bp", __name__, url_prefix="/api/touristinfo")
 
-# ---------------- Lista admin / CRUD (Carga la vista con JS) ----------------
-@touristinfo_bp.route("/list", endpoint="list_tourists_page")
-def list_tourists_view():
-    tourists = TouristInfo.query.all()
-    return render_template("touristinfo/touristinfo.html", tourists=tourists)
-
 # ---------------- Crear TouristInfo (solo admin) ----------------
 @touristinfo_bp.route("/", methods=["POST"])
 @role_required("admin")
@@ -93,17 +87,52 @@ def update_tourist(current_user, tourist_id):
 
 
 # ---------------- Eliminar TouristInfo (solo admin) ----------------
-@touristinfo_bp.route("/<int:tourist_id>", methods=["DELETE"])
-@role_required("admin")
-def delete_tourist(current_user,tourist_id ):
-    tourist = TouristInfo.query.get(tourist_id)
-    if not tourist:
-        return jsonify({"error": "Tourist not found"}), 404
+@touristinfo_bp.route('/api/tourist_info/<id_tourist_info>', methods=['DELETE'])
 
-    try:
-        db.session.delete(tourist)
-        db.session.commit()
-        return jsonify({"message": "Tourist deleted successfully"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+@role_required("admin")
+def delete_tourist(id_tourist_info):
+        tourist_info = TouristInfo.query.get(id_tourist_info)
+
+        if not tourist_info:
+            return jsonify({'message': 'Tourist not found'}), 404
+
+        try:
+            tourist_info.is_activate = False  # Directamente mantenemos inactivo el sitio. Eliminado logico.
+            # Es decir, tenemos el espacio vacio, pero con la tabla creada.
+            #db.session.delete(tourist_site)
+            db.session.commit()
+            return jsonify({'message': 'Tourist Site delete successfully'})
+
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+
+
+# ---------------- RUTAS DE ADMIN HTML----------------
+
+# ---------------- Lista admin / CRUD (Carga la vista con JS) ----------------
+@touristinfo_bp.route("/list", endpoint="list_tourists_page")
+def list_tourists_view():
+    tourists = TouristInfo.query.all()
+    return render_template("touristinfo/touristinfoadmin/touristinfo.html", tourists=tourists)
+
+# ---------------- RUTAS DE ADMIN HTML----------------
+
+@touristinfo_bp.route("/touristinfo/add", methods=["GET"])
+def add_touristinfo_page():
+    return render_template("touristinfo/touristinfoadmin/touristinfo_admin_add_touristinfo.html", role="admin")
+
+@touristinfo_bp.route("/touristinfo/edit/<string:id_tourist>", methods=["GET"])
+def edit_cit_page(id_cit):
+    tourist_info = TouristInfo.query.get(id_cit)
+    if not tourist_info:
+        return render_template("errors/404.html"), 404
+    return render_template("touristinfo/touristinfoadmin/touristinfo_admin_edit_touristinfo.html", tourist_info=tourist_info, role="admin")
+
+
+@touristinfo_bp.route("/touristinfo/delete/<string:id_tourist>", methods=["GET"])
+def delete_touristinfo_page(id_tourist):
+    tourist_info = TouristInfo.query.get(id_tourist)
+    if not tourist_info:
+        return render_template("errors/404.html"), 404
+    return render_template("touristinfo/touristinfoadmin/touristinfo_admin_delete_touristinfo.html", tourist_info=tourist_info, role="admin")

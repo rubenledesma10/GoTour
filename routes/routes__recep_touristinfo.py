@@ -2,17 +2,11 @@
 from flask import Blueprint, request, jsonify, render_template
 from sqlalchemy.exc import IntegrityError
 from models.db import db
+from models.tourist_site import TouristSite
 from models.touristinfo import TouristInfo
 from utils.decorators import role_required
 
 touristinfo_recep_bp = Blueprint("touristinfo_recep_bp", __name__, url_prefix="/api/touristinfo_recep")
-
-#---------------- Lista receptionist / CRUD (Carga la vista con JS) ----------------
-@touristinfo_recep_bp.route("/list", endpoint="list_tourists_page_recep")
-def list_tourists_view():
-    tourists = TouristInfo.query.all()
-    return render_template("touristinfo/touristinfo_recep.html", tourists=tourists)
-
 
 # ---------------- Crear TouristInfo (solo receptionist) ----------------
 @touristinfo_recep_bp.route("/", methods=["POST"])
@@ -65,7 +59,8 @@ def update_tourist(current_user, tourist_id):
     if not tourist:
         return jsonify({"error": "Tourist not found"}), 404
 
-    data = request.get_json()
+    # Cambié aquí para aceptar form-data
+    data = request.form.to_dict() or request.get_json()
     if not data:
         return jsonify({"error": "Invalid data"}), 400
 
@@ -74,11 +69,10 @@ def update_tourist(current_user, tourist_id):
             setattr(tourist, field, data[field])
 
     try:
-        # 🔹 Convertir valores si fueron modificados
+        # Convertir a int para validación lógica
         quantity = int(tourist.quantity)
         person_with_disability = int(tourist.person_with_disability)
 
-        # 🔹 Validación lógica
         if person_with_disability > quantity:
             db.session.rollback()
             return jsonify({"error": "La cantidad de personas con discapacidad no puede ser mayor al total de personas"}), 400
@@ -104,9 +98,18 @@ def delete_tourist(current_user, tourist_id):
         return jsonify({"error": "Tourist not found"}), 404
 
     try:
-        db.session.delete(tourist)
+        # 🔹 Borrado lógico
+        tourist.is_active = False
         db.session.commit()
-        return jsonify({"message": "Tourist deleted successfully"}), 200
+        return jsonify({"message": "Turista eliminado (marcado como inactivo) correctamente."}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+    
+#---------------- Lista receptionist / CRUD (Carga la vista con JS) ----------------
+@touristinfo_recep_bp.route("/list", endpoint="list_tourists_page_recep")
+def list_tourists_view():
+    tourists = TouristInfo.query.all()
+    return render_template("touristinfo/touristinforecep/touristinfo_recep.html", tourists=tourists)
