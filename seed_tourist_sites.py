@@ -5,7 +5,7 @@ from models.db import db
 from models.tourist_site import TouristSite
 
 # usuario admin
-ADMIN_USER_ID = "cde306e1-7599-42e9-89f7-9f208c7c76d4"
+ADMIN_USER_ID = "15dbf7af-a112-4ab7-be49-86f3c202b92f"
 
 
 def seed_tourist_sites():

@@ -1,7 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from flask import Blueprint, jsonify, request
 from models.db import db
-# from models.feedBack import Feedback 
+from models.feedBack import feedBack 
 from models.tourist_site import TouristSite
 from datetime import datetime, date
 from enums.roles_enums import RoleEnum
@@ -158,6 +158,49 @@ def add_tourist_site(current_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({"errors": {"server": [f"Error adding Tourist Site: {str(e)}"]}}), 500
+# --------------------------------------------------------------------------------- #
+# Endpoint para agregar un comentario con calificación a un sitio turístico.
+
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>/feedback', methods=['POST'])
+@role_required("tourist")
+def add_feedback(current_user, id_tourist_site):
+    data = request.get_json()
+
+    # Validamos los datos mínimos
+    if not data or "comment" not in data or "qualification" not in data:
+        return jsonify({"error": "Se requieren los campos 'comment' y 'qualification'"}), 400
+
+    # Validamos el sitio turístico
+    site = TouristSite.query.get(id_tourist_site)
+    if not site:
+        return jsonify({"error": "El sitio turístico no existe"}), 404
+
+    try:
+        # Crear feedback
+        new_feedback = feedBack(
+            comment=data["comment"].strip(),
+            qualification=int(data["qualification"]),
+            id_user=current_user.id_user,
+            id_tourist_site=id_tourist_site
+        )
+
+        db.session.add(new_feedback)
+        db.session.commit()
+
+        # Actualizar promedio de calificaciones
+        site.update_average_rating()
+
+        return jsonify({
+            "message": "Comentario agregado con éxito",
+            "feedback": new_feedback.serialize(),
+            "new_average_rating": site.average_rating
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Error al agregar comentario: {str(e)}"}), 500
+
+
 # --------------------------------------------------------------------------------- #
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['PUT'])
@@ -443,3 +486,5 @@ def edit_tourist_site_form():
 def delete_tourist_site_form():
     sites = TouristSite.query.all()
     return render_template('tourist_site/delete_tourist_sites.html', sites=sites)
+
+

@@ -1,9 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ tourist_sites_view.js cargado correctamente");
 
-    // =============================
-    // 🔐 Autenticación y roles
-    // =============================
+    // Autenticación y roles
+
     const body = document.getElementById("protectedBody");
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -25,9 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // =============================
-    // 🔍 Búsqueda y filtros
-    // =============================
+    // Búsqueda y filtros
+
     const searchInput = document.getElementById("searchInput");
     const categoryFilter = document.getElementById("categoryFilter");
     const statusFilter = document.getElementById("statusFilter");
@@ -39,9 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // =============================
-    // 🧱 Renderizar sitios turísticos
-    // =============================
+    // Renderizar sitios turísticos
+
     function renderSites(sites) {
         container.innerHTML = "";
 
@@ -62,6 +59,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
+            // Generar estrellas según el promedio de calificaciones
+            let ratingStars = "";
+            if (site.average_rating && site.average_rating > 0) {
+                const filledStars = Math.floor(site.average_rating);
+                const emptyStars = 5 - filledStars;
+
+                ratingStars += `<p class="text-muted mb-1">
+                    <i class="bi bi-star-fill text-warning"></i> Promedio calificaciones: `;
+
+                for (let i = 0; i < filledStars; i++) {
+                    ratingStars += `<i class="bi bi-star-fill text-warning"></i>`;
+                }
+                for (let i = 0; i < emptyStars; i++) {
+                    ratingStars += `<i class="bi bi-star text-muted"></i>`;
+                }
+
+                ratingStars += ` (${site.average_rating.toFixed(2)})</p>`;
+            } else {
+                ratingStars = `<p class="text-muted mb-1">
+                    <i class="bi bi-star text-muted"></i> Sin calificaciones
+                </p>`;
+            }
+
             // Estado del sitio
             let statusBadge = "";
             if (site.is_activate) {
@@ -77,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>`;
             }
 
-            // 🟢 Botón de comentar (solo turistas logueados y sitio activo)
+            // Botón de comentar (solo turistas logueados y sitio activo)
             const commentButton = (role === "tourist" && site.is_activate && token)
                 ? `
                     <a href="/api/feedback/add?site_id=${site.id_tourist_site}&name=${encodeURIComponent(site.name)}"
@@ -87,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 `
                 : "";
 
-            // 💳 Card completa
+            // Card completa
             const card = `
                 <div class="col">
                     <div class="card h-100 shadow-sm border-0">
@@ -105,11 +125,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             <h5 class="card-title text-primary">${site.name}</h5>
                             <p><strong>Descripción:</strong> ${site.description}</p>
                             <p class="text-muted"><i class="bi bi-geo-alt-fill"></i> ${site.address}</p>
-                            <p class="text-muted"><i class="bi bi-tag-fill"></i> ${site.category}</p>
                             <p class="text-muted"><i class="bi bi-clock"></i> ${site.opening_hours} - ${site.closing_hours}</p>
-                            <p class="text-muted"><i class="bi bi-bar-chart-line"></i> Promedio visitas:
+                            <p class="text-muted mb-1"><i class="bi bi-bar-chart-line"></i> Promedio visitas:
                                 <strong>${site.average?.toFixed(2) || "0.00"}</strong>
                             </p>
+                            ${ratingStars} <!-- ⭐️ Insertamos el bloque de estrellas -->
+                            <p class="text-muted"><i class="bi bi-tag-fill"></i> ${site.category}</p>
                         </div>
                         <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
                             ${site.url ? `
@@ -124,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
             container.insertAdjacentHTML("beforeend", card);
         });
 
-        // 🖼️ Modal de imagen
+        //  Modal de imagen
         document.querySelectorAll(".site-photo").forEach(img => {
             img.addEventListener("click", () => {
                 const modalImage = document.getElementById("modalImage");
@@ -135,9 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // =============================
-    // 🔄 Reactivar sitio turístico
-    // =============================
+    //  Reactivar sitio turístico
+    
     container.addEventListener("click", async (e) => {
         const btn = e.target.closest(".btn-reactivate");
         if (!btn) return;
@@ -174,9 +194,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // =============================
-    // 🔎 Buscar sitios con filtros
-    // =============================
+    //  Buscar sitios con filtros
+
     async function searchSites() {
         const query = searchInput?.value.trim() || "";
         const category = categoryFilter?.value || "";
@@ -215,9 +234,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // =============================
-    // ⚡ Eventos
-    // =============================
+    // Eventos
+
     if (searchBtn) {
         searchBtn.addEventListener("click", e => {
             e.preventDefault();
