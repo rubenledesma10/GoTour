@@ -8,7 +8,7 @@
 
         <h2 class="mb-4">Información Turística - Receptionist</h2>
 
-        <!-- Botón agregar solo visible para receptionist -->
+        <!-- Botón agregar -->
         <div class="mb-3">
             <button id="btnShowAdd" class="btn btn-primary d-none" data-role="receptionist">Agregar</button>
         </div>
@@ -27,20 +27,24 @@
             </thead>
             <tbody>
                 {% for tourist in tourists %}
-                <tr data-id="{{ tourist.id_turist }}">
+                <tr data-id="{{ tourist.id_turist }}" class="{{ 'table-danger' if not tourist.is_active else '' }}">
                     <td>{{ tourist.nationality }}</td>
                     <td>{{ tourist.province }}</td>
                     <td>{{ tourist.quantity }}</td>
                     <td>{{ tourist.mobility }}</td>
                     <td>{{ tourist.person_with_disability }}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-warning btnEdit d-none" data-role="receptionist">Editar</button>
-                        <button class="btn btn-sm btn-danger btnDelete d-none" data-role="receptionist">Eliminar</button>
+                        {% if tourist.is_active %}
+                            <button class="btn btn-sm btn-warning btnEdit d-none" data-role="receptionist">Editar</button>
+                            <button class="btn btn-sm btn-danger btnDelete d-none" data-role="receptionist">Eliminar</button>
+                        {% else %}
+                            <button class="btn btn-sm btn-success btnReactivate d-none" data-role="receptionist">Reactivar</button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6">No hay turistas cargados</td>
+                    <td colspan="6" class="text-center">No hay turistas cargados</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -137,7 +141,6 @@
     border-radius: 1rem;
     box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     padding: 20px;
-    display: none; /* oculto por defecto */
 }
 .floating-form .card {
     margin: 0;
@@ -150,54 +153,54 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addForm = document.getElementById('addFormContainer');
     const editForm = document.getElementById('editFormContainer');
+    const btnShowAdd = document.getElementById('btnShowAdd');
+    const btnCancelAdd = document.getElementById('btnCancelAdd');
+    const btnCancelEdit = document.getElementById('btnCancelEdit');
+    const role = (localStorage.getItem('role') || '').toLowerCase();
 
-    // asegurarse de que estén ocultos al inicio
     addForm.style.display = 'none';
     editForm.style.display = 'none';
 
-    const role = (localStorage.getItem('role') || '').toLowerCase();
-
+    // Mostrar botones solo si es receptionist
     if (role === 'receptionist') {
-        document.getElementById('btnShowAdd').classList.remove('d-none');
-        document.querySelectorAll('.btnEdit, .btnDelete').forEach(btn => btn.classList.remove('d-none'));
+        btnShowAdd.classList.remove('d-none');
+        document.querySelectorAll('.btnEdit, .btnDelete, .btnReactivate').forEach(btn => btn.classList.remove('d-none'));
     }
 
-    // Abrir formulario agregar
-    document.getElementById('btnShowAdd').addEventListener('click', () => {
-        addForm.style.display = 'block';
-    });
-    document.getElementById('btnCancelAdd').addEventListener('click', () => {
-        addForm.style.display = 'none';
-    });
+    // Abrir/cerrar formulario agregar
+    btnShowAdd.addEventListener('click', () => addForm.style.display = 'block');
+    btnCancelAdd.addEventListener('click', () => addForm.style.display = 'none');
 
-    // Abrir formulario editar
-    document.querySelectorAll('.btnEdit').forEach(btn => {
-        btn.addEventListener('click', e => {
-            const row = e.target.closest('tr');
+    // Delegación de eventos para botones de la tabla
+    document.querySelector('tbody').addEventListener('click', e => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+
+        // Editar
+        if (e.target.classList.contains('btnEdit')) {
             const id = row.dataset.id;
-
             document.getElementById('editId').value = id;
             document.getElementById('editNationality').value = row.children[0].innerText;
             document.getElementById('editProvince').value = row.children[1].innerText;
             document.getElementById('editQuantity').value = row.children[2].innerText;
             document.getElementById('editDisability').value = row.children[4].innerText;
             document.getElementById('editMobility').value = row.children[3].innerText;
-
             editForm.style.display = 'block';
-        });
+        }
+
+        // Aquí después podés agregar Delete o Reactivate con e.target.classList.contains('btnDelete') etc.
     });
-    document.getElementById('btnCancelEdit').addEventListener('click', () => {
-        editForm.style.display = 'none';
-    });
+
+    btnCancelEdit.addEventListener('click', () => editForm.style.display = 'none');
 });
 </script>
 
 
-<!-- JS específicos -->
+<!-- Scripts del receptionist -->
 <script src="/static/recep_touristinfo.js/touristinfo_recep.js"></script>
 <script src="/static/recep_touristinfo.js/touristinfo_add_recep.js"></script>
 <script src="/static/recep_touristinfo.js/touristinfo_edit_recep.js"></script>
 <script src="/static/recep_touristinfo.js/touristinfo_delete_recep.js"></script>
+<script src="/static/recep_touristinfo.js/touristinfo_reactivate_recep.js"></script> 
 
 {% include "scripts.html" %}
-</body>

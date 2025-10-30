@@ -87,6 +87,21 @@ def update_tourist(current_user, tourist_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+# ---------------- Reactivar TouristInfo (solo receptionist) ----------------
+@touristinfo_recep_bp.route('/<int:id>/reactivate', methods=['PUT'])
+@role_required("receptionist")
+def reactivate_touristinfo(current_user, id):
+    tourist = TouristInfo.query.get(id)
+    if not tourist:
+        return jsonify({"error": "Información turística no encontrada"}), 404
+
+    try:
+        tourist.is_active = True
+        db.session.commit()
+        return jsonify({"message": "Reactivado correctamente"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- Eliminar TouristInfo (solo receptionist) ----------------
@@ -107,9 +122,12 @@ def delete_tourist(current_user, tourist_id):
         return jsonify({"error": str(e)}), 500
 
 
+
     
 #---------------- Lista receptionist / CRUD (Carga la vista con JS) ----------------
 @touristinfo_recep_bp.route("/list", endpoint="list_tourists_page_recep")
 def list_tourists_view():
     tourists = TouristInfo.query.all()
     return render_template("touristinfo/touristinforecep/touristinfo_recep.html", tourists=tourists)
+
+

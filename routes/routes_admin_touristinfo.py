@@ -86,26 +86,40 @@ def update_tourist(current_user, tourist_id):
         return jsonify({"error": str(e)}), 500
 
 
-# ---------------- Eliminar TouristInfo (solo admin) ----------------
-@touristinfo_bp.route('/api/tourist_info/<id_tourist_info>', methods=['DELETE'])
-
+# ---------------- Reactivar TouristInfo (solo admin) ----------------
+@touristinfo_bp.route("/<int:id>/reactivate", methods=["PUT"])
 @role_required("admin")
-def delete_tourist(id_tourist_info):
-        tourist_info = TouristInfo.query.get(id_tourist_info)
+def reactivate_touristinfo(current_user, id):
+    tourist = TouristInfo.query.get(id)
+    if not tourist:
+        return jsonify({"error": "Turista no encontrado"}), 404
 
-        if not tourist_info:
-            return jsonify({'message': 'Tourist not found'}), 404
+    try:
+        tourist.is_active = True
+        db.session.commit()
+        return jsonify({"message": "Turista reactivado correctamente."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
-        try:
-            tourist_info.is_activate = False  # Directamente mantenemos inactivo el sitio. Eliminado logico.
-            # Es decir, tenemos el espacio vacio, pero con la tabla creada.
-            #db.session.delete(tourist_site)
-            db.session.commit()
-            return jsonify({'message': 'Tourist Site delete successfully'})
 
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': str(e)}), 500
+# ---------------- Eliminar TouristInfo (solo admin) ----------------
+@touristinfo_bp.route("/<int:tourist_id>", methods=["DELETE"])
+@role_required("admin")
+def delete_tourist(current_user, tourist_id):
+    tourist = TouristInfo.query.get(tourist_id)
+    if not tourist:
+        return jsonify({"error": "Turista no encontrado"}), 404
+
+    try:
+        # 🔹 Borrado lógico
+        tourist.is_active = False
+        db.session.commit()
+        return jsonify({"message": "Turista marcado como inactivo correctamente."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 
 # ---------------- RUTAS DE ADMIN HTML----------------
