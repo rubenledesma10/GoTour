@@ -5,7 +5,7 @@ from models.db import db
 from models.tourist_site import TouristSite
 from models.touristinfo import TouristInfo
 from utils.decorators import role_required
-
+from utils.utils import log_action
 touristinfo_recep_bp = Blueprint("touristinfo_recep_bp", __name__, url_prefix="/api/touristinfo_recep")
 
 # ---------------- Crear TouristInfo (solo receptionist) ----------------
@@ -40,6 +40,7 @@ def create_tourist(current_user):
 
         db.session.add(new_tourist)
         db.session.commit()
+        log_action(current_user.id_user, f"Receptionist created tourist info {new_tourist.id_turist}")
         return jsonify(new_tourist.serialize()), 201
 
     except IntegrityError as e:
@@ -78,6 +79,7 @@ def update_tourist(current_user, tourist_id):
             return jsonify({"error": "La cantidad de personas con discapacidad no puede ser mayor al total de personas"}), 400
 
         db.session.commit()
+        log_action(current_user.id_user, f"Receptionist updated tourist info {tourist_id}")
         return jsonify(tourist.serialize()), 200
 
     except IntegrityError as e:
@@ -98,6 +100,7 @@ def reactivate_touristinfo(current_user, id):
     try:
         tourist.is_active = True
         db.session.commit()
+        log_action(current_user.id_user, f"Receptionist reactivated tourist info {id}")
         return jsonify({"message": "Reactivado correctamente"}), 200
     except Exception as e:
         db.session.rollback()
@@ -116,6 +119,7 @@ def delete_tourist(current_user, tourist_id):
         # 🔹 Borrado lógico
         tourist.is_active = False
         db.session.commit()
+        log_action(current_user.id_user, f"Receptionist deactivated tourist info {tourist_id}")
         return jsonify({"message": "Turista eliminado (marcado como inactivo) correctamente."}), 200
     except Exception as e:
         db.session.rollback()

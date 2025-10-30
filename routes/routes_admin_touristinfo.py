@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from models.db import db
 from models.touristinfo import TouristInfo
 from utils.decorators import role_required
-
+from utils.utils import log_action 
 touristinfo_bp = Blueprint("touristinfo_bp", __name__, url_prefix="/api/touristinfo")
 
 # ---------------- Crear TouristInfo (solo admin) ----------------
@@ -39,6 +39,7 @@ def create_tourist(current_user):
 
         db.session.add(new_tourist)
         db.session.commit()
+        log_action(current_user.id_user, f"Created tourist info {new_tourist.id_turist}")
         return jsonify(new_tourist.serialize()), 201
 
     except IntegrityError as e:
@@ -76,6 +77,7 @@ def update_tourist(current_user, tourist_id):
             return jsonify({"error": "La cantidad de personas con discapacidad no puede ser mayor al total de personas"}), 400
 
         db.session.commit()
+        log_action(current_user.id_user, f"Updated tourist info {tourist_id}")
         return jsonify(tourist.serialize()), 200
 
     except IntegrityError as e:
@@ -97,6 +99,7 @@ def reactivate_touristinfo(current_user, id):
     try:
         tourist.is_active = True
         db.session.commit()
+        log_action(current_user.id_user, f"Reactivated tourist info {id}")
         return jsonify({"message": "Turista reactivado correctamente."}), 200
     except Exception as e:
         db.session.rollback()
@@ -115,6 +118,7 @@ def delete_tourist(current_user, tourist_id):
         # 🔹 Borrado lógico
         tourist.is_active = False
         db.session.commit()
+        log_action(current_user.id_user, f"Deactivated tourist info {tourist_id}")
         return jsonify({"message": "Turista marcado como inactivo correctamente."}), 200
     except Exception as e:
         db.session.rollback()
