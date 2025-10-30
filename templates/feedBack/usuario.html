@@ -39,9 +39,8 @@
       </div>
     </div>
 
-    <!-- Promedio general -->
+    <!-- Ultimos Comentarios -->
     <h2 class="mb-3">Últimos comentarios</h2>
-    <div id="avgRating" class="feedback-avg-rating">⭐ Promedio general: - / 5</div>
     <div class="row row-cols-1 row-cols-md-2 g-4" id="latestFeedbacks"></div>
   </div>
 
@@ -138,21 +137,10 @@
       return "⭐".repeat(qualification) + "☆".repeat(5 - qualification);
     }
 
-    function calcularPromedio(data) {
-      if (!data.length) return 0;
-      const promedio = data.reduce((a, b) => a + b.qualification, 0) / data.length;
-      return promedio.toFixed(1);
-    }
-
     async function loadFeedbacks() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
-
-        const avg = calcularPromedio(data);
-        const avgElement = document.getElementById("avgRating");
-        avgElement.innerText = `⭐ Promedio general: ${avg} / 5`;
-        avgElement.style.color = avg >= 4 ? "green" : avg >= 2.5 ? "orange" : "red";
 
         const container = document.getElementById("latestFeedbacks");
         container.innerHTML = "";
@@ -178,10 +166,29 @@
                 <p class="feedback-text">${f.comment}</p>
 
                 ${f.photos && f.photos.length ? `
-                  <div class="feedback-photos">
-                    ${f.photos.map(p => `<img src="${p.url}" alt="foto feedback" onclick="openImageModal('${p.url}')">`).join('')}
+                <div id="carousel-${f.id_feedback}" class="carousel slide feedback-carousel mb-3" data-bs-ride="carousel">
+                  <div class="carousel-inner">
+                    ${f.photos.map((p, index) => `
+                      <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                        <img src="${p.url}" class="d-block w-100 rounded" alt="foto feedback" 
+                            style="max-height:300px; object-fit:cover; cursor:pointer;"
+                            onclick="openImageModal('${p.url}')">
+                      </div>
+                    `).join('')}
                   </div>
-                ` : ""}
+                  ${f.photos.length > 1 ? `
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${f.id_feedback}" data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-${f.id_feedback}" data-bs-slide="next">
+                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                      <span class="visually-hidden">Siguiente</span>
+                    </button>
+                  ` : ""}
+                </div>
+              ` : ""}
+
 
                 <div class="text-end text-muted small mb-2">
                   <span>📅 ${f.date_hour ? new Date(f.date_hour).toLocaleDateString() : ""}</span>
