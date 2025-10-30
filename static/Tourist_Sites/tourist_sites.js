@@ -81,8 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const commentButton = (role === "tourist" && site.is_activate && token)
                 ? `
                     <a href="/api/feedback/add?site_id=${site.id_tourist_site}&name=${encodeURIComponent(site.name)}"
-                       class="btn btn-success btn-sm mb-2 btn-send-comment">
-                       <i class="bi bi-chat-dots"></i> Comentar
+                    class="btn btn-success btn-sm mb-2 btn-send-comment">
+                    <i class="bi bi-chat-dots"></i> Comentar
                     </a>
                 `
                 : "";
@@ -92,14 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="col">
                     <div class="card h-100 shadow-sm border-0">
                         <img src="${imagePath}"
-                             class="card-img-top site-photo"
-                             alt="${site.name}"
-                             style="height:200px; object-fit:cover; cursor:pointer;"
-                             onerror="this.src='/static/img/no-image.png';"
-                             data-bs-toggle="modal"
-                             data-bs-target="#imageModal"
-                             data-img-src="${imagePath}"
-                             data-img-name="${site.name}">
+                            class="card-img-top site-photo"
+                            alt="${site.name}"
+                            style="height:200px; object-fit:cover; cursor:pointer;"
+                            onerror="this.src='/static/img/no-image.png';"
+                            data-bs-toggle="modal"
+                            data-bs-target="#imageModal"
+                            data-img-src="${imagePath}"
+                            data-img-name="${site.name}">
                         <div class="card-body">
                             ${commentButton}
                             <h5 class="card-title text-primary">${site.name}</h5>
