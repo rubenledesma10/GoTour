@@ -27,8 +27,8 @@ def create_cit(current_user):
         if not current_user or not current_user.id_user:
             return jsonify({'error': 'User not found in token'}), 400
 
-        # Conversión a booleano simple y clara
-        is_activate = str(data.get('is_activate', 'false')).lower() in ('true', '1', 'on')
+        # Conversión a booleano simple
+        is_activate = str(data.get('is_activate_cit', 'true')).lower() in ('true', '1', 'on')
         is_activate_qr_map = str(data.get('is_activate_qr_map', 'false')).lower() in ('true', '1', 'on')
 
         new_cit = Cit(
@@ -36,7 +36,7 @@ def create_cit(current_user):
             address=data["address"].strip(),
             number_cit=data["number_cit"],
             id_user=current_user.id_user,
-            is_activate=is_activate,
+            is_activate=is_activate,          
             is_activate_qr_map=is_activate_qr_map
         )
 
@@ -51,6 +51,7 @@ def create_cit(current_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
 
 # ---------------- Editar CIT (solo admin) ----------------
 @cit_bp.route("/api/<string:cit_id>", methods=["PATCH"])

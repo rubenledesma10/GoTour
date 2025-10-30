@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ tourist_sites_view.js cargado correctamente");
 
-    // Autenticación y roles
-
+    // =============================
+    // 🔐 Autenticación y roles
+    // =============================
     const body = document.getElementById("protectedBody");
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -24,8 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    //  Búsqueda y filtros
-
+    // =============================
+    // 🔍 Búsqueda y filtros
+    // =============================
     const searchInput = document.getElementById("searchInput");
     const categoryFilter = document.getElementById("categoryFilter");
     const statusFilter = document.getElementById("statusFilter");
@@ -37,7 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Renderizar sitios turísticos
+    // =============================
+    // 🧱 Renderizar sitios turísticos
+    // =============================
     function renderSites(sites) {
         container.innerHTML = "";
 
@@ -58,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
+            // Estado del sitio
             let statusBadge = "";
             if (site.is_activate) {
                 statusBadge = `<span class="badge bg-success">Activo</span>`;
@@ -72,6 +77,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>`;
             }
 
+            // 🟢 Botón de comentar (solo turistas logueados y sitio activo)
+            const commentButton = (role === "tourist" && site.is_activate && token)
+                ? `
+                    <a href="/api/feedback/add?site_id=${site.id_tourist_site}&name=${encodeURIComponent(site.name)}"
+                       class="btn btn-success btn-sm mb-2 btn-send-comment">
+                       <i class="bi bi-chat-dots"></i> Comentar
+                    </a>
+                `
+                : "";
+
+            // 💳 Card completa
             const card = `
                 <div class="col">
                     <div class="card h-100 shadow-sm border-0">
@@ -85,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
                              data-img-src="${imagePath}"
                              data-img-name="${site.name}">
                         <div class="card-body">
+                            ${commentButton}
                             <h5 class="card-title text-primary">${site.name}</h5>
                             <p><strong>Descripción:</strong> ${site.description}</p>
                             <p class="text-muted"><i class="bi bi-geo-alt-fill"></i> ${site.address}</p>
@@ -103,10 +120,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                 </div>`;
+
             container.insertAdjacentHTML("beforeend", card);
         });
 
-        // Modal de imagen
+        // 🖼️ Modal de imagen
         document.querySelectorAll(".site-photo").forEach(img => {
             img.addEventListener("click", () => {
                 const modalImage = document.getElementById("modalImage");
@@ -117,7 +135,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Reactivar sitio turístico (solo admin)
+    // =============================
+    // 🔄 Reactivar sitio turístico
+    // =============================
     container.addEventListener("click", async (e) => {
         const btn = e.target.closest(".btn-reactivate");
         if (!btn) return;
@@ -125,7 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = btn.dataset.id;
         const token = localStorage.getItem("token");
 
-        // Prevenimos doble confirmación por clicks repetidos
         if (btn.dataset.processing === "true") return;
         btn.dataset.processing = "true";
 
@@ -143,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await res.json();
             if (res.ok) {
                 alert("✅ Sitio turístico reactivado con éxito");
-                searchSites(); // recargar lista actual
+                searchSites();
             } else {
                 alert("⚠️ " + (result.error || result.message));
             }
@@ -155,8 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
-    // Buscar sitios con filtros
+    // =============================
+    // 🔎 Buscar sitios con filtros
+    // =============================
     async function searchSites() {
         const query = searchInput?.value.trim() || "";
         const category = categoryFilter?.value || "";
@@ -195,8 +215,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
-    //  Eventos de búsqueda y filtros
+    // =============================
+    // ⚡ Eventos
+    // =============================
     if (searchBtn) {
         searchBtn.addEventListener("click", e => {
             e.preventDefault();
@@ -213,6 +234,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (categoryFilter) categoryFilter.addEventListener("change", searchSites);
     if (statusFilter) statusFilter.addEventListener("change", searchSites);
 
-    // Carga inicial
+    // =============================
+    // 🚀 Carga inicial
+    // =============================
     searchSites();
 });
