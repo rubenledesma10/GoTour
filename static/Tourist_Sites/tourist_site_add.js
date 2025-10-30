@@ -1,20 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("tourist_site_add.js cargado correctamente");
+    console.log("✅ tourist_site_add.js con toasts cargado correctamente");
 
-    
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
 
     if (!token) {
-        alert("Debes iniciar sesión para acceder a esta página.");
+        showToast("⚠️ Debes iniciar sesión para acceder a esta página.");
         window.location.href = "/login";
         return;
     }
 
-    // Control de acceso: solo admins
-
     if (role !== 'admin') {
-        alert("Acceso denegado. Solo los administradores pueden agregar sitios turísticos.");
+        showToast("🚫 Acceso denegado. Solo los administradores pueden agregar sitios turísticos.");
         window.location.href = "/";
         return;
     }
@@ -29,65 +26,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const addTouristSiteForm = document.getElementById('addTouristSiteForm');
     if (!addTouristSiteForm) return;
 
+    // Envío del formulario
+
     addTouristSiteForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        // Creamos FormData (permite texto + archivo)
         const formData = new FormData(addTouristSiteForm);
-
-        // Validación de campos requeridos
-        const requiredFields = ['name', 'description', 'address', 'phone','category', 'url', 'opening_hours', 'closing_hours', 'photo'];
-
-        for (const field of requiredFields) {
-            const value = formData.get(field);
-            if (!value || String(value).trim() === '') {
-                alert(`El campo "${field}" es requerido.`);
-                return;
-            }
-        }
-
-        // Agregamos valores por defecto
         formData.append('is_activate', 'true');
-        if (!formData.get('average') || formData.get('average') === '') {
-            formData.set('average', '0');
-        }
-        
-        console.log("Token enviado:", token);
 
         try {
             const response = await fetch('/api/add_tourist_sites', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
-                    // No ponemos el 'Content-Type' ya que el FormData lo maneja automáticamente
                 },
                 body: formData
             });
 
             const result = await response.json();
 
+            // ✅ Éxito
             if (response.ok) {
-                alert('✅ Sitio turístico agregado con éxito!');
-                window.location.href = '/tourist_sites/view';
-            } else {
-                alert('⚠️ Error al agregar el sitio turístico: ' + (result.error || result.message));
+                showToast("✅ Sitio turístico agregado con éxito!", true, "/tourist_sites/view");
+                return;
             }
+
+            // ⚠️ Validaciones (Schema)
+            if (result.errors) {
+                const messages = Object.entries(result.errors)
+                    .map(([field, msgs]) => `<strong>${field}:</strong> ${msgs.join(', ')}`)
+                    .join('<br>');
+                showToast(`⚠️ <b>Errores de validación:</b><br>${messages}`);
+                return;
+            }
+
+            // ⚠️ Otros errores
+            showToast(`⚠️ ${result.error || result.message || "Error desconocido"}`);
+
         } catch (error) {
-            console.error('❌ Error de red o del servidor:', error);
-            alert('❌ Ocurrió un error al intentar agregar el sitio turístico.');
+            console.error("❌ Error:", error);
+            showToast("❌ Error de red o del servidor al intentar agregar el sitio.");
         }
     });
 
-    // Vista previa de la imagen seleccionada
+    // Vista previa imagen
+
     const photoInput = document.getElementById('photo');
     const previewImage = document.getElementById('previewImage');
 
     if (photoInput && previewImage) {
-        photoInput.addEventListener('change', function (event) {
+        photoInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = (e) => {
                     previewImage.src = e.target.result;
                     previewImage.style.display = 'block';
                 };
@@ -96,5 +88,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 previewImage.style.display = 'none';
             }
         });
+    }
+
+    // Función Toast global
+    
+    function showToast(message, success = false, redirectUrl = null) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMsg = document.getElementById('toastMessage');
+
+        toastMsg.innerHTML = message;
+        toastEl.className = `toast align-items-center border ${success ? 'border-success' : 'border-danger'}`;
+        toastEl.style.backgroundColor = "#ffffff";
+        toastEl.style.color = "#000";
+        toastEl.style.borderRadius = "0.5rem";
+        toastEl.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+
+        const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+        toast.show();
+
+        if (redirectUrl) {
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 2000);
+        }
     }
 });

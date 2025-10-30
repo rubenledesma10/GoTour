@@ -16,6 +16,9 @@ from flask import current_app
 from models.user import User
 from werkzeug.utils import secure_filename
 from utils.file_helpers import allowed_file
+from marshmallow import ValidationError
+from schemas.tourist_site_schema import tourist_site_schema
+
 
 tourist_site = Blueprint('tourist_site', __name__)
 
@@ -105,78 +108,56 @@ def delete_tourist_site(current_user, id_tourist_site):
 @tourist_site.route('/api/add_tourist_sites', methods=['POST'])
 @role_required("admin")
 def add_tourist_site(current_user):
-    # Obtenemos lso datos del formulario y del archivo de imagen
     data = request.form
     file = request.files.get('photo')
 
-    required_fields = ['name', 'description', 'address', 'phone', 'category', 'url','opening_hours', 'closing_hours', 'average', 'is_activate']
+    # Validar los campos con el Schema
+    try:
+        validated_data = tourist_site_schema.load(data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
 
-    for field in required_fields:
-        value = data.get(field)
-        if value is None or str(value).strip() == '':
-            return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
-
-    # Validamos el archivo de imagen
+    # Validamos imagen
     if not file or file.filename == '':
-        return jsonify({'error': 'Image is required'}), 400
+        return jsonify({"errors": {"photo": ["Image is required."]}}), 400
     if not allowed_file(file.filename):
-        return jsonify({'error': 'Invalid file type'}), 400
+        return jsonify({"errors": {"photo": ["Invalid file type."]}}), 400
 
     try:
-        # Obtenemos el ID de usuario a traves del token
         id_user = current_user.id_user
-        if not id_user:
-            return jsonify({'error': 'User not found in token'}), 400
-
-        # Verificamos los campos duplicados (nombre, dirección o URL)
-        existing_site = TouristSite.query.filter(
-            (TouristSite.name == data.get('name')) |
-            (TouristSite.address == data.get('address')) |
-            (TouristSite.url == data.get('url'))
+        # Evitamos duplicados
+        existing = TouristSite.query.filter(
+            (TouristSite.name == validated_data["name"]) |
+            (TouristSite.address == validated_data["address"]) |
+            (TouristSite.url == validated_data["url"])
         ).first()
-        if existing_site:
-            return jsonify({'error': 'Name, address or URL already exists'}), 409
+        if existing:
+            return jsonify({"errors": {"duplicate": ["Name, address or URL already exists."]}}), 409
 
-        # Parsear tipos de datos
-        opening_hours = datetime.strptime(data.get('opening_hours'), "%H:%M").time()
-        closing_hours = datetime.strptime(data.get('closing_hours'), "%H:%M").time()
-        average = float(data.get('average', 0))
-        is_activate = str(data.get('is_activate', 'true')).lower() in ('true', '1')
-
-        # Guardamos la imagen en la carpeta configurada globalmente
+        # Guardamos la imagen
         filename = secure_filename(file.filename)
-        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         file.save(save_path)
 
-        # Creamos el nuevo sitio turístico
-        new_tourist_site = TouristSite(
-            name=data.get('name'),
-            description=data.get('description'),
-            address=data.get('address'),
-            phone=data.get('phone'),
-            category=data.get('category'),
-            url=data.get('url'),
-            opening_hours=opening_hours,
-            closing_hours=closing_hours,
-            average=average,
-            is_activate=is_activate,
+        # Crear y guardar sitio
+        new_site = TouristSite(
+            **validated_data,
             id_user=id_user,
-            photo=filename  # solo guardamos el nombre del archivo
+            photo=filename
         )
 
-        db.session.add(new_tourist_site)
+        db.session.add(new_site)
         db.session.commit()
 
         return jsonify({
-            "message": "Tourist site created successfully",
-            "tourist_site": new_tourist_site.serialize()
+            "message": "Tourist site created successfully.",
+            "tourist_site": new_site.serialize()
         }), 201
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': f'Error adding Tourist Site: {str(e)}'}), 500
-
+        return jsonify({"errors": {"server": [f"Error adding Tourist Site: {str(e)}"]}}), 500
 # --------------------------------------------------------------------------------- #
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['PUT'])
