@@ -169,4 +169,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 }
 
     });
+
+// Mostrar / Ocultar contraseñas
+const currentPasswordInput = document.getElementById("current_password");
+const newPasswordInput = document.getElementById("password");
+const repeatPasswordInput = document.getElementById("repeat_password");
+
+const toggleCurrentPassword = document.getElementById("toggleCurrentPassword");
+const toggleNewPassword = document.getElementById("toggleNewPassword");
+const toggleRepeatPassword = document.getElementById("toggleRepeatPassword");
+
+// Contraseña actual
+if (toggleCurrentPassword && currentPasswordInput) {
+    const icon = toggleCurrentPassword.querySelector("i");
+    toggleCurrentPassword.addEventListener("click", () => {
+        const isHidden = currentPasswordInput.type === "password";
+        currentPasswordInput.type = isHidden ? "text" : "password";
+        icon.classList.toggle("bi-eye", !isHidden);
+        icon.classList.toggle("bi-eye-slash", isHidden);
+    });
+}
+
+// Nueva contraseña
+if (toggleNewPassword && newPasswordInput) {
+    const icon = toggleNewPassword.querySelector("i");
+    toggleNewPassword.addEventListener("click", () => {
+        const isHidden = newPasswordInput.type === "password";
+        newPasswordInput.type = isHidden ? "text" : "password";
+        icon.classList.toggle("bi-eye", !isHidden);
+        icon.classList.toggle("bi-eye-slash", isHidden);
+    });
+}
+
+// Repetir contraseña
+if (toggleRepeatPassword && repeatPasswordInput) {
+    const icon = toggleRepeatPassword.querySelector("i");
+    toggleRepeatPassword.addEventListener("click", () => {
+        const isHidden = repeatPasswordInput.type === "password";
+        repeatPasswordInput.type = isHidden ? "text" : "password";
+        icon.classList.toggle("bi-eye", !isHidden);
+        icon.classList.toggle("bi-eye-slash", isHidden);
+    });
+}
 });
+
+

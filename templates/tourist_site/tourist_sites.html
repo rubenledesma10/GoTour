@@ -6,14 +6,13 @@
     {% include "partials/navbar.html" %}
 
     <div class="container mt-4">
-        <h2 class="mb-4 mt-3">Sitios Turísticos Creados</h2>
+        <h2 class="mb-4 mt-3">Sitios Turísticos</h2>
 
-        
+
         <div class="card mb-4 shadow-sm border-0 p-3 rounded-3">
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <input type="text" id="searchInput" class="form-control flex-grow-1"
-                    placeholder="Buscar por nombre, descripción o dirección..."
-                    style="min-width: 250px;">
+                    placeholder="Buscar por nombre, descripción o dirección..." style="min-width: 250px;">
 
                 <select id="categoryFilter" class="form-select" style="min-width: 200px;">
                     <option value="">Todas las categorías</option>
@@ -51,8 +50,8 @@
                     {% if site.photo %}
                     <img src="{{ url_for('static', filename='tourist_sites_images/' ~ site.photo) }}"
                         class="card-img-top site-photo" alt="{{ site.name }}"
-                        style="height: 200px; object-fit: cover; cursor: pointer;"
-                        data-bs-toggle="modal" data-bs-target="#imageModal"
+                        style="height: 200px; object-fit: cover; cursor: pointer;" data-bs-toggle="modal"
+                        data-bs-target="#imageModal"
                         data-img-src="{{ url_for('static', filename='tourist_sites_images/' ~ site.photo) }}"
                         data-img-name="{{ site.name }}">
                     {% else %}
@@ -60,10 +59,11 @@
                     {% endif %}
 
                     <div class="card-body">
-                        <a href="{{ url_for('feedback_bp.feedback_add_form', site_id=site.id_tourist_site) }}"
+                        <a href="{{ url_for('feedback_bp.feedback_add_form', site_id=site.id_tourist_site, name=site.name) }}"
                             class="btn btn-success btn-sm btn-send-comment">
                             <i class="bi bi-chat-dots"></i> Comentar
                         </a>
+
 
                         <h5 class="card-title text-primary mt-2">{{ site.name }}</h5>
                         <p class="mb-1"><strong>Descripción:</strong> {{ site.description }}</p>
@@ -76,14 +76,30 @@
                             <i class="bi bi-bar-chart-line"></i> Promedio visitas:
                             <strong>{{ "{:,.2f}".format(site.average or 0) }}</strong>
                         </p>
+
+                        <!-- Promedio de calificaciones -->
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-star-fill text-warning"></i> Promedio calificaciones:
+                            {% if site.average_rating %}
+                                {% for i in range(site.average_rating|round(0, 'floor')) %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% endfor %}
+                                {% for i in range(5 - site.average_rating|round(0, 'floor')) %}
+                                    <i class="bi bi-star text-muted"></i>
+                                {% endfor %}
+                                ({{ "{:,.2f}".format(site.average_rating) }})
+                            {% else %}
+                                Sin calificaciones
+                            {% endif %}
+                        </p>
+
                         <p class="text-muted"><i class="bi bi-tag-fill"></i> {{ site.category }}</p>
                     </div>
 
                     <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
                         <div>
                             {% if site.url %}
-                            <a href="{{ site.url }}" target="_blank"
-                                class="btn btn-outline-primary btn-sm me-2">
+                            <a href="{{ site.url }}" target="_blank" class="btn btn-outline-primary btn-sm me-2">
                                 <i class="bi bi-box-arrow-up-right"></i> Ver sitio
                             </a>
                             {% endif %}
@@ -113,8 +129,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="imageModalLabel">Vista ampliada</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Cerrar"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
                     <div class="modal-body text-center">
                         <img id="modalImage" src="" alt="" class="img-fluid rounded shadow">
@@ -143,7 +158,6 @@
 
     <!-- JS -->
     <script src="/static/tourist_sites/tourist_sites.js"></script>
-    <script src="/static/tourist_sites/criterios_de_busqueda.js"></script>
 
-{% include "scripts.html" %}
 
+    {% include "scripts.html" %}
