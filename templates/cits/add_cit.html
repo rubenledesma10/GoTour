@@ -10,24 +10,39 @@
                 <label for="number_cit" class="form-label">Número de CIT</label>
                 <input type="number" id="number_cit" name="number_cit" class="form-control" required>
             </div>
+
             <div class="col-md-4">
                 <label for="district" class="form-label">Distrito</label>
-                <input type="text" id="district" name="district" class="form-control" required>
+                <select id="district" name="district" class="form-select" required>
+                    <option value="">Seleccione un distrito</option>
+                    <option value="Maipú Centro">Maipú Centro</option>
+                    <option value="Coquimbito">Coquimbito</option>
+                    <option value="Luzuriaga">Luzuriaga</option>
+                    <option value="Russell">Russell</option>
+                    <option value="Lunlunta">Lunlunta</option>
+                    <option value="Cruz de Piedra">Cruz de Piedra</option>
+                    <option value="Fray Luis Beltrán">Fray Luis Beltrán</option>
+                    <option value="San Roque">San Roque</option>
+                    <option value="Barrancas">Barrancas</option>
+                    <option value="General Gutiérrez">General Gutiérrez</option>
+                    <option value="Rodeo del Medio">Rodeo del Medio</option>
+                </select>
             </div>
+
             <div class="col-md-4">
                 <label for="address" class="form-label">Dirección</label>
                 <input type="text" id="address" name="address" class="form-control" required>
             </div>
         </div>
 
-        <div class="form-check mb-2">
-            <input type="checkbox" id="is_activate" name="is_activate" class="form-check-input">
-            <label for="is_activate" class="form-check-label">Activo</label>
-        </div>
-
         <div class="form-check mb-4">
             <input type="checkbox" id="is_activate_qr_map" name="is_activate_qr_map" class="form-check-input">
             <label for="is_activate_qr_map" class="form-check-label">QR Mapa Activo</label>
+        </div> 
+        
+        <div class="form-check mb-4">
+            <input type="checkbox" id="is_activate_cit" name="is_activate_cit" class="form-check-input">
+            <label for="is_activate_cit" class="form-check-label">Activo</label>
         </div>
 
         <div class="d-flex justify-content-between">

@@ -23,7 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const formData = new FormData(createForm);
+
+        // 🔹 Agregamos el estado activo del CIT
+        formData.set("is_activate_cit", document.getElementById("is_activate_cit").checked ? "true" : "false");
+
         console.log("Token enviado:", token);
+        console.log("Datos del formulario:", Object.fromEntries(formData.entries()));
 
         try {
             const response = await fetch('/api/add_cit', {
