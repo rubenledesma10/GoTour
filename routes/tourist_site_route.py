@@ -18,6 +18,7 @@ from werkzeug.utils import secure_filename
 from utils.file_helpers import allowed_file
 from marshmallow import ValidationError
 from schemas.tourist_site_schema import tourist_site_schema
+from utils.utils import log_action
 
 
 tourist_site = Blueprint('tourist_site', __name__)
@@ -97,6 +98,7 @@ def delete_tourist_site(current_user, id_tourist_site):
             #Es decir, tenemos el espacio vacio, pero con la tabla creada.
             #db.session.delete(tourist_site)
             db.session.commit()
+            log_action(current_user.id_user, f"Deactivated tourist site {id_tourist_site}")
             return jsonify({'message': 'Tourist Site delete successfully'})
         
         except Exception as e: 
@@ -149,7 +151,7 @@ def add_tourist_site(current_user):
 
         db.session.add(new_site)
         db.session.commit()
-
+        log_action(current_user.id_user, f"Created tourist site {new_site.id_tourist_site}")
         return jsonify({
             "message": "Tourist site created successfully.",
             "tourist_site": new_site.serialize()
@@ -189,7 +191,7 @@ def add_feedback(current_user, id_tourist_site):
 
         # Actualizar promedio de calificaciones
         site.update_average_rating()
-
+        log_action(current_user.id_user, f"Created tourist site {new_feedback.id_tourist_site}")
         return jsonify({
             "message": "Comentario agregado con éxito",
             "feedback": new_feedback.serialize(),
@@ -271,7 +273,7 @@ def edit_tourist_site(current_user, id_tourist_site):
 
 
         db.session.commit()
-
+        log_action(current_user.id_user, f"Edited tourist site {id_tourist_site}")
         return jsonify({
             'message': 'Tourist site updated successfully',
             'tourist_site': tourist_site.serialize()
@@ -375,6 +377,7 @@ def update_tourist_site(current_user, id_tourist_site):
 
         if updated:
             db.session.commit()
+            log_action(current_user.id_user, f"Updated tourist site {id_tourist_site}")
             return jsonify({
                 'message': 'Tourist site updated successfully',
                 'tourist_site': tourist_site.serialize()
@@ -411,6 +414,7 @@ def reactivate_tourist_site(current_user, id_tourist_site):
     try:
         tourist_site.is_activate = True
         db.session.commit()
+        log_action(current_user.id_user, f"Reactivated tourist site {id_tourist_site}")
         return jsonify({
             'message': 'Tourist site reactivated successfully',
             'tourist_site': tourist_site.serialize()
