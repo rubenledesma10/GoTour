@@ -4,7 +4,7 @@ from models.db import db
 from models.cit import Cit
 from utils.decorators import role_required
 from models.user import User
-
+from utils.utils import log_action
 cit_bp = Blueprint("cit_bp", __name__)
 
 # ---------------- Crear CIT (solo admin) ----------------
@@ -42,7 +42,7 @@ def create_cit(current_user):
 
         db.session.add(new_cit)
         db.session.commit()
-
+        log_action(current_user.id_user, f"Created CIT {new_cit.id_cit}")
         return jsonify(new_cit.serialize()), 201
 
     except IntegrityError as e:
@@ -87,6 +87,7 @@ def update_cit(current_user, cit_id):
 
     try:
         db.session.commit()
+        log_action(current_user.id_user, f"Updated CIT {cit_id}")
         return jsonify(cit.serialize()), 200
     except IntegrityError as e:
         db.session.rollback()
@@ -110,6 +111,7 @@ def delete_cit(current_user, id_cit):
     try:
         cit.is_activate = False
         db.session.commit()
+        log_action(current_user.id_user, f"Deactivated CIT {id_cit}")
         return jsonify({"message": "CIT deactivated successfully"}), 200
     except Exception as e:
         db.session.rollback()
@@ -144,6 +146,7 @@ def reactivate_cit(current_user, id_cit):
     try:
         cit.is_activate = True
         db.session.commit()
+        log_action(current_user.id_user, f"Reactivated CIT {id_cit}")
         return jsonify({"message": "CIT reactivated successfully"}), 200
     except Exception as e:
         db.session.rollback()
