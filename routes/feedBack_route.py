@@ -9,6 +9,7 @@ from enums.roles_enums import RoleEnum
 from marshmallow import ValidationError
 from datetime import datetime
 import jwt, os, uuid
+from utils.utils import log_action
 
 feedback_bp = Blueprint("feedback_bp", __name__, url_prefix="/api/feedback") 
 
@@ -143,6 +144,7 @@ def create_feedback():
                 db.session.add(FeedbackPhoto(filename=filename, id_feedback=new_feedback.id_feedback))
 
         db.session.commit()
+        log_action(user.id_user, f"User created feedback {new_feedback.id_feedback}")
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({"error": "Error al registrar feedback", "detail": str(e)}), 400
@@ -255,6 +257,7 @@ def update_feedback(id):
 
     try:
         db.session.commit()
+        log_action(user.id_user, f"Admin updated feedback {id}")
         return jsonify({"feedback": feedback.serialize()}), 200
     except Exception as e:
         db.session.rollback()
@@ -279,6 +282,7 @@ def delete_feedback(id):
         # 👇 CAMBIO: Borrado lógico
         feedback.is_deleted = True
         db.session.commit()
+        log_action(user.id_user, f"Admin deleted feedback {id}")
         return jsonify({"message": "Feedback marcado como eliminado (borrado lógico)."}), 200
     except Exception as e:
         db.session.rollback()
@@ -315,6 +319,7 @@ def reply_feedback(id):
 
     try:
         db.session.commit()
+        log_action(user.id_user, f"Admin replied to feedback {id}")
         return jsonify({
             "message": "Respuesta registrada con éxito",
             "feedback": feedback.serialize()
@@ -365,6 +370,7 @@ def moderate_feedback(id):
 
     try:
         db.session.commit()
+        log_action(user.id_user, f"Admin {'approved' if approve else 'rejected'} feedback {id}")
         msg = "Comentario aprobado y publicado." if approve else "Comentario rechazado y ocultado."
         return jsonify({"message": msg}), 200
     except Exception as e:
