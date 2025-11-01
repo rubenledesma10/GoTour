@@ -11,7 +11,7 @@ from datetime import date
 
 app.config['TESTING'] = True #activamos el modo prueba en flask (para el manejo de errores mas explicito, no envia emails, etc)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///:memory:" #bd temporal en memoria para el test. Se crea al inicio del test y desp se elimina, de esta manera no tocamos la bd real
-
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 @pytest.fixture
 def setup_db():
     with app.app_context():
