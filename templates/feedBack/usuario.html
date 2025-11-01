@@ -12,11 +12,44 @@
       <div class="card-body">
         <h5 class="mb-3">Dejá tu comentario</h5>
         <form id="feedbackForm">
-          <div class="mb-3">
-            <label for="touristSiteName" class="form-label">Lugar Turístico</label>
-            <input type="text" id="touristSiteName" class="form-control" value="{{ site_name }}" readonly>
-            <input type="hidden" id="touristSiteId" name="id_tourist_site" value="{{ site_id }}">
-          </div>
+          
+          {% if site_name %}
+        <!-- Si el sitio fue pasado por la URL -->
+        <div class="mb-3">
+          <label for="site_name" class="form-label">Lugar Turístico</label>
+          <input
+            type="text"
+            id="site_name"
+            class="form-control"
+            value="{{ site_name }}"
+            readonly
+          >
+          <!-- hidden que se manda al backend -->
+          <input
+            type="hidden"
+            id="touristSiteId"
+            name="id_tourist_site"
+            value="{{ site_id }}"
+          >
+        </div>
+      {% else %}
+        <!-- Si no se pasó sitio, mostrar el selector -->
+        <div class="mb-3">
+          <label for="siteSelect" class="form-label">Lugar Turístico</label>
+          <select id="siteSelect" class="form-select" name="id_tourist_site" required>
+            <option value="">-- Seleccioná un sitio --</option>
+            {% for s in sites %}
+              <option
+                value="{{ s.id_tourist_site }}"
+                {% if site_id and site_id == s.id_tourist_site|string %}selected{% endif %}
+              >
+                {{ s.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
 
           <div class="mb-3">
             <label for="qualification" class="form-label">Calificación (1-5)</label>
@@ -96,15 +129,17 @@
     </div>
   </div>
 
-  <!-- 🖼️ Modal para ampliar imágenes -->
-  <div class="modal fade" id="feedbackImageModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-      <div class="modal-content border-0 bg-transparent">
-        <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        <img id="modalImage" src="" alt="Foto feedback ampliada">
-      </div>
+<!-- 🖼️ Modal para ampliar imágenes -->
+<div class="modal fade" id="feedbackImageModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content border-0 bg-transparent position-relative">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      <button type="button" id="prevImage" class="btn btn-dark position-absolute top-50 start-0 translate-middle-y ms-3">‹</button>
+      <img id="modalImage" src="" alt="Foto feedback ampliada" class="w-100 rounded">
+      <button type="button" id="nextImage" class="btn btn-dark position-absolute top-50 end-0 translate-middle-y me-3">›</button>
     </div>
   </div>
+</div>
 
   {% include "scripts.html" %}
   <script>
@@ -113,6 +148,36 @@
     const username = localStorage.getItem("username");
     const token = localStorage.getItem("token");
     const role = (userRole || "").toUpperCase();
+
+    // ✅ Si el template recibió site_id, selecciona el sitio automáticamente
+    document.addEventListener("DOMContentLoaded", () => {
+      const siteSelect = document.getElementById("siteSelect");
+      const touristSiteIdInput = document.getElementById("touristSiteId");
+
+      // Verifica si hay un site_id cargado en el hidden
+      const preselected = touristSiteIdInput?.value;
+      if (preselected && siteSelect) {
+        siteSelect.value = preselected;
+      }
+
+      // Permite cambiar manualmente el sitio (desde la solapa de comentarios)
+      siteSelect?.addEventListener("change", () => {
+        touristSiteIdInput.value = siteSelect.value || "";
+      });
+      loadFeedbacks();
+    });
+
+
+    if (token && !localStorage.getItem("id_user")) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1])); // decodifica el JWT
+        if (payload.id_user) {
+          localStorage.setItem("id_user", payload.id_user);
+        }
+      } catch (err) {
+        console.warn("No se pudo decodificar el token para obtener id_user:", err);
+      }
+    }
 
     if (token && role !== "ADMIN") {
       document.getElementById("feedbackFormCard").classList.remove("d-none");
@@ -139,8 +204,14 @@
 
     async function loadFeedbacks() {
       try {
-        const res = await fetch(API_URL);
+        // 👉 si es admin, carga los pendientes; si no, los aprobados
+        const endpoint = `${API_URL}`;
+        const res = await fetch(endpoint, {
+          headers: token ? { "Authorization": "Bearer " + token } : {}
+        });
+
         const data = await res.json();
+
 
         const container = document.getElementById("latestFeedbacks");
         container.innerHTML = "";
@@ -148,9 +219,15 @@
         data.forEach(f => {
           const card = document.createElement("div");
           card.className = "col";
+          card.setAttribute("data-feedback-id", f.id_feedback);
           card.innerHTML = `
-            <div class="feedback-card shadow-sm border-0">
+             <div class="feedback-card shadow-sm border-0 ${f.is_deleted ? 'opacity-50 bg-light' : ''}">
               <div class="card-body">
+                ${f.is_deleted ? `
+                  <div class="alert alert-secondary text-center p-2 mb-2">
+                    🗑️ Este comentario fue eliminado por un administrador.
+                  </div>
+                ` : ''}
                 <div class="feedback-header">
                   <img src="${f.user?.photo 
                     ? `/static/uploads/${f.user.photo}` 
@@ -162,32 +239,72 @@
                   </div>
                 </div>
 
-                <h5 class="card-title mt-2">${renderStars(f.qualification)}</h5>
-                <p class="feedback-text">${f.comment}</p>
+                ${(() => {
+                  const currentUserId = localStorage.getItem("id_user");
+                  const isOwner = currentUserId && f.user && f.user.id == currentUserId;
+                  const isAdmin = role === "ADMIN";
 
-                ${f.photos && f.photos.length ? `
-                <div id="carousel-${f.id_feedback}" class="carousel slide feedback-carousel mb-3" data-bs-ride="carousel">
-                  <div class="carousel-inner">
-                    ${f.photos.map((p, index) => `
-                      <div class="carousel-item ${index === 0 ? 'active' : ''}">
-                        <img src="${p.url}" class="d-block w-100 rounded" alt="foto feedback" 
-                            style="max-height:300px; object-fit:cover; cursor:pointer;"
-                            onclick="openImageModal('${p.url}')">
+                  // Si el admin lo ve, siempre se muestra el comentario
+                  if (isAdmin) {
+                    return `
+                      <h5 class="card-title mt-2">${renderStars(f.qualification)}</h5>
+                      <p class="feedback-text">${f.comment}</p>
+                      ${!f.is_approved ? `
+                        <div class="alert alert-warning d-flex align-items-center mt-2 py-2 px-3 small" role="alert">
+                          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                          <div>Comentario pendiente de revisión (marcado por lenguaje inapropiado).</div>
+                        </div>
+                      ` : ``}
+                    `;
+                  }
+
+
+                  // Si el comentario está aprobado, también se muestra
+                  if (f.is_approved) {
+                    return `
+                      <h5 class="card-title mt-2">${renderStars(f.qualification)}</h5>
+                      <p class="feedback-text">${f.comment}</p>
+                    `;
+                  }
+
+                  // Si no está aprobado y el comentario es del usuario actual, mostrar alerta
+                  if (!f.is_approved && isOwner) {
+                    return `
+                      <div class="alert alert-warning d-flex align-items-center mt-2 py-2 px-3 small" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div>🕓 Tu comentario está pendiente de revisión por el administrador.</div>
                       </div>
+                    `;
+                  }
+
+                  // Si no está aprobado y no es del usuario, no mostrar nada
+                  return "";
+                })()}
+
+
+
+                ${f.photos && f.photos.length ? (() => {
+                // 1) limpio las fotos sin url
+                const safePhotos = f.photos.filter(ph => ph && ph.url);
+
+                // 2) si después de limpiar no quedó nada, no muestro nada
+                if (!safePhotos.length) return "";
+
+                // 3) si hay, las pinto
+                return `
+                  <div class="feedback-photos mb-3 d-flex flex-wrap gap-2">
+                    ${safePhotos.map(p => `
+                      <img src="${p.url}" 
+                        class="rounded shadow-sm"  
+                        alt="foto feedback"
+                        data-photos='${JSON.stringify(safePhotos.map(ph => ph.url))}'
+                        onclick="openImageModal('${p.url}', this)">
                     `).join('')}
                   </div>
-                  ${f.photos.length > 1 ? `
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-${f.id_feedback}" data-bs-slide="prev">
-                      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                      <span class="visually-hidden">Anterior</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-${f.id_feedback}" data-bs-slide="next">
-                      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                      <span class="visually-hidden">Siguiente</span>
-                    </button>
-                  ` : ""}
-                </div>
-              ` : ""}
+                `;
+              })() : ""}
+
+
 
 
                 <div class="text-end text-muted small mb-2">
@@ -210,9 +327,12 @@
                   </div>
                 ` : ""}
 
+            
+
+
                 ${role === "ADMIN" ? `
                   <div class="mt-2">
-                    <button class="btn feedback-btn-sm btn-success me-2" onclick="openEditModal('${f.id_feedback}', \`${f.comment}\`, ${f.qualification})">Editar</button>
+                    <button class="btn feedback-btn-sm btn-success me-2" onclick="moderateFeedback('${f.id_feedback}', true)">Confirmar</button>
                     <button class="btn feedback-btn-sm btn-danger me-2" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button>
                     <button class="btn feedback-btn-sm btn-primary" onclick="openReplyModal('${f.id_feedback}', \`${f.comment}\`)">Responder</button>
                   </div>
@@ -227,12 +347,76 @@
       }
     }
 
-    function openImageModal(url) {
+    function openImageModal(url, imgEl) {
       const img = document.getElementById("modalImage");
+      const modalEl = document.getElementById("feedbackImageModal");
+
+      // ✅ leer fotos del dataset de la imagen clickeada
+      let photosArray = [];
+      if (imgEl && imgEl.dataset.photos) {
+        try {
+          photosArray = JSON.parse(imgEl.dataset.photos);
+        } catch (e) {
+          console.warn("Error leyendo fotos del dataset:", e);
+          photosArray = [];
+        }
+      }
+
+      modalEl.dataset.photos = JSON.stringify(photosArray);
+      modalEl.dataset.current = url;
+
       img.src = url;
-      const modal = new bootstrap.Modal(document.getElementById("feedbackImageModal"));
+
+      const modal = new bootstrap.Modal(modalEl);
       modal.show();
     }
+
+
+    // botones del modal
+    document.getElementById("prevImage").addEventListener("click", () => {
+      changeModalImage(-1);
+    });
+
+    document.getElementById("nextImage").addEventListener("click", () => {
+      changeModalImage(1);
+    });
+
+    function changeModalImage(direction) {
+      const modalEl = document.getElementById("feedbackImageModal");
+      const img = document.getElementById("modalImage");
+
+      const photos = JSON.parse(modalEl.dataset.photos || "[]");
+      const current = modalEl.dataset.current;
+
+      if (!photos.length) return;
+
+      // posición actual
+      let index = photos.indexOf(current);
+      if (index === -1) index = 0;
+
+      // siguiente / anterior
+      let nextIndex = index + direction;
+      if (nextIndex < 0) nextIndex = photos.length - 1;
+      if (nextIndex >= photos.length) nextIndex = 0;
+
+      const nextUrl = photos[nextIndex];
+      img.src = nextUrl;
+      modalEl.dataset.current = nextUrl;
+    }
+    
+    // ✅ Control del teclado dentro del modal
+    document.addEventListener("keydown", (e) => {
+      const modalEl = document.getElementById("feedbackImageModal");
+      const modalVisible = modalEl.classList.contains("show");
+
+      if (!modalVisible) return;
+
+      if (e.key === "ArrowLeft") {
+        changeModalImage(-1);
+      } else if (e.key === "ArrowRight") {
+        changeModalImage(1);
+      }
+    });
 
     window.openEditModal = function(id, comment, qualification) {
       document.getElementById("editId").value = id;
@@ -303,52 +487,119 @@
       }
     });
 
-    async function deleteFeedback(id) {
-      if (!confirm("¿Seguro que deseas eliminar este feedback?")) return;
+    // ✅ Función para confirmar comentarios (moderación)
+    async function moderateFeedback(id, approve = true) {
+      if (!confirm("¿Deseas aprobar este comentario?")) return;
+
       try {
-        await fetch(`${API_URL}/${id}`, {
-          method: "DELETE",
-          headers: token ? { "Authorization": "Bearer " + token } : {}
+        const res = await fetch(`${API_URL}/${id}/moderate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { "Authorization": "Bearer " + token } : {})
+          },
+          body: JSON.stringify({ approve: true }) // ✅ siempre aprueba
         });
+
+        const data = await res.json();
+        alert(data.message);
         loadFeedbacks();
       } catch (err) {
-        console.error("Error eliminando feedback:", err);
+        console.error("Error moderando feedback:", err);
       }
     }
 
-    document.getElementById("feedbackForm")?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append("comment", document.getElementById("comment").value.trim());
-      formData.append("qualification", Number(document.getElementById("qualification").value));
-      formData.append("id_tourist_site", document.getElementById("touristSiteId").value);
 
-      const files = document.getElementById("photos").files;
-      if (files.length > 10) {
-        alert("Podés subir como máximo 10 fotos.");
-        return;
-      }
-      for (let i = 0; i < files.length; i++) formData.append("photos", files[i]);
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: token ? { "Authorization": "Bearer " + token } : {},
-          body: formData
-        });
-        if (res.ok) {
-          e.target.reset();
-          loadFeedbacks();
-        } else {
-          const err = await res.json();
-          alert("Error: " + (err.error || "No se pudo enviar el comentario"));
+    async function deleteFeedback(id) {
+      const token = localStorage.getItem("token");
+      if (!confirm("¿Seguro que querés eliminar este comentario?")) return;
+
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+        headers: token ? { "Authorization": "Bearer " + token } : {}
+      });
+
+      if (res.ok) {
+        const card = document.querySelector(`[data-feedback-id="${id}"]`);
+        if (card) {
+          // Atenuamos visualmente
+          card.classList.add("opacity-50");
+
+          // Ocultamos botón eliminar
+          const deleteBtn = card.querySelector(".btn-danger");
+          if (deleteBtn) deleteBtn.style.display = "none";
+
+          // Deshabilitamos Confirmar y Responder
+          const confirmBtn = card.querySelector(".btn-success");
+          const replyBtn = card.querySelector(".btn-primary");
+          if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add("btn-secondary");
+            confirmBtn.classList.remove("btn-success");
+          }
+          if (replyBtn) {
+            replyBtn.disabled = true;
+            replyBtn.classList.add("btn-secondary");
+            replyBtn.classList.remove("btn-primary");
+          }
+
+          // Agregamos el cartel informativo
+          const alertDiv = document.createElement("div");
+          alertDiv.className = "alert alert-secondary text-center p-2 mt-2";
+          alertDiv.innerHTML = "🗑️ Este comentario fue eliminado por un administrador.";
+          card.appendChild(alertDiv);
         }
-      } catch (err) {
-        console.error("Error enviando feedback:", err);
+      } else {
+        const err = await res.json();
+        alert("Error al eliminar: " + (err.error || res.statusText));
       }
+    }
+
+
+
+    document.getElementById("feedbackForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append("comment", document.getElementById("comment").value.trim());
+  formData.append("qualification", Number(document.getElementById("qualification").value));
+
+  // ✅ Manejar ambos casos (hidden o select)
+  const siteInput = document.getElementById("touristSiteId") || document.getElementById("siteSelect");
+  formData.append("id_tourist_site", siteInput ? siteInput.value : "");
+
+  // 📸 Adjuntar fotos
+  const files = document.getElementById("photos").files;
+  if (files.length > 10) {
+    alert("Podés subir como máximo 10 fotos.");
+    return;
+  }
+  for (let i = 0; i < files.length; i++) formData.append("photos", files[i]);
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: token ? { "Authorization": "Bearer " + token } : {},
+      body: formData,
+      credentials: "include" // opcional, si usás cookies o Flask-Login
     });
 
-    loadFeedbacks();
+    if (res.ok) {
+      const data = await res.json();
+      alert(data.message || "Comentario enviado correctamente.");
+      e.target.reset();
+      loadFeedbacks();
+    } else {
+      const err = await res.json();
+      alert("Error: " + (err.error || "No se pudo enviar el comentario."));
+    }
+  } catch (err) {
+    console.error("Error enviando feedback:", err);
+    alert("Error al conectar con el servidor.");
+  }
+});
+
   </script>
 </body>
 </html>

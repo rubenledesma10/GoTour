@@ -42,13 +42,16 @@ class feedBack(db.Model):
     response_date = db.Column(db.DateTime, nullable=True)
     admin_name = db.Column(db.String(100), nullable=True)
     
+    is_approved = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)
 
-    def __init__(self, comment, qualification, id_user, id_tourist_site, date_hour=None):
+    def __init__(self, comment, qualification, id_user, id_tourist_site, date_hour=None,is_approved=False):
         self.date_hour = date_hour or datetime.utcnow()
         self.comment = comment
         self.qualification = qualification
         self.id_user = id_user
         self.id_tourist_site = id_tourist_site
+        self.is_approved = is_approved
 
     def serialize(self):
         # Busca al admin actual por su nombre para obtener la foto más reciente
@@ -84,5 +87,8 @@ class feedBack(db.Model):
             "admin_photo": admin_user.photo if admin_user and admin_user.photo else None,
 
             #  Fotos adjuntas al feedback
-            "photos": [p.serialize() for p in self.photos] if self.photos else []
+            "photos": [p.serialize() for p in self.photos] if self.photos else [],
+
+            "is_approved": self.is_approved,
+            "is_deleted" : self.is_deleted
         }

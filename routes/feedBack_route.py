@@ -12,24 +12,34 @@ import jwt, os, uuid
 
 feedback_bp = Blueprint("feedback_bp", __name__, url_prefix="/api/feedback") 
 
-#Carpeta donde se guardan las fotos subidas
 UPLOAD_FOLDER = "static/uploads"
 
-def get_identity_from_header():
-    auth_header = request.headers.get("Authorization") # Busca el header Authorization
+# ✅ CAMBIO: lista básica de malas palabras
+BAD_WORDS = {"puto", "puta", "sexo", "mierda", "imbecil", "pelotudo", "tonto", "estupido"}
+
+def get_identity_from_header(optional=False):
+    """Devuelve (id_user, error, code). Si optional=True, no requiere token."""
+    auth_header = request.headers.get("Authorization")
+
+    # Si no hay token y no es obligatorio → devolvemos None sin error
     if not auth_header:
+        if optional:
+            return None, None, None
         return None, {"error": "Token no proporcionado"}, 401
-    try:                                                #  # Extrae y decodifica el token JWT
+
+    try:
         token = auth_header.split(" ")[1]
         decoded = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
         return decoded["id_user"], None, None
     except jwt.ExpiredSignatureError:
         return None, {"error": "El token ha expirado"}, 401
     except jwt.InvalidTokenError:
+        if optional:
+            return None, None, None
         return None, {"error": "Token inválido"}, 401
 
 
-# Vista
+
 @feedback_bp.route("/view")
 def feedback_view():
     usuario = None
@@ -41,27 +51,42 @@ def feedback_view():
     sites = TouristSite.query.all()
     return render_template("feedBack/usuario.html", usuario=usuario, sites=sites)
 
-# Formulario para dejar un nuevo comentario
+
 @feedback_bp.route("/add", methods=["GET"])
 def feedback_add_form():
     site_id = request.args.get("site_id")
     site_name = request.args.get("name")
 
-    # Buscar el sitio en la BD
-    site = TouristSite.query.get(site_id)
-    if not site:
-        return render_template("404.html"), 404
+    site = None
+    # Si hay un ID, buscamos el sitio
+    if site_id:
+        site = TouristSite.query.get(site_id)
+        if site and not site_name:
+            site_name = site.name
 
-    # Renderiza el formulario de comentarios (otra plantilla o la misma si querés)
+    # ✅ Si no hay site_id pero hay site_name, no devolvemos 404
+    if not site and not site_name:
+        # Si no se especificó ningún dato, mostramos el formulario general
+        sites = TouristSite.query.all()
+        return render_template(
+            "feedBack/usuario.html",
+            sites=sites,
+            site=None,
+            site_name=None,
+            site_id=None
+        )
+
+    # ✅ Si venís desde un sitio específico
     return render_template(
-        "feedBack/usuario.html",  # o feedBack/add.html si lo tenés separado
+        "feedBack/usuario.html",
         site=site,
         site_name=site_name,
         site_id=site_id
     )
 
 
-# Crear nuevo feedback con fotos
+
+# ✅ CAMBIO: versión con moderación automática
 @feedback_bp.route("/", methods=["POST"])
 def create_feedback():
     identity, err, code = get_identity_from_header()
@@ -80,7 +105,7 @@ def create_feedback():
     if len(files) > 10:
         return jsonify({"error": "Podés subir como máximo 10 fotos"}), 400
 
-    comment = data.get("comment", "").strip()
+    comment = (data.get("comment") or "").strip()
     qualification = int(data.get("qualification", 0))
     id_tourist_site = data.get("id_tourist_site")
 
@@ -93,19 +118,24 @@ def create_feedback():
     if not site:
         return jsonify({"error": f"El sitio turístico con id {id_tourist_site} no existe"}), 404
 
+    # ✅ CAMBIO: detección de lenguaje inapropiado
+    lower_comment = comment.lower()
+    has_bad_words = any(word in lower_comment for word in BAD_WORDS)
+
     new_feedback = feedBack(
         date_hour=datetime.utcnow(),
         comment=comment,
         qualification=qualification,
         id_user=user.id_user,
-        id_tourist_site=id_tourist_site
+        id_tourist_site=id_tourist_site,
+        is_approved=not has_bad_words  # ✅ CAMBIO: nuevo campo
     )
 
     try:
         db.session.add(new_feedback)
         db.session.flush()
 
-        for file in files:              #Guarda cada foto en static/uploads con un nombre único (uuid).
+        for file in files:
             if file:
                 filename = f"{uuid.uuid4()}_{file.filename}"
                 upload_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -120,20 +150,75 @@ def create_feedback():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-    return jsonify({"feedback": new_feedback.serialize()}), 201
+    # ✅ CAMBIO: respuesta distinta si quedó pendiente
+    if has_bad_words:
+        return jsonify({
+            "message": "Tu comentario quedó pendiente de revisión por lenguaje inapropiado.",
+            "feedback": new_feedback.serialize()
+        }), 201
+    else:
+        return jsonify({
+            "message": "Comentario enviado correctamente.",
+            "feedback": new_feedback.serialize()
+        }), 201
 
 
-# Obtener todos los feedbacks
 @feedback_bp.route("/", methods=["GET"])
 def get_feedbacks():
     try:
-        feedbacks = feedBack.query.order_by(feedBack.date_hour.desc()).all()
+        identity, err, code = get_identity_from_header(optional=True)
+        user_role = None
+        user_id = None
+
+        # ✅ Detectamos usuario si hay token
+        if identity:
+            user = User.query.filter_by(id_user=identity).first()
+            if user:
+                user_role = user.role
+                user_id = user.id_user
+
+        print("DEBUG ROL:", user_role, "==", RoleEnum.ADMIN.value)
+
+
+        # ✅ CASO 1: Admin ve todos los comentarios
+        if user_role == RoleEnum.ADMIN.value:
+            feedbacks = (
+                feedBack.query
+                .order_by(feedBack.date_hour.desc())
+                .all()
+            )
+
+        # ✅ CASO 2: Usuario logueado → aprobados + los suyos
+        elif user_id:
+            feedbacks = (
+                feedBack.query
+                .filter(
+                    ((feedBack.is_approved == True) | (feedBack.id_user == user_id))
+                    & (feedBack.is_deleted == False)
+                )
+                .order_by(feedBack.date_hour.desc())
+                .all()
+            )
+
+        # ✅ CASO 3: Visitante (sin login) → solo aprobados
+        else:
+            feedbacks = (
+                feedBack.query
+                .filter_by(is_approved=True, is_deleted=False)
+                .order_by(feedBack.date_hour.desc())
+                .all()
+            )
+
         return jsonify([f.serialize() for f in feedbacks]), 200
+
     except Exception as e:
+        print("ERROR en get_feedbacks:", e)
         return jsonify({"error": str(e)}), 500
 
 
-# Actualizar feedback (solo admin)
+
+
+
 @feedback_bp.route("/<int:id>", methods=["PUT"])
 def update_feedback(id):
     identity, err, code = get_identity_from_header()
@@ -176,12 +261,12 @@ def update_feedback(id):
         return jsonify({"error": str(e)}), 500
 
 
-# Eliminar feedback
 @feedback_bp.route("/<int:id>", methods=["DELETE"])
 def delete_feedback(id):
     identity, err, code = get_identity_from_header()
     if err:
         return jsonify(err), code
+
     user = User.query.filter_by(id_user=identity).first()
     if not user or user.role != RoleEnum.ADMIN.value:
         return jsonify({"error": "Debes iniciar sesión como administrador"}), 401
@@ -191,15 +276,16 @@ def delete_feedback(id):
         return jsonify({"error": f"Feedback con id {id} no encontrado"}), 404
 
     try:
-        db.session.delete(feedback)
+        # 👇 CAMBIO: Borrado lógico
+        feedback.is_deleted = True
         db.session.commit()
-        return jsonify({"message": "Feedback eliminado con éxito"}), 200
+        return jsonify({"message": "Feedback marcado como eliminado (borrado lógico)."}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
 
-#  Responder feedback
+
 @feedback_bp.route("/<int:id>/reply", methods=["POST"])
 def reply_feedback(id):
     identity, err, code = get_identity_from_header()
@@ -233,6 +319,54 @@ def reply_feedback(id):
             "message": "Respuesta registrada con éxito",
             "feedback": feedback.serialize()
         }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@feedback_bp.route("/pending", methods=["GET"])
+def get_pending_feedbacks():
+    """Devuelve todos los comentarios que están pendientes de aprobación (is_approved=False)."""
+    identity, err, code = get_identity_from_header()
+    if err:
+        return jsonify(err), code
+
+    user = User.query.filter_by(id_user=identity).first()
+    if not user or user.role != RoleEnum.ADMIN.value:
+        return jsonify({"error": "Solo los administradores pueden ver comentarios pendientes"}), 401
+
+    try:
+        pending_feedbacks = (
+            feedBack.query.filter_by(is_approved=False,is_deleted=False)
+            .order_by(feedBack.date_hour.desc())
+            .all()
+        )
+        return jsonify([f.serialize() for f in pending_feedbacks]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@feedback_bp.route("/<int:id>/moderate", methods=["POST"])
+def moderate_feedback(id):
+    identity, err, code = get_identity_from_header()
+    if err:
+        return jsonify(err), code
+
+    user = User.query.filter_by(id_user=identity).first()
+    if not user or user.role != RoleEnum.ADMIN.value:
+        return jsonify({"error": "Solo los administradores pueden moderar comentarios"}), 401
+
+    feedback = feedBack.query.get(id)
+    if not feedback:
+        return jsonify({"error": f"Feedback con id {id} no encontrado"}), 404
+
+    data = request.get_json()
+    approve = data.get("approve")
+
+    feedback.is_approved = bool(approve)
+
+    try:
+        db.session.commit()
+        msg = "Comentario aprobado y publicado." if approve else "Comentario rechazado y ocultado."
+        return jsonify({"message": msg}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
