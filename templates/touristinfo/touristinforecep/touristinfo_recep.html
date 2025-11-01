@@ -80,7 +80,16 @@
             </div>
             <div class="mb-3">
                 <label for="mobility" class="form-label">Movilidad</label>
-                <input type="text" class="form-control" id="mobility" name="mobility" required>
+                <select class="form-select" id="mobility" name="mobility" required>
+                    <option value="" selected disabled>Seleccionar tipo de movilidad</option>
+                    <option value="Auto">Auto</option>
+                    <option value="Bicicleta">Bicicleta</option>
+                    <option value="Micro">Micro</option>
+                    <option value="Remis o Taxi">Remis o Taxi</option>
+                    <option value="Moto">Moto</option>
+                    <option value="App de transporte (Uber, Cabify, etc)">App de transporte (Uber, Cabify, etc)</option>
+                    <option value="Otro">Otro</option>
+                </select>
             </div>
             <div class="d-flex justify-content-between mt-4">
                 <button type="button" id="btnCancelAdd" class="btn btn-secondary">Cancelar</button>
@@ -118,7 +127,16 @@
             </div>
             <div class="mb-3">
                 <label for="editMobility" class="form-label">Movilidad</label>
-                <input type="text" class="form-control" id="editMobility" name="editMobility" required>
+                <select class="form-select" id="editMobility" name="editMobility" required>
+                    <option value="" selected disabled>Seleccionar tipo de movilidad</option>
+                    <option value="Auto">Auto</option>
+                    <option value="Bicicleta">Bicicleta</option>
+                    <option value="Micro">Micro</option>
+                    <option value="Remis o Taxi">Remis o Taxi</option>
+                    <option value="Moto">Moto</option>
+                    <option value="App de transporte (Uber, Cabify, etc)">App de transporte (Uber, Cabify, etc)</option>
+                    <option value="Otro">Otro</option>
+                </select>
             </div>
             <div class="d-flex justify-content-between mt-4">
                 <button type="button" id="btnCancelEdit" class="btn btn-secondary">Cancelar</button>
