@@ -42,7 +42,7 @@ class feedBack(db.Model):
     response_date = db.Column(db.DateTime, nullable=True)
     admin_name = db.Column(db.String(100), nullable=True)
     
-    is_approved = db.Column(db.Boolean, default=False)
+    is_approved = db.Column(db.Boolean, default=True)
     is_deleted = db.Column(db.Boolean, default=False)
 
     def __init__(self, comment, qualification, id_user, id_tourist_site, date_hour=None,is_approved=False):

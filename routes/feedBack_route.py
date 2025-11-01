@@ -85,8 +85,7 @@ def feedback_add_form():
     )
 
 
-
-# ✅ CAMBIO: versión con moderación automática
+# Aprobación automática de comentarios normales 
 @feedback_bp.route("/", methods=["POST"])
 def create_feedback():
     identity, err, code = get_identity_from_header()
@@ -118,7 +117,7 @@ def create_feedback():
     if not site:
         return jsonify({"error": f"El sitio turístico con id {id_tourist_site} no existe"}), 404
 
-    # ✅ CAMBIO: detección de lenguaje inapropiado
+    # Detección de lenguaje inapropiado
     lower_comment = comment.lower()
     has_bad_words = any(word in lower_comment for word in BAD_WORDS)
 
@@ -128,7 +127,7 @@ def create_feedback():
         qualification=qualification,
         id_user=user.id_user,
         id_tourist_site=id_tourist_site,
-        is_approved=not has_bad_words  # ✅ CAMBIO: nuevo campo
+        is_approved=not has_bad_words
     )
 
     try:
@@ -143,6 +142,11 @@ def create_feedback():
                 db.session.add(FeedbackPhoto(filename=filename, id_feedback=new_feedback.id_feedback))
 
         db.session.commit()
+
+        # Si el comentario fue aprobado automáticamente actualiza el promedio
+        if not has_bad_words:
+            site.update_average_rating()
+
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({"error": "Error al registrar feedback", "detail": str(e)}), 400
@@ -150,7 +154,7 @@ def create_feedback():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-    # ✅ CAMBIO: respuesta distinta si quedó pendiente
+    # Respuesta diferente según si tiene malas palabras o no
     if has_bad_words:
         return jsonify({
             "message": "Tu comentario quedó pendiente de revisión por lenguaje inapropiado.",
@@ -158,8 +162,9 @@ def create_feedback():
         }), 201
     else:
         return jsonify({
-            "message": "Comentario enviado correctamente.",
-            "feedback": new_feedback.serialize()
+            "message": "Comentario enviado correctamente y promedio actualizado.",
+            "feedback": new_feedback.serialize(),
+            "new_average_rating": site.average_rating
         }), 201
 
 
@@ -365,6 +370,13 @@ def moderate_feedback(id):
 
     try:
         db.session.commit()
+
+        # Actualiza el promedio del sitio relacionado
+        if approve:
+            site = TouristSite.query.get(feedback.id_tourist_site)
+            if site:
+                site.update_average_rating()
+
         msg = "Comentario aprobado y publicado." if approve else "Comentario rechazado y ocultado."
         return jsonify({"message": msg}), 200
     except Exception as e:
