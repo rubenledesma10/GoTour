@@ -4,7 +4,7 @@ from models.db import db
 from models.cit import Cit
 from utils.decorators import role_required
 from models.user import User
-
+from utils.utils import log_action
 cit_bp = Blueprint("cit_bp", __name__)
 
 # ---------------- Crear CIT (solo admin) ----------------
@@ -27,8 +27,8 @@ def create_cit(current_user):
         if not current_user or not current_user.id_user:
             return jsonify({'error': 'User not found in token'}), 400
 
-        # Conversión a booleano simple y clara
-        is_activate = str(data.get('is_activate', 'false')).lower() in ('true', '1', 'on')
+        # Conversión a booleano simple
+        is_activate = str(data.get('is_activate_cit', 'true')).lower() in ('true', '1', 'on')
         is_activate_qr_map = str(data.get('is_activate_qr_map', 'false')).lower() in ('true', '1', 'on')
 
         new_cit = Cit(
@@ -36,13 +36,13 @@ def create_cit(current_user):
             address=data["address"].strip(),
             number_cit=data["number_cit"],
             id_user=current_user.id_user,
-            is_activate=is_activate,
+            is_activate=is_activate,          
             is_activate_qr_map=is_activate_qr_map
         )
 
         db.session.add(new_cit)
         db.session.commit()
-
+        log_action(current_user.id_user, f"Created CIT {new_cit.id_cit}")
         return jsonify(new_cit.serialize()), 201
 
     except IntegrityError as e:
@@ -51,6 +51,7 @@ def create_cit(current_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
 
 # ---------------- Editar CIT (solo admin) ----------------
 @cit_bp.route("/api/<string:cit_id>", methods=["PATCH"])
@@ -86,6 +87,7 @@ def update_cit(current_user, cit_id):
 
     try:
         db.session.commit()
+        log_action(current_user.id_user, f"Updated CIT {cit_id}")
         return jsonify(cit.serialize()), 200
     except IntegrityError as e:
         db.session.rollback()
@@ -109,6 +111,7 @@ def delete_cit(current_user, id_cit):
     try:
         cit.is_activate = False
         db.session.commit()
+        log_action(current_user.id_user, f"Deactivated CIT {id_cit}")
         return jsonify({"message": "CIT deactivated successfully"}), 200
     except Exception as e:
         db.session.rollback()
@@ -143,6 +146,7 @@ def reactivate_cit(current_user, id_cit):
     try:
         cit.is_activate = True
         db.session.commit()
+        log_action(current_user.id_user, f"Reactivated CIT {id_cit}")
         return jsonify({"message": "CIT reactivated successfully"}), 200
     except Exception as e:
         db.session.rollback()
