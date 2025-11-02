@@ -2,17 +2,17 @@ document.getElementById('formAddTourist').addEventListener('submit', async (e) =
     e.preventDefault();
 
     const token = localStorage.getItem('token');
-    const baseApiUrl = localStorage.getItem('baseApiUrl'); // 👈
+    const baseApiUrl = localStorage.getItem('baseApiUrl');
     const data = {
         nationality: document.getElementById('nationality').value,
         province: document.getElementById('province').value,
-        quantity: document.getElementById('quantity').value,
-        person_with_disability: document.getElementById('person_with_disability').value,
+        quantity: parseInt(document.getElementById('quantity').value),
+        person_with_disability: parseInt(document.getElementById('person_with_disability').value),
         mobility: document.getElementById('mobility').value
     };
 
     try {
-        const res = await fetch(`${baseApiUrl}/`, {  // 👈 usa la ruta según el rol
+        const res = await fetch(`${baseApiUrl}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -24,9 +24,9 @@ document.getElementById('formAddTourist').addEventListener('submit', async (e) =
         if (res.ok) location.reload();
         else {
             const err = await res.json();
-            alert(err.error || 'Error al agregar');
+            showToast(err.error || 'Error al agregar');
         }
     } catch (err) {
-        alert('Error al agregar');
+        showToast('Error al agregar');
     }
 });

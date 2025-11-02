@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- DESACTIVAR ---
         if (e.target.classList.contains("btnDelete")) {
-            if (!confirm("¿Seguro que querés desactivar este turista?")) return;
+            if (!await showToastConfirm("¿Seguro que querés desactivar este turista?")) return;
 
             try {
                 const res = await fetch(`${baseUrl}/${id}`, {
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await res.json();
 
                 if (res.ok) {
-                    alert(result.message || "Turista desactivado correctamente.");
+                    showToast(result.message || "Turista desactivado correctamente.");
                     row.classList.add("table-danger");
                     row.querySelector(".btnEdit").remove();
                     row.querySelector(".btnDelete").remove();
@@ -32,18 +32,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnReact.className = "btn btn-sm btn-success btnReactivate";
                     btnReact.textContent = "Reactivar";
                     row.querySelector("td:last-child").appendChild(btnReact);
-                } else {
-                    alert(result.error || "Error al desactivar.");
-                }
+                } else showToast(result.error || "Error al desactivar.");
             } catch (err) {
-                console.error("Error al desactivar:", err);
-                alert("Error de conexión al eliminar.");
+                console.error(err);
+                showToast("Error de conexión al eliminar.");
             }
         }
 
         // --- REACTIVAR ---
         if (e.target.classList.contains("btnReactivate")) {
-            if (!confirm("¿Seguro que querés reactivar este turista?")) return;
+            if (!await showToastConfirm("¿Seguro que querés reactivar este turista?")) return;
 
             try {
                 const res = await fetch(`${baseUrl}/${id}/reactivate`, {
@@ -53,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await res.json();
 
                 if (res.ok) {
-                    alert(result.message || "Turista reactivado correctamente.");
+                    showToast(result.message || "Turista reactivado correctamente.");
                     row.classList.remove("table-danger");
                     e.target.remove();
 
@@ -68,12 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     td.appendChild(btnEdit);
                     td.appendChild(btnDel);
-                } else {
-                    alert(result.error || "Error al reactivar.");
-                }
+                } else showToast(result.error || "Error al reactivar.");
             } catch (err) {
-                console.error("Error al reactivar:", err);
-                alert("Error de conexión al reactivar.");
+                console.error(err);
+                showToast("Error de conexión al reactivar.");
             }
         }
     });

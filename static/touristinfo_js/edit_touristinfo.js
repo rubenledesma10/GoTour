@@ -4,11 +4,9 @@ document.querySelectorAll('.btnEdit').forEach(btn => {
         const row = e.target.closest('tr');
         const id = row.dataset.id;
 
-        // Mostrar formulario
         const formContainer = document.getElementById('editFormContainer');
         formContainer.classList.remove('d-none');
 
-        // Rellenar campos
         document.getElementById('editId').value = id;
         document.getElementById('editNationality').value = row.children[0].innerText;
         document.getElementById('editProvince').value = row.children[1].innerText;
@@ -50,9 +48,9 @@ document.getElementById('formEditTourist').addEventListener('submit', async e =>
         if (res.ok) location.reload();
         else {
             const err = await res.json();
-            alert(err.error || 'Error al actualizar');
+            showToast(err.error || 'Error al actualizar');
         }
     } catch (err) {
-        alert('Error al actualizar');
+        showToast('Error al actualizar');
     }
 });
