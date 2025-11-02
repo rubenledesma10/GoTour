@@ -124,6 +124,14 @@
         <button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
     </form>
 </div>
-
+<!-- Toast container -->
+<div id="liveToast" class="toast position-fixed top-0 end-0 m-3 border border-secondary"
+     role="alert" aria-live="assertive" aria-atomic="true" style="z-index:1100;">
+    <div class="toast-body">
+        <span id="toastMessage"></span>
+        <div id="toastButtons" class="mt-2 text-center"></div>
+    </div>
+</div>
 <script src="/static/tourist_sites/tourist_site_edit.js"></script>
+
 {% include "scripts.html"%}

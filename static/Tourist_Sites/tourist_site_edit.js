@@ -1,148 +1,190 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("tourist_site_edit.js cargado correctamente");
+    console.log("✅ tourist_site_edit.js cargado");
 
-    // Control de acceso - solo admins
     const role = localStorage.getItem('role');
     const token = localStorage.getItem('token');
 
-    // Si no hay token o el usuario no es admin, redirigimos a login o vista principal
+    // ============ ACCESS CONTROL ============
     if (!token) {
-        alert("No hay token de acceso. Por favor, inicia sesión.");
-        window.location.href = '/login'; // o la ruta de tu login
+        showToastReload("Debes iniciar sesión.", "/login");
         return;
     }
 
-    if (role !== 'admin') {
-        alert("No tienes permisos para acceder a esta sección.");
-        window.location.href = '/tourist_sites/view';
+    if (role !== "admin") {
+        showToastReload("No tienes permiso para editar sitios.", "/tourist_sites/view");
         return;
     }
 
-    // Logica principal
+    // ============ FORM ELEMENTS ============
     const siteSelect = document.getElementById('siteSelect');
-    const editTouristSiteForm = document.getElementById('editTouristSiteForm');
+    const form = document.getElementById('editTouristSiteForm');
     const cancelButton = document.getElementById('cancelButton');
 
-    // Elementos del archivo imagen
     const currentImage = document.getElementById('currentImage');
     const noImageText = document.getElementById('noImageText');
     const previewImage = document.getElementById('previewImage');
     const photoInput = document.getElementById('photo');
     const noNewImageText = document.getElementById('noNewImageText');
-    
-    // Vista previa de la nueva imagen
+
+    // ============ IMAGE PREVIEW ============
     if (photoInput) {
-        photoInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = e => {
-                    previewImage.src = e.target.result;
+                reader.onload = r => {
+                    previewImage.src = r.target.result;
                     previewImage.style.display = 'block';
-                    if (noNewImageText) noNewImageText.style.display = 'none';
+                    noNewImageText.style.display = 'none';
                 };
                 reader.readAsDataURL(file);
             } else {
-                previewImage.src = '';
                 previewImage.style.display = 'none';
-                if (noNewImageText) noNewImageText.style.display = 'block';
+                noNewImageText.style.display = 'block';
             }
         });
     }
 
-    // Botón para cancelar
-    if (cancelButton) {
-        cancelButton.addEventListener('click', () => {
-            window.location.href = '/tourist_sites/view';
+    // ============ CANCEL BUTTON ============
+    cancelButton.addEventListener("click", async () => {
+        const confirm = await showToastConfirm("¿Cancelar y volver?");
+        if (confirm) window.location.href = "/tourist_sites/view";
+    });
+
+    // ============ LOAD SITE DATA ============
+    siteSelect.addEventListener("change", async (e) => {
+        const id = e.target.value;
+        if (!id) {
+            form.reset();
+            previewImage.style.display = "none";
+            currentImage.style.display = "none";
+            noImageText.style.display = "block";
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/tourist_sites/${id}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error();
+
+            const data = await res.json();
+
+            // Fill fields
+            document.getElementById('name').value = data.name;
+            document.getElementById('description').value = data.description;
+            document.getElementById('address').value = data.address;
+            document.getElementById('phone').value = data.phone;
+            document.getElementById('category').value = data.category;
+            document.getElementById('url').value = data.url;
+            document.getElementById('average').value = data.average;
+            document.getElementById('opening_hours').value = data.opening_hours?.substring(0,5);
+            document.getElementById('closing_hours').value = data.closing_hours?.substring(0,5);
+
+            // Current image
+            if (data.photo) {
+                currentImage.src = data.photo;
+                currentImage.style.display = "block";
+                noImageText.style.display = "none";
+            } else {
+                currentImage.style.display = "none";
+                noImageText.style.display = "block";
+            }
+
+            previewImage.style.display = "none";
+            photoInput.value = "";
+
+        } catch {
+            showToast("Error cargando datos del sitio");
+        }
+    });
+
+    // ============ SAVE ============
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const id = siteSelect.value;
+        if (!id) return showToast("Selecciona un sitio");
+
+        const confirm = await showToastConfirm("¿Guardar cambios?");
+        if (!confirm) return;
+
+        const formData = new FormData(form);
+
+        try {
+            const res = await fetch(`/api/tourist_sites/${id}`, {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${token}` },
+                body: formData
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                showToastReload("✅ Sitio actualizado con éxito", "/tourist_sites/view");
+            } else {
+                showToast("Error: " + (result.error || result.message));
+            }
+        } catch {
+            showToast("Error al actualizar el sitio");
+        }
+    });
+
+
+    // ========= TOAST FUNCTIONS =========
+
+    function showToast(message) {
+        const toastEl = document.getElementById("liveToast");
+        const msg = document.getElementById("toastMessage");
+        const buttons = document.getElementById("toastButtons");
+
+        msg.textContent = message;
+        buttons.innerHTML = ""; // no botones
+
+        toastEl.style.background = "#fff";
+        toastEl.style.color = "#000";
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4500 });
+        toast.show();
+    }
+
+    function showToastReload(message, redirect) {
+        const toastEl = document.getElementById("liveToast");
+        const msg = document.getElementById("toastMessage");
+        const buttons = document.getElementById("toastButtons");
+
+        msg.textContent = message;
+        buttons.innerHTML = `
+            <button id="toastAccept" class="btn btn-success btn-sm me-2">Aceptar</button>
+        `;
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+        toast.show();
+
+        document.getElementById("toastAccept").onclick = () => {
+            toast.hide();
+            window.location.href = redirect;
+        };
+    }
+
+    function showToastConfirm(message) {
+        return new Promise((resolve) => {
+            const toastEl = document.getElementById("liveToast");
+            const msg = document.getElementById("toastMessage");
+            const buttons = document.getElementById("toastButtons");
+
+            msg.textContent = message;
+            buttons.innerHTML = `
+                <button id="yesBtn" class="btn btn-success btn-sm me-2">Sí</button>
+                <button id="noBtn" class="btn btn-secondary btn-sm">No</button>
+            `;
+
+            const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+            toast.show();
+
+            document.getElementById("yesBtn").onclick = () => { toast.hide(); resolve(true); };
+            document.getElementById("noBtn").onclick = () => { toast.hide(); resolve(false); };
         });
     }
 
-
-    // Carga los datos del sitio seleccionado
-    if (siteSelect && editTouristSiteForm) {
-        siteSelect.addEventListener('change', async (event) => {
-            const selectedSiteId = event.target.value;
-            if (!selectedSiteId) {
-                editTouristSiteForm.reset();
-                currentImage.style.display = 'none';
-                noImageText.style.display = 'block';
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/tourist_sites/${selectedSiteId}`, {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('No se pudo obtener la información del sitio.');
-
-                const siteData = await response.json();
-
-                // Rellenamos los campos
-                document.getElementById('name').value = siteData.name || '';
-                document.getElementById('description').value = siteData.description || '';
-                document.getElementById('address').value = siteData.address || '';
-                document.getElementById('phone').value = siteData.phone || '';
-                document.getElementById('category').value = siteData.category || '';
-                document.getElementById('url').value = siteData.url || '';
-                document.getElementById('average').value = siteData.average || '';
-                document.getElementById('opening_hours').value = siteData.opening_hours?.substring(0, 5) || '';
-                document.getElementById('closing_hours').value = siteData.closing_hours?.substring(0, 5) || '';
-
-                // Imagen actual
-                if (siteData.photo) {
-                    currentImage.src = siteData.photo;
-                    currentImage.style.display = 'block';
-                    noImageText.style.display = 'none';
-                } else {
-                    currentImage.style.display = 'none';
-                    noImageText.style.display = 'block';
-                }
-
-                // Limpia la vista previa anterior
-                previewImage.src = '';
-                previewImage.style.display = 'none';
-                photoInput.value = '';
-
-            } catch (error) {
-                console.error('Error al cargar el sitio:', error);
-                alert('Hubo un error al cargar los datos.');
-                editTouristSiteForm.reset();
-            }
-        });
-
-        // Guardamos los cambios
-        editTouristSiteForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            const selectedSiteId = siteSelect.value;
-            if (!selectedSiteId) {
-                alert("Error: No hay un sitio seleccionado para actualizar.");
-                return;
-            }
-
-            const formData = new FormData(editTouristSiteForm);
-
-            try {
-                const response = await fetch(`/api/tourist_sites/${selectedSiteId}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert('Sitio turístico actualizado con éxito!');
-                    window.location.href = '/tourist_sites/view';
-                } else {
-                    alert('Error al actualizar: ' + (result.error || result.message));
-                }
-            } catch (error) {
-                console.error('Error al actualizar:', error);
-                alert('Ocurrió un error al intentar actualizar el sitio turístico.');
-            }
-        });
-    }
 });
