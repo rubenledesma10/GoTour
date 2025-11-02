@@ -21,11 +21,12 @@ class TouristSiteSchema(Schema):
         error_messages={"required": "Address is required."}
     )
 
+    # Teléfono flexible: + opcional, 7–15 dígitos reales, admite espacios/guiones/paréntesis
     phone = fields.Str(
         required=True,
         validate=validate.Regexp(
-            r'^\+?\d{7,15}$',
-            error="Phone number must contain between 7 and 15 digits (optional + at start)."
+            r'^\+?(?:[()\s-]*\d[()\s-]*){7,15}$',
+            error="Phone number must have 7–15 digits; spaces, dashes, and parentheses are allowed."
         ),
         error_messages={"required": "Phone number is required."}
     )
@@ -58,6 +59,15 @@ class TouristSiteSchema(Schema):
     closing_hours = fields.Time(
         required=True,
         error_messages={"required": "Closing time is required."}
+    )
+
+    lat = fields.Float(
+        allow_none=True,
+        validate=validate.Range(min=-90, max=90, error="Latitude must be between -90 and 90.")
+    )
+    lng = fields.Float(
+        allow_none=True,
+        validate=validate.Range(min=-180, max=180, error="Longitude must be between -180 and 180.")
     )
 
     try:

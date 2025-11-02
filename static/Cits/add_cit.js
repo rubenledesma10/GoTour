@@ -5,14 +5,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const role = localStorage.getItem('role');
 
     if (!token) {
-        alert("Debes iniciar sesión para acceder a esta página.");
-        window.location.href = "/login";
+        showToast("⚠️ Debes iniciar sesión para acceder a esta página.", 3000, () => {
+            window.location.href = "/api/gotour/login";
+        });
         return;
     }
 
     if (role !== 'admin') {
-        alert("Acceso denegado. Solo los administradores pueden agregar CITs.");
-        window.location.href = "/";
+        showToast("🚫 Acceso denegado. Solo los administradores pueden agregar CITs.", 3000, () => {
+            window.location.href = "/";
+        });
         return;
     }
 
@@ -42,14 +44,49 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (response.ok) {
-                alert('✅ CIT agregado con éxito!');
-                window.location.href = '/cit/view';
+                showToast("✅ CIT agregado con éxito!", 2000, () => {
+                    window.location.href = '/cit/view';
+                });
             } else {
-                alert('⚠️ Error al agregar el CIT: ' + (result.error || result.message));
+                showToast("⚠️ Error al agregar el CIT: " + (result.error || result.message), 5000);
             }
         } catch (error) {
             console.error('❌ Error de red o del servidor:', error);
-            alert('❌ Ocurrió un error al intentar agregar el CIT.');
+            showToast("❌ Ocurrió un error al intentar agregar el CIT.", 5000);
         }
     });
+
+    // =================== FUNCION TOAST =====================
+    function showToast(message, duration = 5000, callback = null) {
+        // Creamos el toast dinámicamente si no existe
+        let toastEl = document.getElementById('liveToast');
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.id = 'liveToast';
+            toastEl.className = 'toast';
+            toastEl.setAttribute('role', 'alert');
+            toastEl.style.position = 'fixed';
+            toastEl.style.top = '1rem';
+            toastEl.style.right = '1rem';
+            toastEl.style.zIndex = '9999';
+            toastEl.innerHTML = `<div class="toast-body" id="toastMessage"></div>`;
+            document.body.appendChild(toastEl);
+        }
+
+        const toastMessage = document.getElementById('toastMessage');
+        toastMessage.textContent = message;
+
+        toastEl.className = `toast align-items-center border border-secondary`;
+        toastEl.style.backgroundColor = "#ffffff";
+        toastEl.style.color = "#000000";
+        toastEl.style.borderRadius = "0.5rem";
+        toastEl.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: duration });
+        toast.show();
+
+        if (callback) {
+            setTimeout(callback, duration);
+        }
+    }
 });

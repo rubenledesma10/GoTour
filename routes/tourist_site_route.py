@@ -19,9 +19,19 @@ from utils.file_helpers import allowed_file
 from marshmallow import ValidationError
 from schemas.tourist_site_schema import tourist_site_schema
 from utils.utils import log_action
-
+from utils.geocode import geocode_address_free
 
 tourist_site = Blueprint('tourist_site', __name__)
+
+# ------------------------ GEOCODIFICACION ------------------------------ #
+
+
+@tourist_site.route("/api/geocode")
+def api_geocode():
+    address = (request.args.get("address") or "").strip()
+    lat, lng, note = geocode_address_free(address)
+    return jsonify({"lat": lat, "lng": lng, "note": note}), 200
+
 
 # -------------------- ENDPOINTS PARA TRAER LOS SITIOS TURISTICOS POR FILTRO ---------------------------- #
     
@@ -113,13 +123,13 @@ def add_tourist_site(current_user):
     data = request.form
     file = request.files.get('photo')
 
-    # Validar los campos con el Schema
+    # 1) Validación
     try:
         validated_data = tourist_site_schema.load(data)
     except ValidationError as err:
         return jsonify({"errors": err.messages}), 400
 
-    # Validamos imagen
+    # 2) Imagen
     if not file or file.filename == '':
         return jsonify({"errors": {"photo": ["Image is required."]}}), 400
     if not allowed_file(file.filename):
@@ -127,7 +137,8 @@ def add_tourist_site(current_user):
 
     try:
         id_user = current_user.id_user
-        # Evitamos duplicados
+
+        # 3) Duplicados básicos
         existing = TouristSite.query.filter(
             (TouristSite.name == validated_data["name"]) |
             (TouristSite.address == validated_data["address"]) |
@@ -136,31 +147,64 @@ def add_tourist_site(current_user):
         if existing:
             return jsonify({"errors": {"duplicate": ["Name, address or URL already exists."]}}), 409
 
-        # Guardamos la imagen
+        # 4) Guardar imagen
         filename = secure_filename(file.filename)
         save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         file.save(save_path)
 
-        # Crear y guardar sitio
+        # 5) Resolver lat/lng sin duplicar keys
+        from utils.geocode import geocode_address_free
+
+        def to_float_or_none(x):
+            try:
+                return float(x) if x not in (None, "", "null", "None") else None
+            except (TypeError, ValueError):
+                return None
+
+        # tomar lo que venga del form/schema
+        lat_form = to_float_or_none(validated_data.get("lat"))
+        lng_form = to_float_or_none(validated_data.get("lng"))
+
+        # si faltan, geocodificar por address
+        lat = lat_form
+        lng = lng_form
+        geo_note = None
+        if lat is None or lng is None:
+            lat, lng, geo_note = geocode_address_free(validated_data["address"])
+
+        # IMPORTANTE: quitar lat/lng de validated_data para no duplicar al instanciar
+        validated_data.pop("lat", None)
+        validated_data.pop("lng", None)
+
+        # 6) Crear modelo (ya sin duplicados)
         new_site = TouristSite(
             **validated_data,
             id_user=id_user,
-            photo=filename
+            photo=filename,
+            lat=lat,
+            lng=lng
         )
 
         db.session.add(new_site)
         db.session.commit()
         log_action(current_user.id_user, f"Created tourist site {new_site.id_tourist_site}")
-        return jsonify({
+
+        resp = {
             "message": "Tourist site created successfully.",
             "tourist_site": new_site.serialize()
-        }), 201
+        }
+        if geo_note:
+            resp["geocode_note"] = geo_note
+        if lat is None or lng is None:
+            resp["warning"] = "Site created but coordinates could not be resolved."
+
+        return jsonify(resp), 201
 
     except Exception as e:
         db.session.rollback()
         return jsonify({"errors": {"server": [f"Error adding Tourist Site: {str(e)}"]}}), 500
-    
+
 # ------------------ Endpoint para agregar un comentario con calificación a un sitio turístico ------------------------- #
 
 

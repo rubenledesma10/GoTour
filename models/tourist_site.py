@@ -21,7 +21,8 @@ class TouristSite(db.Model):
     user = db.relationship('User', backref='tourist_sites', lazy=True)
     is_activate = db.Column(db.Boolean, default=True, nullable=False)
     comment_count = db.Column(db.Integer, default=0, nullable=False) # Para registrar la cantidad de comentarios
-
+    lat = db.Column(db.Numeric(9, 6), nullable=True)
+    lng = db.Column(db.Numeric(9, 6), nullable=True)
 
     def serialize(self):
         return {
@@ -37,6 +38,8 @@ class TouristSite(db.Model):
             'photo': url_for('static', filename=f'tourist_sites_images/{self.photo}', _external=True) if self.photo else None,
             'opening_hours': self.opening_hours.strftime("%H:%M:%S") if self.opening_hours else None,
             'closing_hours': self.closing_hours.strftime("%H:%M:%S") if self.closing_hours else None,
+            'lat': float(self.lat) if self.lat is not None else None,
+            'lng': float(self.lng) if self.lng is not None else None,
             'id_user': self.id_user,
             'is_activate': self.is_activate,
             'comment_count': self.comment_count,
