@@ -53,6 +53,15 @@
         </div>
     </form>
 </div>
+<!-- ✅ Toast Container -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+    <div id="liveToast" class="toast text-white bg-dark border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">Mensaje...</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 
 <script src="/static/Cits/edit_cit.js"></script>
 {% include "scripts.html" %}

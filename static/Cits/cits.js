@@ -3,14 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
 
-
-    // VALIDACIÓN DE ACCESO
-    // if (!token) {
-    //     alert("⚠️ Debes iniciar sesión o registrarte para acceder a los Centros de Información Turística.");
-    //     window.location.replace('/'); 
-    //     return;
-    // }
-
     if (body) body.style.display = 'block';
 
     if (role !== 'admin') {
@@ -20,78 +12,170 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ Página de CITs cargada correctamente. Rol:", role);
 
     // ==========================================================
-
-    // ACCESO A LOS BOTONES DE ACTIVAR / DESACTIVAR
+    // BOTONES ACTIVAR / DESACTIVAR
     const buttons = document.querySelectorAll('.btnToggle');
-    console.log("🧩 Botones encontrados:", buttons.length);
 
     buttons.forEach(button => {
-        button.addEventListener('click', async () => {
+        button.addEventListener('click', () => {
             const citId = button.dataset.id;
             const action = button.dataset.action;
 
             if (!citId) {
-                alert("⚠️ No se encontró el ID del CIT.");
+                showToast("⚠️ No se encontró el ID del CIT.");
                 return;
             }
 
             const confirmMsg = action === 'deactivate'
-                ? '¿Deseas desactivar este CIT?'
-                : '¿Deseas reactivar este CIT?';
+                ? "¿Deseas desactivar este CIT?"
+                : "¿Deseas reactivar este CIT?";
 
-            if (!confirm(confirmMsg)) return;
+            showConfirmToast(confirmMsg, async (confirmed) => {
+                if (!confirmed) return;
 
-            try {
-                const url = action === 'deactivate'
-                    ? `/api/cit/${citId}`
-                    : `/api/cit/${citId}/reactivate`;
-                const method = action === 'deactivate' ? 'DELETE' : 'PUT';
+                try {
+                    const url = action === 'deactivate'
+                        ? `/api/cit/${citId}`
+                        : `/api/cit/${citId}/reactivate`;
 
-                console.log(`➡️ Enviando ${method} a ${url}`);
+                    const method = action === 'deactivate' ? 'DELETE' : 'PUT';
 
-                const response = await fetch(url, {
-                    method,
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                    console.log(`➡️ Enviando ${method} a ${url}`);
 
-                const result = await response.json();
-                console.log("📦 Respuesta del servidor:", result);
+                    const response = await fetch(url, {
+                        method,
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
 
-                if (response.ok) {
-                    const successMsg = action === 'deactivate'
-                        ? '🗑️ CIT desactivado correctamente.'
-                        : '✅ CIT reactivado correctamente.';
-                    alert(successMsg);
-                    window.location.reload();
-                } else {
-                    alert("❌ Error: " + (result.error || result.message));
+                    const result = await response.json();
+                    console.log("📦 Respuesta del servidor:", result);
+
+                    if (response.ok) {
+                        const successMsg = action === 'deactivate'
+                            ? '🗑️ CIT desactivado correctamente.'
+                            : '✅ CIT reactivado correctamente.';
+
+                        showToastReload(successMsg, 1500); // recarga automática después de 1.5s
+                    } else {
+                        showToast("❌ Error: " + (result.error || result.message));
+                    }
+
+                } catch (error) {
+                    console.error("⚠️ Error al conectar con el servidor:", error);
+                    showToast("⚠️ Error al conectar con el servidor.");
                 }
-            } catch (error) {
-                console.error("⚠️ Error al conectar con el servidor:", error);
-                alert("⚠️ Error al conectar con el servidor.");
-            }
+            });
         });
     });
 
     // ==========================================================
-
-    // ---------------- ACCESO AL BOTON DE EDITAR ----------------
+    // BOTÓN EDITAR
     const editButtons = document.querySelectorAll(".btnEdit");
 
-    if (editButtons.length === 0) {
-        console.warn("⚠️ No se encontraron botones de edición (.btnEdit).");
-    } else {
-        editButtons.forEach(button => {
-            button.addEventListener("click", () => {
-                const citId = button.dataset.id;
-                if (!citId) {
-                    alert("⚠️ No se encontró el ID del CIT para editar.");
-                    return;
-                }
+    editButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const citId = button.dataset.id;
 
-                console.log(`✏️ Redirigiendo a /cit/edit/${citId}`);
-                window.location.href = `/cit/edit/${citId}`;
-            });
+            if (!citId) {
+                showToast("⚠️ No se encontró el ID del CIT para editar.");
+                return;
+            }
+
+            console.log(`✏️ Redirigiendo a /cit/edit/${citId}`);
+            window.location.href = `/cit/edit/${citId}`;
+        });
+    });
+
+    // ==========================================================
+    // =================== FUNCIONES TOAST =====================
+
+    function showToast(message, duration = 5000) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toastMessage.textContent = message;
+
+        toastEl.className = `toast align-items-center border border-secondary`;
+        toastEl.style.backgroundColor = "#ffffff";
+        toastEl.style.color = "#000000";
+        toastEl.style.borderRadius = "0.5rem";
+        toastEl.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: duration });
+        toast.show();
+    }
+
+    function showToastReload(message, duration = 2000) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toastMessage.innerHTML = `
+            ${message} 
+            <div class="mt-2 text-center">
+                <button id="toastAccept" class="btn btn-sm btn-primary">Aceptar</button>
+            </div>
+        `;
+
+        toastEl.className = `toast align-items-center border border-secondary`;
+        toastEl.style.backgroundColor = "#ffffff";
+        toastEl.style.color = "#000000";
+        toastEl.style.borderRadius = "0.5rem";
+        toastEl.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+        toast.show();
+
+        const acceptBtn = document.getElementById('toastAccept');
+        acceptBtn.addEventListener('click', () => {
+            toast.hide();
+            window.location.reload();
+        });
+
+        // Recargar automáticamente después de X ms
+        setTimeout(() => {
+            toast.hide();
+            window.location.reload();
+        }, duration);
+    }
+
+    function showConfirmToast(message, callback) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toastMessage.innerHTML = `
+            ${message}
+            <div class="mt-2 text-center">
+                <button id="toastConfirm" class="btn btn-success btn-sm me-2">Sí</button>
+                <button id="toastCancel" class="btn btn-secondary btn-sm">No</button>
+            </div>
+        `;
+
+        toastEl.className = `toast align-items-center border border-secondary`;
+        toastEl.style.backgroundColor = "#ffffff";
+        toastEl.style.color = "#000000";
+        toastEl.style.borderRadius = "0.5rem";
+        toastEl.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+        toast.show();
+
+        // Limpiar listeners previos
+        const btnConfirm = document.getElementById('toastConfirm');
+        const btnCancel = document.getElementById('toastCancel');
+        btnConfirm.replaceWith(btnConfirm.cloneNode(true));
+        btnCancel.replaceWith(btnCancel.cloneNode(true));
+
+        const newBtnConfirm = document.getElementById('toastConfirm');
+        const newBtnCancel = document.getElementById('toastCancel');
+
+        newBtnConfirm.addEventListener('click', () => {
+            toast.hide();
+            callback(true);
+        });
+
+        newBtnCancel.addEventListener('click', () => {
+            toast.hide();
+            callback(false);
         });
     }
+
 });
