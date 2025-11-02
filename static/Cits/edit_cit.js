@@ -3,23 +3,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const role = localStorage.getItem("role");
     const body = document.getElementById("protectedBody");
 
+    if (body) body.style.display = "block";
+
     if (!token) {
-        alert("⚠️ Debes iniciar sesión para editar CITs.");
-        window.location.replace("/login");
+        showToastReload("⚠️ Debes iniciar sesión para editar CITs.", "/login");
         return;
     }
 
-    if (body) body.style.display = "block";
-
     if (role !== "admin") {
-        alert("❌ No tienes permisos para editar CITs.");
-        window.location.replace("/cit/view");
+        showToastReload("❌ No tienes permisos para editar CITs.", "/cit/view");
         return;
     }
 
     const editForm = document.getElementById("editCitForm");
     if (!editForm) {
         console.error("⚠️ No se encontró el formulario de edición.");
+        showToast("⚠️ Error interno: no se encontró el formulario.");
         return;
     }
 
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const citId = editForm.dataset.id;
         if (!citId) {
-            alert("⚠️ No se encontró el ID del CIT.");
+            showToast("⚠️ No se encontró el ID del CIT.");
             return;
         }
 
@@ -53,14 +52,58 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("📦 Resultado del servidor:", result);
 
             if (response.ok) {
-                alert("✅ CIT actualizado correctamente.");
-                window.location.replace("/cit/view");
+                showToastReload("✅ CIT actualizado correctamente.", "/cit/view");
             } else {
-                alert("❌ Error al actualizar: " + (result.error || result.message));
+                showToast("❌ Error al actualizar: " + (result.error || result.message));
             }
         } catch (error) {
             console.error("⚠️ Error al editar:", error);
-            alert("⚠️ No se pudo conectar con el servidor.");
+            showToast("⚠️ No se pudo conectar con el servidor.");
         }
     });
+
+    // =================== FUNCIONES TOAST =====================
+
+    function showToast(message, duration = 5000) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toastMessage.textContent = message;
+
+        toastEl.className = `toast align-items-center border border-secondary`;
+        toastEl.style.backgroundColor = "#ffffff";
+        toastEl.style.color = "#000000";
+        toastEl.style.borderRadius = "0.5rem";
+        toastEl.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: duration });
+        toast.show();
+    }
+
+    function showToastReload(message, redirectUrl = null) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toastMessage.innerHTML = `
+            ${message} 
+            <div class="mt-2 text-center">
+                <button id="toastAccept" class="btn btn-sm btn-primary">Aceptar</button>
+            </div>
+        `;
+
+        toastEl.className = `toast align-items-center border border-secondary`;
+        toastEl.style.backgroundColor = "#ffffff";
+        toastEl.style.color = "#000000";
+        toastEl.style.borderRadius = "0.5rem";
+        toastEl.style.boxShadow = "0 2px 10px rgba(0,0,0,0.15)";
+
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+        toast.show();
+
+        const acceptBtn = document.getElementById('toastAccept');
+        acceptBtn.addEventListener('click', () => {
+            toast.hide();
+            if (redirectUrl) window.location.href = redirectUrl;
+        });
+    }
 });
