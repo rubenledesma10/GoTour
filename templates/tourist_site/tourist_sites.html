@@ -163,7 +163,24 @@
             });
         </script>
     </div>
+<!-- Agregar contenedor de toasts -->
+<div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1200;"></div>
 
+<!-- Script de modales y toasts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('imageModalLabel');
+
+    document.querySelectorAll('.site-photo').forEach(img => {
+        img.addEventListener('click', () => {
+            modalImage.src = img.getAttribute('data-img-src');
+            modalTitle.textContent = `Vista ampliada - ${img.getAttribute('data-img-name')}`;
+        });
+    });
+
+});
+</script>
     <!-- JS -->
     <script src="/static/tourist_sites/tourist_sites.js"></script>
 
