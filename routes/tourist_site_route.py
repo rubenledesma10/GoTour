@@ -258,7 +258,6 @@ def edit_tourist_site(current_user, id_tourist_site):
     if not current_user or not current_user.id_user:
         return jsonify({'error': 'User not found in token'}), 400
 
-    
     tourist_site = TouristSite.query.get(id_tourist_site)
 
     if not tourist_site:
@@ -284,6 +283,9 @@ def edit_tourist_site(current_user, id_tourist_site):
             return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
 
     try:
+        # Guardamos la dirección previa para detectar cambios
+        old_address = tourist_site.address
+
         # Actualizamos los campos obligatorios
         tourist_site.name = data.get('name')
         tourist_site.description = data.get('description')
@@ -298,6 +300,27 @@ def edit_tourist_site(current_user, id_tourist_site):
         tourist_site.average = float(data.get('average'))
         tourist_site.is_activate = str(data.get('is_activate', 'true')).lower() in ('true', '1')
 
+        # Manejo de coordenadas: tomar del form o re-geocodificar si cambió address
+        def _to_float_or_none(x):
+            try:
+                return float(x)
+            except (TypeError, ValueError):
+                return None
+
+        lat_in = _to_float_or_none(data.get('lat'))
+        lng_in = _to_float_or_none(data.get('lng'))
+
+        if lat_in is not None and lng_in is not None:
+            tourist_site.lat = lat_in
+            tourist_site.lng = lng_in
+        else:
+            # si no mandan lat/lng pero la dirección cambió, re-geocodificar
+            if (data.get('address') or '') != (old_address or ''):
+                lat, lng, _note = geocode_address_free(tourist_site.address)
+                tourist_site.lat = lat
+                tourist_site.lng = lng
+            # si no cambió address y no mandaron lat/lng, dejamos las coords como estaban
+
         # Imagen nueva 
         if file and file.filename != '':
             if not allowed_file(file.filename):
@@ -305,7 +328,7 @@ def edit_tourist_site(current_user, id_tourist_site):
 
             filename = secure_filename(file.filename)
 
-            # 🔥 fallback si no está definido en la config
+            # fallback si no está definido en la config
             upload_folder = current_app.config.get(
                 'UPLOAD_FOLDER',
                 os.path.join(current_app.root_path, 'static', 'tourist_sites_images')
@@ -316,7 +339,6 @@ def edit_tourist_site(current_user, id_tourist_site):
             file.save(save_path)
 
             tourist_site.photo = filename  # reemplaza la imagen anterior
-
 
         db.session.commit()
         log_action(current_user.id_user, f"Edited tourist site {id_tourist_site}")
@@ -339,6 +361,7 @@ def edit_tourist_site(current_user, id_tourist_site):
         db.session.rollback()
         return jsonify({'error': f'Error updating Tourist Site: {str(e)}'}), 500
 
+
 # ------------------------- ENDPOINT PARA ACTUALIZAR UN ATRIBUTO ------------------------------- #
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['PATCH'])
@@ -347,7 +370,6 @@ def update_tourist_site(current_user, id_tourist_site):
     
     if not current_user or not current_user.id_user:
         return jsonify({'error': 'User not found in token'}), 400
-
 
     tourist_site = TouristSite.query.get(id_tourist_site)
 
@@ -368,6 +390,9 @@ def update_tourist_site(current_user, id_tourist_site):
     updated = False
 
     try:
+        # recordamos la dirección previa para saber si cambió
+        old_address = tourist_site.address
+
         if 'name' in data and str(data['name']).strip():
             tourist_site.name = data['name']
             updated = True
@@ -408,6 +433,28 @@ def update_tourist_site(current_user, id_tourist_site):
             tourist_site.is_activate = str(data['is_activate']).lower() in ('true', '1')
             updated = True
 
+        # coordenadas, acepta lat/lng del form o re-geocodifica si cambió address
+        def _to_float_or_none(x):
+            try:
+                return float(x)
+            except (TypeError, ValueError):
+                return None
+
+        lat_in = _to_float_or_none(data.get('lat'))
+        lng_in = _to_float_or_none(data.get('lng'))
+
+        if lat_in is not None and lng_in is not None:
+            tourist_site.lat = lat_in
+            tourist_site.lng = lng_in
+            updated = True
+        else:
+            # si NO mandaron lat/lng pero SÍ cambió la dirección, re-geocodificamos
+            if ('address' in data and str(data['address']).strip()) and ((data.get('address') or '') != (old_address or '')):
+                lat, lng, _note = geocode_address_free(tourist_site.address)
+                tourist_site.lat = lat
+                tourist_site.lng = lng
+                updated = True
+
         # Imagen nueva 
         if file and file.filename != '':
             if not allowed_file(file.filename):
@@ -444,6 +491,7 @@ def update_tourist_site(current_user, id_tourist_site):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Error updating Tourist Site: {str(e)}'}), 500
+
 
 # ------------------ Endpoint para reactivar un sitio turistico ------------------------- #
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>/reactivate', methods=['PUT']) 
