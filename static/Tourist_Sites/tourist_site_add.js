@@ -45,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
 
-            // ✅ Éxito
+            // SSitio agregado con éxito
             if (response.ok) {
                 showToast("✅ Sitio turístico agregado con éxito!", true, "/tourist_sites/view");
                 return;
             }
 
-            // ⚠️ Validaciones (Schema)
+            // Validaciones (Schema)
             if (result.errors) {
                 const messages = Object.entries(result.errors)
                     .map(([field, msgs]) => `<strong>${field}:</strong> ${msgs.join(', ')}`)
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // ⚠️ Otros errores
+            // Otros errores
             showToast(`⚠️ ${result.error || result.message || "Error desconocido"}`);
 
         } catch (error) {

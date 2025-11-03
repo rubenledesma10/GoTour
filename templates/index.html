@@ -1,9 +1,12 @@
 {% include "head.html" %}
+{% include "partials/navbar.html" %}
 
-    {% include "partials/navbar.html" %}
+<div class="container-fluid mt-3">
+    <h1 h1 class="text-center mb-3">Mapa GoTour</h1>
+    <div id="map"></div>
+</div>
 
-    <div class="container-fluid text-center mt-4">
-        <h1>ACA VA EL MAPA</h1>
-    </div>
+<!-- Cargamos nuestro JS del mapa (no tocamos scripts.html) -->
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
 
 {% include "scripts.html"%}

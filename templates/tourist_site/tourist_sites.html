@@ -46,7 +46,7 @@
         <div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
             {% for site in sites %}
             <div class="col">
-                <div class="card h-100 shadow-sm border-0">
+                <div class="card h-100 shadow-sm border-0 rounded-3">
                     {% if site.photo %}
                     <img src="{{ url_for('static', filename='tourist_sites_images/' ~ site.photo) }}"
                         class="card-img-top site-photo" alt="{{ site.name }}"
@@ -81,13 +81,21 @@
                         <p class="text-muted mb-1">
                             <i class="bi bi-star-fill text-warning"></i> Promedio calificaciones:
                             {% if site.average_rating %}
-                                {% for i in range(site.average_rating|round(0, 'floor')) %}
+                                {% set stars = site.average_rating|round(0, 'floor')|int %}
+                                {% for i in range(stars) %}
                                     <i class="bi bi-star-fill text-warning"></i>
                                 {% endfor %}
-                                {% for i in range(5 - site.average_rating|round(0, 'floor')) %}
+                                {% for i in range(5 - stars) %}
                                     <i class="bi bi-star text-muted"></i>
                                 {% endfor %}
-                                ({{ "{:,.2f}".format(site.average_rating) }})
+                                ({{ "%.2f"|format(site.average_rating) }})
+                                
+                                {% if site.comment_count and site.comment_count > 0 %}
+                                    — 
+                                    <i class="bi bi-chat-dots text-secondary"></i>
+                                    {{ site.comment_count }}
+                                    comentario{% if site.comment_count != 1 %}s{% endif %}
+                                {% endif %}
                             {% else %}
                                 Sin calificaciones
                             {% endif %}

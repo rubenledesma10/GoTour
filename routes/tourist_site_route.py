@@ -19,18 +19,26 @@ from utils.file_helpers import allowed_file
 from marshmallow import ValidationError
 from schemas.tourist_site_schema import tourist_site_schema
 from utils.utils import log_action
-
+from utils.geocode import geocode_address_free
 
 tourist_site = Blueprint('tourist_site', __name__)
 
-# --------------------------------------------------------------------------------- #
-    # Estos son los endpoint para el CRUD de sitios turísticos.
-        # Crear, editar y eliminar sitios turísticos.
+# ------------------------ GEOCODIFICACION ------------------------------ #
+
+
+@tourist_site.route("/api/geocode")
+def api_geocode():
+    address = (request.args.get("address") or "").strip()
+    lat, lng, note = geocode_address_free(address)
+    return jsonify({"lat": lat, "lng": lng, "note": note}), 200
+
+
+# -------------------- ENDPOINTS PARA TRAER LOS SITIOS TURISTICOS POR FILTRO ---------------------------- #
+    
 
 
 
 @tourist_site.route('/api/tourist_sites', methods=['GET'])
-
 def get_tourist_sites():
     query = request.args.get('q', '').strip().lower()
     category = request.args.get('category', '').strip().lower()
@@ -58,16 +66,18 @@ def get_tourist_sites():
 
     tourist_sites = sites_query.all()
 
-    if not tourist_sites:
-        return jsonify({'message': 'No tourist sites found', 'data': []}), 200
-
     serialized_sites = []
     for site in tourist_sites:
+        # Forzamos la actualización del promedio y contador
+        site.update_average_rating()
+        db.session.flush()  # Nos asegura reflejar los nuevos valores sin commit
+
         data = site.serialize()
-        # 🖼️ Agregamos la URL completa del archivo
         if site.photo:
             data["photo"] = url_for('static', filename=f"tourist_sites_images/{site.photo}", _external=False)
         serialized_sites.append(data)
+
+    db.session.commit()  # guardamos todos los conteos actualizados
 
     return jsonify(serialized_sites), 200
 
@@ -82,7 +92,7 @@ def get_tourist_site_id(current_user, id_tourist_site):
         return jsonify({'message': 'Tourist site not found'}), 404
     return jsonify(tourist_site.serialize()), 200
 
-# --------------------------------------------------------------------------------- #
+# ----------------------- ENDPOINT PARA ELIMINAR UN SITIO TURISTICO (ELIMINADO LOGICO) -------------------------- #
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['DELETE'])
 
@@ -105,7 +115,7 @@ def delete_tourist_site(current_user, id_tourist_site):
             db.session.rollback()
             return jsonify ({'error': str(e)})
         
-# --------------------------------------------------------------------------------- #
+# ------------------------- ENDPOINT PARA AGREGAR SITIOS TURISTICOS --------------------------- #
 
 @tourist_site.route('/api/add_tourist_sites', methods=['POST'])
 @role_required("admin")
@@ -113,13 +123,13 @@ def add_tourist_site(current_user):
     data = request.form
     file = request.files.get('photo')
 
-    # Validar los campos con el Schema
+    # 1) Validación
     try:
         validated_data = tourist_site_schema.load(data)
     except ValidationError as err:
         return jsonify({"errors": err.messages}), 400
 
-    # Validamos imagen
+    # 2) Imagen
     if not file or file.filename == '':
         return jsonify({"errors": {"photo": ["Image is required."]}}), 400
     if not allowed_file(file.filename):
@@ -127,7 +137,8 @@ def add_tourist_site(current_user):
 
     try:
         id_user = current_user.id_user
-        # Evitamos duplicados
+
+        # 3) Duplicados básicos
         existing = TouristSite.query.filter(
             (TouristSite.name == validated_data["name"]) |
             (TouristSite.address == validated_data["address"]) |
@@ -136,64 +147,98 @@ def add_tourist_site(current_user):
         if existing:
             return jsonify({"errors": {"duplicate": ["Name, address or URL already exists."]}}), 409
 
-        # Guardamos la imagen
+        # 4) Guardar imagen
         filename = secure_filename(file.filename)
         save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         file.save(save_path)
 
-        # Crear y guardar sitio
+        # 5) Resolver lat/lng sin duplicar keys
+        from utils.geocode import geocode_address_free
+
+        def to_float_or_none(x):
+            try:
+                return float(x) if x not in (None, "", "null", "None") else None
+            except (TypeError, ValueError):
+                return None
+
+        # tomar lo que venga del form/schema
+        lat_form = to_float_or_none(validated_data.get("lat"))
+        lng_form = to_float_or_none(validated_data.get("lng"))
+
+        # si faltan, geocodificar por address
+        lat = lat_form
+        lng = lng_form
+        geo_note = None
+        if lat is None or lng is None:
+            lat, lng, geo_note = geocode_address_free(validated_data["address"])
+
+        # IMPORTANTE: quitar lat/lng de validated_data para no duplicar al instanciar
+        validated_data.pop("lat", None)
+        validated_data.pop("lng", None)
+
+        # 6) Crear modelo (ya sin duplicados)
         new_site = TouristSite(
             **validated_data,
             id_user=id_user,
-            photo=filename
+            photo=filename,
+            lat=lat,
+            lng=lng
         )
 
         db.session.add(new_site)
         db.session.commit()
         log_action(current_user.id_user, f"Created tourist site {new_site.id_tourist_site}")
-        return jsonify({
+
+        resp = {
             "message": "Tourist site created successfully.",
             "tourist_site": new_site.serialize()
-        }), 201
+        }
+        if geo_note:
+            resp["geocode_note"] = geo_note
+        if lat is None or lng is None:
+            resp["warning"] = "Site created but coordinates could not be resolved."
+
+        return jsonify(resp), 201
 
     except Exception as e:
         db.session.rollback()
         return jsonify({"errors": {"server": [f"Error adding Tourist Site: {str(e)}"]}}), 500
-# --------------------------------------------------------------------------------- #
-# Endpoint para agregar un comentario con calificación a un sitio turístico.
+
+# ------------------ Endpoint para agregar un comentario con calificación a un sitio turístico ------------------------- #
+
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>/feedback', methods=['POST'])
 @role_required("tourist")
 def add_feedback(current_user, id_tourist_site):
     data = request.get_json()
 
-    # Validamos los datos mínimos
     if not data or "comment" not in data or "qualification" not in data:
         return jsonify({"error": "Se requieren los campos 'comment' y 'qualification'"}), 400
 
-    # Validamos el sitio turístico
     site = TouristSite.query.get(id_tourist_site)
     if not site:
         return jsonify({"error": "El sitio turístico no existe"}), 404
 
     try:
-        # Crear feedback
+        # se aprueban automáticamente todos los comentarios normales
         new_feedback = feedBack(
             comment=data["comment"].strip(),
             qualification=int(data["qualification"]),
             id_user=current_user.id_user,
-            id_tourist_site=id_tourist_site
+            id_tourist_site=id_tourist_site,
+            is_approved=True  
         )
 
         db.session.add(new_feedback)
         db.session.commit()
 
-        # Actualizar promedio de calificaciones
+        # Actualizamos el promedio automáticamente
         site.update_average_rating()
-        log_action(current_user.id_user, f"Created tourist site {new_feedback.id_tourist_site}")
+        log_action(current_user.id_user, f"Created feedback for site {site.name}")
+
         return jsonify({
-            "message": "Comentario agregado con éxito",
+            "message": "Comentario agregado y aprobado automáticamente.",
             "feedback": new_feedback.serialize(),
             "new_average_rating": site.average_rating
         }), 201
@@ -203,7 +248,8 @@ def add_feedback(current_user, id_tourist_site):
         return jsonify({"error": f"Error al agregar comentario: {str(e)}"}), 500
 
 
-# --------------------------------------------------------------------------------- #
+
+# ------------------------ENDPOINT PARA ACTUALIZAR ATRIBUTOS ------------------------------ #
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['PUT'])
 @role_required("admin")
@@ -293,7 +339,7 @@ def edit_tourist_site(current_user, id_tourist_site):
         db.session.rollback()
         return jsonify({'error': f'Error updating Tourist Site: {str(e)}'}), 500
 
-# --------------------------------------------------------------------------------- #
+# ------------------------- ENDPOINT PARA ACTUALIZAR UN ATRIBUTO ------------------------------- #
 
 @tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['PATCH'])
 @role_required("admin")
@@ -399,8 +445,8 @@ def update_tourist_site(current_user, id_tourist_site):
         db.session.rollback()
         return jsonify({'error': f'Error updating Tourist Site: {str(e)}'}), 500
 
-# --------------------------------------------------------------------------------- #
-@tourist_site.route('/api/tourist_sites/<id_tourist_site>/reactivate', methods=['PUT']) #Endpoint para reactivar un sitio turistico.
+# ------------------ Endpoint para reactivar un sitio turistico ------------------------- #
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>/reactivate', methods=['PUT']) 
 @role_required("admin")
 def reactivate_tourist_site(current_user, id_tourist_site):
     tourist_site = TouristSite.query.get(id_tourist_site)
@@ -424,50 +470,22 @@ def reactivate_tourist_site(current_user, id_tourist_site):
         db.session.rollback()
         return jsonify({'error': f'Error reactivating Tourist Site: {str(e)}'}), 500
 
-# --------------------------------------------------------------------------------- # Endpoint para agregar un comentario a un sitio turistico.
-
-
-# @tourist_site.route('/api/tourist_sites/<id_tourist_site>/feedback', methods=['POST'])
-# @role_required("tourist")
-# def add_feedback(current_user, id_tourist_site):
-#     data = request.get_json()
-
-#     # Validar datos
-#     if not data or not data.get("comment"):
-#         return jsonify({"error": "El campo 'comment' es obligatorio"}), 400
-
-#     # Validar que el sitio exista
-#     tourist_site = TouristSite.query.get(id_tourist_site)
-#     if not tourist_site:
-#         return jsonify({"error": "El sitio turístico no existe"}), 404
-
-#     try:
-#         new_feedback = Feedback(
-#             id_user=current_user.id_user,
-#             id_tourist_site=id_tourist_site,
-#             comment=data["comment"].strip()
-#         )
-
-#         db.session.add(new_feedback)
-#         db.session.commit()
-
-#         return jsonify({
-#             "message": "Comentario agregado con éxito",
-#             "feedback": new_feedback.serialize()
-#         }), 201
-
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({"error": f"Error al agregar comentario: {str(e)}"}), 500
-
 # -------------------------------------------------------------------------------- #
+
         # Rutas para renderizar las plantillas de los sitios turísticos.
 
 @tourist_site.route('/tourist_sites/view', methods=['GET'])
-
 def tourist_sites_view():
-        sites = TouristSite.query.all()
-        return render_template('tourist_site/tourist_sites.html', sites=sites)
+    sites = TouristSite.query.all()
+
+    # Actualiza los promedios y contadores antes de mostrar
+    for site in sites:
+        site.update_average_rating()
+
+    db.session.commit()
+
+    return render_template('tourist_site/tourist_sites.html', sites=sites)
+
 
 
 
