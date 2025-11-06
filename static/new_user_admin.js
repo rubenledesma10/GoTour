@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   registerAdminForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-     const password = document.getElementById("password").value;
+    const password = document.getElementById("password").value;
     const passwordRepeat = document.getElementById("password_repeat").value;
     const passwordMsg = document.getElementById("passwordMatchMsg");
 
@@ -138,4 +138,37 @@ document.addEventListener("DOMContentLoaded", () => {
       showToastReload("Error al registrar usuario");
     }
   });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  // 👁 Mostrar/ocultar contraseñas
+  document.querySelectorAll(".toggle-pass").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      const icon  = btn.querySelector("i");
+      const isPwd = input.type === "password";
+      input.type  = isPwd ? "text" : "password";
+      icon.classList.toggle("bi-eye", !isPwd);
+      icon.classList.toggle("bi-eye-slash", isPwd);
+    });
+  });
+
+  // Validación de coincidencia
+  const pass   = document.getElementById("password");
+  const repeat = document.getElementById("password_repeat");
+  const msg    = document.getElementById("passwordMatchMsg");
+
+  function checkMatch() {
+    if (!repeat.value) { msg.classList.add("d-none"); repeat.setCustomValidity(""); return; }
+    if (pass.value === repeat.value) {
+      msg.classList.add("d-none");
+      repeat.setCustomValidity("");
+    } else {
+      msg.classList.remove("d-none");
+      repeat.setCustomValidity("Las contraseñas no coinciden");
+    }
+  }
+
+  pass.addEventListener("input", checkMatch);
+  repeat.addEventListener("input", checkMatch);
 });
