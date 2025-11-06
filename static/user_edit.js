@@ -1,5 +1,5 @@
 // =============================
-// 🔹 Función para mostrar toast
+// Función para mostrar toast
 // =============================
 function showToastReload(message, redirectUrl = null) {
     const toastEl = document.getElementById('liveToast');
@@ -28,7 +28,7 @@ function showToastReload(message, redirectUrl = null) {
 }
 
 // =============================
-// 🔹 Carga inicial del formulario
+// Carga inicial del formulario
 // =============================
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     nationalitySelect.addEventListener("change", () => fillProvinces(nationalitySelect.value));
 
     // =============================
-    // 🔹 Envío del formulario
+    // Envío del formulario
     // =============================
     form.addEventListener("submit", async e => {
         e.preventDefault();
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const formData = new FormData(form);
 
-        // 🔸 Validaciones simples
+        // Validaciones simples
         if (newPassword || repeatPassword || currentPassword) {
             if (!currentPassword) {
                 showToastReload("⚠️ Debe ingresar la contraseña actual.");
@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // =============================
-        // 🔹 Enviar al backend (Fetch)
+        // Enviar al backend (Fetch)
         // =============================
         try {
     const res = await fetch(editEndpoint, {

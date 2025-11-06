@@ -159,14 +159,14 @@ def edit_user(current_user, id_user):
     data = request.form.to_dict()
     file = request.files.get("photo")
 
-    # ✅ Limpiar DNI como en register
+    # Limpiar DNI como en register
     dni = data.get('dni', '').replace('.', '').replace('-', '').replace(' ', '')
     if dni and not dni.isdigit():
         return jsonify({"error": "DNI inválido, solo números"}), 400
     data['dni'] = dni
 
     try:
-        # ✅ Igual que register: validación uniforme
+        # Igual que register: validación uniforme
         validated_data = user_schema.load(data, partial=True)
     except ValidationError as err:
         errors = []
@@ -175,14 +175,14 @@ def edit_user(current_user, id_user):
         return jsonify({"error": " | ".join(errors)}), 400
 
     try:
-        # ✅ Guardar foto si se subió
+        # Guardar foto si se subió
         if file:
             filename = f"{uuid.uuid4()}_{file.filename}"
             upload_path = os.path.join("static/uploads", filename)
             file.save(upload_path)
             user.photo = filename
 
-        # ✅ Actualizar campos igual que en register
+        # Actualizar campos igual que en register
         for field, value in validated_data.items():
             if field == "email":
                 value = value.lower()

@@ -9,7 +9,7 @@ class TouristInfo(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     mobility = db.Column(db.String(100))
     person_with_disability = db.Column(db.Integer)
-    is_active = db.Column(db.Boolean, default=True)  # 🔹 Borrado lógico
+    is_active = db.Column(db.Boolean, default=True)  # Borrado lógico
     id_user = db.Column(db.String(50), db.ForeignKey('user.id_user'), nullable=False)
 
     def __init__(self, nationality, province, quantity, mobility, person_with_disability, id_user):
@@ -19,7 +19,7 @@ class TouristInfo(db.Model):
         self.mobility = mobility
         self.person_with_disability = person_with_disability
         self.id_user = id_user
-        self.is_active = True  # 🔹 Por defecto activo al crearse
+        self.is_active = True  # Por defecto activo al crearse
 
     def serialize(self):
         return {
@@ -30,5 +30,5 @@ class TouristInfo(db.Model):
             "mobility": self.mobility,
             "person_with_disability": self.person_with_disability,
             "id_user": self.id_user,
-            "is_active": self.is_active  # 🔹 Para saber si está activo o no
+            "is_active": self.is_active  # Para saber si está activo o no
         }

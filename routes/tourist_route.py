@@ -69,7 +69,7 @@ def edit_my_data(current_user):
     current_password = data.pop("current_password", None)
     new_password = data.get("password")
 
-    # 🔒 Si quiere cambiar contraseña, validar actual
+    # Si quiere cambiar contraseña, validar actual
     if new_password:
         if not current_password:
             return jsonify({"error": "Debe ingresar la contraseña actual para cambiarla."}), 400
@@ -87,7 +87,7 @@ def edit_my_data(current_user):
         return jsonify({"error": " | ".join(errors)}), 400
 
     try:
-        # 📷 Guardar foto si existe
+        # Guardar foto si existe
         if file and file.filename:
             file_extension = os.path.splitext(file.filename)[1]
             filename = f"{uuid.uuid4()}{file_extension}"
@@ -95,7 +95,7 @@ def edit_my_data(current_user):
             file.save(upload_path)
             user.photo = filename
 
-        # ✏️ Actualizar campos
+        # Actualizar campos
         for field, value in validated_data.items():
             if field in ["role", "is_activate", "id_user"]:
                 continue
