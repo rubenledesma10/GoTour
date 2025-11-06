@@ -144,7 +144,8 @@ async function onAddressChange() {
 		setPoint(r.lat, r.lng);
 		note.textContent = `Ubicación encontrada (${r.note}). Podés ajustar el pin arrastrándolo.`;
 	} else {
-		// si vino null porque se abortó o era repetida, no “ensuciar” el estado actual
+		// si vino null porque se abortó o era repetida, para evitar sobreescribir
+		// una ubicación ya encontrada, no hacemos nada.
 		if (note.textContent === "") {
 			note.textContent = "No se encontró una ubicación clara para esa dirección.";
 		}
