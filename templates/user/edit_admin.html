@@ -8,10 +8,10 @@
 
       <!-- ✅ Se agregan data-nationality y data-province -->
       <form id="editUserForm"
-            data-user-id="{{ user.id_user }}"
-            data-nationality="{{ user.nationality }}"
-            data-province="{{ user.province }}"
-            enctype="multipart/form-data">
+        data-user-id="{{ user.id_user }}"
+        data-current-user-id="{{ session['user_id'] }}"
+        enctype="multipart/form-data">
+
 
         <div class="row">
           <div class="col-md-6 mb-3">
@@ -70,16 +70,41 @@
           </div>
         </div>
 
-        <div class="mb-4 text-center">
-          <label for="photo" class="form-label">Foto de perfil</label><br>
-          {% if user.photo and user.photo|length > 0 %}
-            <img src="/static/uploads/{{ user.photo }}" alt="Foto de perfil"
-                 class="rounded-circle shadow-sm mb-3" width="120" height="120" style="object-fit: cover;">
-          {% else %}
-            <p class="text-muted fst-italic">No tiene foto de perfil</p>
-          {% endif %}
-          <input class="form-control rounded-3 shadow-sm mt-2" type="file" id="photo" name="photo" accept="image/*">
-        </div>
+        <!-- Foto de perfil -->
+            <div class="mb-4 text-center">
+              <label for="photo" class="form-label">Foto de perfil (opcional)</label><br>
+
+              <!-- Botón para usar cámara -->
+              <button type="button" id="openCameraBtn"
+                class="form-control rounded-3 shadow-sm w-75 mx-auto mb-3 text-secondary border"
+                style="background-color: #e9ecef;">
+                📷 Tomar foto 
+              </button>
+
+              <!-- Vista previa -->
+              <img id="preview" src="" class="d-none rounded-3 shadow" width="220">
+
+              <!-- Input tradicional -->
+              <input class="form-control rounded-3 shadow-sm w-75 mx-auto mt-3" type="file" id="photoInput" name="photo" accept="image/*">
+
+              <!-- Cámara -->
+              <div id="cameraContainer" class="d-none mt-3">
+                <video id="camera" width="250" height="200" autoplay class="border rounded"></video><br>
+
+                <button type="button" id="takePhotoBtn"
+                  class="btn btn-success rounded-3 shadow-sm px-4 mt-2 me-2">
+                  📸 Capturar Foto
+                </button>
+
+                <button type="button" id="cancelCameraBtn"
+                  class="btn btn-outline-danger rounded-3 shadow-sm px-4 mt-2">
+                  ❌ Cancelar
+                </button>
+              </div>
+            </div>
+
+            <!-- Canvas oculto -->
+            <canvas id="photoCanvas" width="250" height="200" class="d-none"></canvas>
 
         <div class="row">
           <div class="col-md-6 mb-3">
@@ -128,3 +153,58 @@
 <script src="/static/edit_user_admin.js" defer></script>
 
 {% include "scripts.html" %}
+
+<script>
+const openCameraBtn = document.getElementById('openCameraBtn');
+const cameraContainer = document.getElementById('cameraContainer');
+const video = document.getElementById('camera');
+const canvas = document.getElementById('photoCanvas');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+const preview = document.getElementById('preview');
+const photoInput = document.getElementById('photoInput');
+
+let stream = null;
+
+// Abrir cámara
+openCameraBtn.addEventListener('click', async () => {
+  cameraContainer.classList.remove("d-none");
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+  } catch (err) {
+    alert("No se pudo acceder a la cámara.");
+  }
+});
+
+// Capturar foto
+takePhotoBtn.addEventListener('click', () => {
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const dataURL = canvas.toDataURL("image/png");
+  preview.src = dataURL;
+  preview.classList.remove("d-none");
+
+  fetch(dataURL)
+    .then(res => res.blob())
+    .then(blob => {
+      const file = new File([blob], "photo.png", { type: "image/png" });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      photoInput.files = dataTransfer.files;
+    });
+
+  cameraContainer.classList.add("d-none");
+  if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+});
+
+// Cancelar cámara
+cancelCameraBtn.addEventListener('click', () => {
+  cameraContainer.classList.add("d-none");
+  if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+});
+</script>
+
+
+

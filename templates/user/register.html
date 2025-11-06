@@ -114,9 +114,41 @@
             <!-- Foto de perfil -->
             <div class="mb-4 text-center">
               <label for="photo" class="form-label">Foto de perfil (opcional)</label><br>
-              <input class="form-control rounded-3 shadow-sm w-75 mx-auto" type="file" id="photo" name="photo"
-                accept="image/*">
+
+              <!-- Botón para usar cámara -->
+              <button type="button" id="openCameraBtn"
+                class="form-control rounded-3 shadow-sm w-75 mx-auto mb-3 text-secondary border"
+                style="background-color: #e9ecef;">
+                📷 Tomar foto 
+              </button>
+
+              <!-- Vista previa -->
+              <img id="preview" src="" class="d-none rounded-3 shadow" width="220">
+
+              <!-- Input tradicional -->
+              <input class="form-control rounded-3 shadow-sm w-75 mx-auto mt-3" type="file" id="photoInput" name="photo" accept="image/*">
+
+              <!-- Cámara -->
+              <div id="cameraContainer" class="d-none mt-3">
+                <video id="camera" width="250" height="200" autoplay class="border rounded"></video><br>
+
+                <button type="button" id="takePhotoBtn"
+                  class="btn btn-success rounded-3 shadow-sm px-4 mt-2 me-2">
+                  📸 Capturar Foto
+                </button>
+
+                <button type="button" id="cancelCameraBtn"
+                  class="btn btn-outline-danger rounded-3 shadow-sm px-4 mt-2">
+                  ❌ Cancelar
+                </button>
+              </div>
             </div>
+
+            <!-- Canvas oculto -->
+            <canvas id="photoCanvas" width="250" height="200" class="d-none"></canvas>
+
+            
+
 
             <!-- Estado del correo -->
             <div id="emailStatus" class="text-center mb-3 fw-bold" style="font-size: 1.1em; color: orange;"></div>
@@ -144,3 +176,55 @@
 </div>
 
 {% include "scripts.html" %}
+
+<script>
+const openCameraBtn = document.getElementById('openCameraBtn');
+const cameraContainer = document.getElementById('cameraContainer');
+const video = document.getElementById('camera');
+const canvas = document.getElementById('photoCanvas');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+const preview = document.getElementById('preview');
+const photoInput = document.getElementById('photoInput');
+
+let stream = null;
+
+// Abrir cámara
+openCameraBtn.addEventListener('click', async () => {
+  cameraContainer.classList.remove("d-none");
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+  } catch (err) {
+    alert("No se pudo acceder a la cámara.");
+  }
+});
+
+// Capturar foto
+takePhotoBtn.addEventListener('click', () => {
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const dataURL = canvas.toDataURL("image/png");
+  preview.src = dataURL;
+  preview.classList.remove("d-none");
+
+  fetch(dataURL)
+    .then(res => res.blob())
+    .then(blob => {
+      const file = new File([blob], "photo.png", { type: "image/png" });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      photoInput.files = dataTransfer.files;
+    });
+
+  cameraContainer.classList.add("d-none");
+  if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+});
+
+// Cancelar cámara
+cancelCameraBtn.addEventListener('click', () => {
+  cameraContainer.classList.add("d-none");
+  if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+});
+</script>

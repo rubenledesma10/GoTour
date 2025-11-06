@@ -55,3 +55,24 @@
 .row {
     justify-content: center;
 }
+
+#openCameraBtn {
+  background-color: #e9ecef !important; /* gris */
+  border-color: #ced4da !important;     /* borde gris */
+  color: #495057 !important;            /* texto gris oscuro */
+}
+
+/* Cuando pasa el mouse */
+#openCameraBtn:hover {
+  background-color: #dfe3e6 !important;
+}
+
+/* Cuando se clickea (estado active / focus) */
+#openCameraBtn:active,
+#openCameraBtn:focus,
+#openCameraBtn:focus-visible {
+  background-color: #e9ecef !important;
+  box-shadow: none !important; /* quita highlight azul */
+  border-color: #ced4da !important;
+}
+
