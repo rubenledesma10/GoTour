@@ -88,7 +88,7 @@ $env:FLASK_APP="app.py"        # PowerShell <br>
 
 📜 **Class Diagram**
 
-![Class Diagram](static/images/GoTourDiagram.jpeg)
+![Class Diagram](static/images/GoTour-diagrama_actualizado.jpg)
 
 🛠️ **Technologies and Tools Used**
 
