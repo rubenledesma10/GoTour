@@ -1,4 +1,3 @@
-
 // --- CSS dinámico (Leaflet y mapa) --- 
 (function inject(href) {
   if (!document.querySelector(`link[href="${href}"]`)) {
@@ -47,7 +46,7 @@ const norm = (s) =>
 function colorForCategory(cat) {
   const c = norm(cat);
   if (c.includes("bodega")) return GT_COLORS.bodega;
-  if (c.includes("rest")) return GT_COLORS.restaurante;
+  if (c.includes("rest")) return GT_COLORS.gastronomia;      // <- usa color de gastronomía
   if (c.includes("gastro")) return GT_COLORS.gastronomia;
   if (c.includes("oliv")) return GT_COLORS.olivicolas;
   if (c.includes("aloj") || c.includes("hotel")) return GT_COLORS.alojamiento;
@@ -60,7 +59,7 @@ function colorForCategory(cat) {
 function canonicalCategoryLabel(raw) {
   const c = norm(raw);
   if (c.includes("bodega")) return "Bodegas";
-  if (c.includes("rest")) return "Restaurantes";
+  if (c.includes("rest")) return "Gastronomía";             // <- etiqueta unificada
   if (c.includes("gastro")) return "Gastronomía";
   if (c.includes("oliv")) return "Olívicolas";
   if (c.includes("aloj") || c.includes("hotel")) return "Alojamientos";
@@ -72,8 +71,7 @@ function canonicalCategoryLabel(raw) {
 function colorForLabel(lbl) {
   switch (lbl) {
     case "Bodegas":              return GT_COLORS.bodega;
-    case "Restaurantes":         return GT_COLORS.restaurante;
-    case "Gastronomía":          return GT_COLORS.gastronomia;
+    case "Gastronomía":          return GT_COLORS.gastronomia; // <- color correcto
     case "Olívicolas":           return GT_COLORS.olivicolas;
     case "Alojamientos":         return GT_COLORS.alojamiento;
     case "Turismo rural":        return GT_COLORS["turismo rural"];
@@ -85,12 +83,12 @@ function colorForLabel(lbl) {
 const LEGEND_ORDER = [
   "Bodegas",
   "Gastronomía",
-  "Olívicolas",
+  "Olívcolas",
   "Alojamientos",
   "Turismo rural",
   "Servicios turísticos",
   "Otros"
-];
+].map(s => s.replace("Olívcolas","Olívcolas")); // evita typos si copias/pegas
 
 // Renderiza debajo del mapa la leyenda de categorías usadas
 function renderLegend(labelsSet) {
@@ -203,7 +201,7 @@ async function initMap() {
   L.control.scale().addTo(map);
 
   // Punto de referencia
-  L.marker(PLAZA_MAIPU).addTo(map).bindPopup("<strong>Plaza de Maipú</strong>").openPopup();
+  // (Se quita el pin fijo de la plaza para que no interfiera con el ruteo)
 
   // Capa de sitios turísticos
   const sitesLayer = L.layerGroup().addTo(map);
@@ -333,7 +331,7 @@ async function initMap() {
     rc.setWaypoints([ currentLatLng, L.latLng(dest[0], dest[1]) ]);
   }
 
-  // Controles perfil/idioma
+  // Controles perfil (se quita el control ES|EN)
   const ProfileControl = L.Control.extend({
     onAdd() {
       const w = L.DomUtil.create("div", "leaflet-bar");
@@ -369,26 +367,6 @@ async function initMap() {
   });
   map.addControl(new ProfileControl({ position: "topleft" }));
 
-  const LangControl = L.Control.extend({
-    onAdd() {
-      const w = L.DomUtil.create("div", "leaflet-bar");
-      w.style.background = "white"; w.style.padding = "4px"; w.style.userSelect = "none";
-      w.innerHTML = `
-        <button data-lang="es" title="Español" style="padding:6px;border:0;cursor:pointer">ES</button>
-        <button data-lang="en" title="English"  style="padding:6px;border:0;cursor:pointer">EN</button>`;
-      L.DomEvent.disableClickPropagation(w); L.DomEvent.disableScrollPropagation(w);
-      L.DomEvent.on(w, "click", (ev) => {
-        const b = ev.target.closest("button"); if (!b) return;
-        routeLang = b.dataset.lang;
-        if (routingControl) { map.removeControl(routingControl); routingControl = null; }
-        ensureRouting();
-      });
-      return w;
-    }
-  });
-  map.addControl(new LangControl({ position: "topleft" }));
-
-
   //  Carga de sitios turísticos desde el servidor
 
   try {
@@ -407,11 +385,14 @@ async function initMap() {
 
       renderLegend(labels); // pinta “REFERENCIAS” debajo del mapa
       if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.2));
+      else map.setView(PLAZA_MAIPU, 16);
     } else {
       console.warn("GET /api/tourist_sites →", res.status);
+      map.setView(PLAZA_MAIPU, 16);
     }
   } catch (e) {
     console.warn("No pude cargar sitios:", e);
+    map.setView(PLAZA_MAIPU, 16);
   }
 
 
