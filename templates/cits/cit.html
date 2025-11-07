@@ -7,12 +7,12 @@
 <div class="container mt-4">
     <h2 class="mb-4 text-center">Centros de Información Turística (CIT)</h2>
 
-    <!-- 🔹 Botón para agregar CIT (solo admin) -->
+    <!-- Botón para agregar CIT (solo admin) -->
     <div class="mb-3 admin-only">
         <a href="{{ url_for('cit_bp.add_cit_page') }}" class="btn btn-primary">Agregar CIT</a>
     </div>
 
-    <!-- 🔹 Tabla de CITs -->
+    <!-- Tabla de CITs -->
     <table class="table table-striped table-hover table-bordered shadow-sm align-middle">
         <thead class="table-dark text-center">
             <tr>
@@ -45,7 +45,7 @@
                     {% endif %}
                 </td>
 
-                <!-- 🔹 Acciones solo visibles para admin -->
+                <!-- Acciones solo visibles para admin -->
                 <td class="text-center admin-only">
                     <a href="/cit/edit/{{ cit.id_cit }}" 
                     class="btn btn-sm btn-warning text-white btnEdit" 
@@ -76,7 +76,7 @@
         </tbody>
     </table>
 </div>
-<!-- ✅ Toast Container -->
+<!-- Toast Container -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
     <div id="liveToast" class="toast text-white bg-dark border-0" role="alert">
         <div class="d-flex">

@@ -20,7 +20,7 @@ class Cit(db.Model):
         self.is_activate = is_activate
         self.is_activate_qr_map = is_activate_qr_map
 
-    def serialize(self):   # 👈 dentro de la clase, con la misma indentación que __init__
+    def serialize(self):   
         return {
             "id_cit": self.id_cit,
             "number_cit": self.number_cit,

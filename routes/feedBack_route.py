@@ -65,7 +65,7 @@ def feedback_add_form():
         if site and not site_name:
             site_name = site.name
 
-    # ✅ Si no hay site_id pero hay site_name, no devolvemos 404
+    # Si no hay site_id pero hay site_name, no devolvemos 404
     if not site and not site_name:
         # Si no se especificó ningún dato, mostramos el formulario general
         sites = TouristSite.query.all()
@@ -77,7 +77,7 @@ def feedback_add_form():
             site_id=None
         )
 
-    # ✅ Si venís desde un sitio específico
+    # Si venís desde un sitio específico
     return render_template(
         "feedBack/usuario.html",
         site=site,
@@ -172,7 +172,7 @@ def get_feedbacks():
         user_role = None
         user_id = None
 
-        # ✅ Detectamos usuario si hay token
+        # Detectamos usuario si hay token
         if identity:
             user = User.query.filter_by(id_user=identity).first()
             if user:
@@ -182,7 +182,7 @@ def get_feedbacks():
         print("DEBUG ROL:", user_role, "==", RoleEnum.ADMIN.value)
 
 
-        # ✅ CASO 1: Admin ve todos los comentarios
+        # CASO 1: Admin ve todos los comentarios
         if user_role == RoleEnum.ADMIN.value:
             feedbacks = (
                 feedBack.query
@@ -190,7 +190,7 @@ def get_feedbacks():
                 .all()
             )
 
-        # ✅ CASO 2: Usuario logueado → aprobados + los suyos
+        # CASO 2: Usuario logueado → aprobados + los suyos
         elif user_id:
             feedbacks = (
                 feedBack.query
@@ -202,7 +202,7 @@ def get_feedbacks():
                 .all()
             )
 
-        # ✅ CASO 3: Visitante (sin login) → solo aprobados
+        # CASO 3: Visitante (sin login) → solo aprobados
         else:
             feedbacks = (
                 feedBack.query
@@ -279,7 +279,7 @@ def delete_feedback(id):
         return jsonify({"error": f"Feedback con id {id} no encontrado"}), 404
 
     try:
-        # 👇 CAMBIO: Borrado lógico
+        # CAMBIO: Borrado lógico
         feedback.is_deleted = True
         db.session.commit()
         log_action(user.id_user, f"Admin deleted feedback {id}")

@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ tourist_sites_view.js cargado correctamente");
+    console.log("tourist_sites_view.js cargado correctamente");
 
     // ============================
-    // ✅ Sistema de Toasts Global
+    // Sistema de Toasts Global
     // ============================
 
     // Contenedor general para toasts (arriba derecha)
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(toastMainContainer);
     }
 
-    // ✅ Toast simple (Aceptar)
+    // Toast simple (Aceptar)
     window.showToast = (message, type = "primary") => {
         const toastEl = document.createElement("div");
         toastEl.className = "toast align-items-center border-0 shadow-sm show mb-2";
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => toastEl.remove(), 4000);
     };
 
-    // ✅ Toast confirmar (Sí / No)
+    // Toast confirmar (Sí / No)
     window.showToastConfirm = (message) => {
         return new Promise((resolve) => {
             const toastEl = document.createElement("div");
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ===========================
-    // ✅ Autenticación y roles
+    // Autenticación y roles
     // ===========================
 
     const body = document.getElementById("protectedBody");
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ============================
-    // ✅ Búsqueda & filtros
+    // Búsqueda & filtros
     // ============================
 
     const searchInput = document.getElementById("searchInput");
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ============================
-    // ✅ Renderizar sitios
+    // Renderizar sitios
     // ============================
 
     function renderSites(sites) {
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================
-    // ✅ Reactivar sitio (con confirmación)
+    // Reactivar sitio (con confirmación)
     // ========================================
 
     container.addEventListener("click", async (e) => {
@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // =============================
-    // ✅ Buscar sitios con filtros
+    // Buscar sitios con filtros
     // =============================
 
     async function searchSites() {
@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =====================
-    // ✅ Eventos
+    // Eventos
     // =====================
 
     if (searchBtn) searchBtn.addEventListener("click", searchSites);
@@ -296,6 +296,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (categoryFilter) categoryFilter.addEventListener("change", searchSites);
     if (statusFilter) statusFilter.addEventListener("change", searchSites);
 
-    // ✅ Carga inicial
+    // Carga inicial
     searchSites();
 });

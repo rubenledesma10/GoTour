@@ -25,7 +25,7 @@ def create_tourist(current_user):
         quantity = int(data["quantity"])
         person_with_disability = int(data["person_with_disability"])
 
-        # 🔹 Validación adicional
+        # Validación adicional
         if person_with_disability > quantity:
             return jsonify({"error": "La cantidad de personas con discapacidad no puede ser mayor al total de personas"}), 400
 
@@ -116,7 +116,7 @@ def delete_tourist(current_user, tourist_id):
         return jsonify({"error": "Tourist not found"}), 404
 
     try:
-        # 🔹 Borrado lógico
+        # Borrado lógico
         tourist.is_active = False
         db.session.commit()
         log_action(current_user.id_user, f"Receptionist deactivated tourist info {tourist_id}")
