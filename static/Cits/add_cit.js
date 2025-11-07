@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(createForm);
 
-        // 🔹 Agregamos el estado activo del CIT
+        // Agregamos el estado activo del CIT
         formData.set("is_activate_cit", document.getElementById("is_activate_cit").checked ? "true" : "false");
 
         console.log("Token enviado:", token);

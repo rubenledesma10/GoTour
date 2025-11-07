@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const editEndpoint = role === "receptionist" ? "/api/recepcionist/my_data/edit" : "/api/tourist/my_data/edit";
     const usersPage = role === "receptionist" ? "/api/recepcionist/users_page" : "/api/tourist/users_page";
 
-    // 1️⃣ Obtener información de dashboard
+    // Obtener información de dashboard
     fetch(dashboardEndpoint, { headers: { "Authorization": `Bearer ${token}` } })
     .then(async res => {
         if (!res.ok) {
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         userSection.style.display = "block";
 
-        // 2️⃣ Obtener información del usuario
+        // Obtener información del usuario
         fetch(userEndpoint, { headers: { "Authorization": `Bearer ${token}` } })
         .then(res => {
             if (!res.ok) throw new Error("Error al obtener datos del usuario");
@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             container.innerHTML = userCardHTML;
 
-            // 3️⃣ Si existe el formulario de edición, rellenamos los campos
+            // Si existe el formulario de edición, rellenamos los campos
             const form = document.getElementById("editUserForm");
             if (form) {
                 form.first_name.value = user.first_name || "";

@@ -29,15 +29,15 @@ class feedBack(db.Model):
     comment = db.Column(db.String(250), nullable=True)
     qualification = db.Column(db.Integer, nullable=False)
 
-    # Foreign Keys
+    #foreign Keys
     id_user = db.Column(db.String(50), db.ForeignKey("user.id_user"), nullable=False)
     id_tourist_site = db.Column(db.String(50), db.ForeignKey("tourist_site.id_tourist_site"), nullable=False)
 
-    # Relaciones
+    #relaciones
     user = db.relationship("User", backref="feedbacks")
     tourist_site = db.relationship("TouristSite", backref="feedbacks")
 
-    # Campos de respuesta del admin (Guardan la respuesta del administrador, cuándo respondió, y su nombre)
+    #campos de respuesta del admin (Guardan la respuesta del administrador, cuándo respondió, y su nombre)
     admin_response = db.Column(db.String(250), nullable=True)
     response_date = db.Column(db.DateTime, nullable=True)
     admin_name = db.Column(db.String(100), nullable=True)
