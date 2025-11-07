@@ -1,0 +1,171 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<div class="container mt-4">
+  <h2 class="mb-4">Agregar sitio turístico</h2>
+
+  <!-- enctype para subir imagen -->
+  <form id="addTouristSiteForm" method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="name" class="form-label">Nombre</label>
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        name="name"
+        placeholder="Nombre del sitio"
+        minlength="2"
+        maxlength="50"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Descripción</label>
+      <input
+        type="text"
+        class="form-control"
+        id="description"
+        name="description"
+        placeholder="Descripción del sitio"
+        minlength="2"
+        maxlength="200"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="address" class="form-label">Dirección</label>
+      <input
+        type="text"
+        class="form-control"
+        id="address"
+        name="address"
+        placeholder="Ej: Ozamis 200, Maipú, Mendoza"
+        required
+      />
+    </div>
+
+    <div class="row mt-2">
+      <div class="col-md-6">
+        <label for="lat" class="form-label">Latitud</label>
+        <input type="text" id="lat" name="lat" class="form-control" readonly />
+      </div>
+      <div class="col-md-6">
+        <label for="lng" class="form-label">Longitud</label>
+        <input type="text" id="lng" name="lng" class="form-control" readonly />
+      </div>
+    </div>
+
+    <!-- MINI MAPA PREVIEW -->
+    <div class="mt-3">
+      <div id="map-picker" style="height: 300px; width: 100%; border-radius: 8px;"></div>
+      <small id="geo-note" class="text-muted"></small>
+    </div>
+
+    <div class="mb-3 mt-3">
+      <label for="phone" class="form-label">Contacto/s</label>
+      <input
+        type="text"
+        class="form-control"
+        id="phone"
+        name="phone"
+        placeholder="Ingrese el/los número/s de contacto del lugar"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="category" class="form-label">Categoría</label>
+      <select class="form-select" id="category" name="category" required>
+        <option value="">Seleccione una categoría</option>
+        <option value="Bodegas">Bodegas</option>
+        <option value="Olivícolas">Olivícolas</option>
+        <option value="Alojamiento/Hotelería">Alojamiento/Hotelería</option>
+        <option value="Gastronomía">Gastronomía</option>
+        <option value="Servicios Turísticos">Servicios Turísticos</option>
+        <option value="Turismo Rural">Turismo Rural</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="url" class="form-label">Página Web</label>
+      <input
+        type="url"
+        class="form-control"
+        id="url"
+        name="url"
+        placeholder="Ingrese la URL"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="average" class="form-label">Promedio de visitas</label>
+      <input
+        type="number"
+        class="form-control"
+        id="average"
+        name="average"
+        placeholder="Ingrese el promedio de visitas"
+        step="0.01"
+        min="0"
+        required
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="opening_hours" class="form-label">Horario de apertura</label>
+      <input type="time" class="form-control" id="opening_hours" name="opening_hours" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="closing_hours" class="form-label">Horario de cierre</label>
+      <input type="time" class="form-control" id="closing_hours" name="closing_hours" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="photo" class="form-label">Imagen del sitio turístico</label>
+      <input
+        type="file"
+        class="form-control"
+        id="photo"
+        name="photo"
+        accept=".jpg,.jpeg,.png,.gif"
+        required
+      />
+      <div class="form-text">Formatos permitidos: JPG, PNG, GIF (máx. recomendado: 2 MB).</div>
+    </div>
+
+    <div class="mb-3 text-center">
+      <img
+        id="previewImage"
+        src="#"
+        alt="Vista previa"
+        class="img-fluid rounded shadow-sm"
+        style="max-height: 250px; display: none"
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agregar sitio</button>
+    <button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
+  </form>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+  <div id="liveToast" class="toast align-items-center border border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Mensaje aquí</div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+  </div>
+</div>
+
+<!-- JS de envío del form -->
+<script src="/static/tourist_sites/tourist_site_add.js"></script>
+
+<!-- JS del geocode para este form -->
+<script src="{{ url_for('static', filename='js/form_geocode.js') }}"></script>
+
+{% include "scripts.html"%}

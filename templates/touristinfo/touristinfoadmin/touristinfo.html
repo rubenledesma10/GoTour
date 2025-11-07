@@ -1,0 +1,263 @@
+{% include "head.html" %}
+
+<body>
+{% include "partials/navbar.html" %}
+
+<div id="protectedBody" style="display: none;">
+    <div class="container mt-4">
+
+        <h2 class="mb-4">Información Turística</h2>
+
+        <!-- Botón agregar -->
+        <div class="mb-3">
+            <button id="btnShowAdd" class="btn btn-primary">Agregar</button>
+        </div>
+
+        <!-- Tabla información -->
+        <table class="table table-striped table-bordered mt-3">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>Nacionalidad</th>
+                    <th>Provincia</th>
+                    <th>Cantidad</th>
+                    <th>Movilidad</th>
+                    <th>Personas con discapacidad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tourist in tourists %}
+                <tr data-id="{{ tourist.id_turist }}" class="{{ 'table-danger' if not tourist.is_active else '' }}">
+                    <td>{{ tourist.nationality }}</td>
+                    <td>{{ tourist.province }}</td>
+                    <td>{{ tourist.quantity }}</td>
+                    <td>{{ tourist.mobility }}</td>
+                    <td>{{ tourist.person_with_disability }}</td>
+                    <td class="text-center">
+                        {% if tourist.is_active %}
+                            <button class="btn btn-sm btn-warning btnEdit">Editar</button>
+                            <button class="btn btn-sm btn-danger btnDelete">Eliminar</button>
+                        {% else %}
+                            <button class="btn btn-sm btn-success btnReactivate">Reactivar</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">No hay turistas cargados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<!-- Formulario flotante agregar -->
+<div class="floating-form d-none" id="addFormContainer">
+    <div class="card p-4 shadow-lg rounded-4">
+        <h4 class="text-primary mb-3">Agregar Información Turística</h4>
+        <form id="formAddTourist">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="nationality" class="form-label">Nacionalidad</label>
+                    <input type="text" class="form-control" id="nationality" name="nationality" placeholder="Ej: Argentina" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="province" class="form-label">Provincia</label>
+                    <input type="text" class="form-control" id="province" name="province" placeholder="Ej: Mendoza" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="quantity" class="form-label">Cantidad de Personas</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="person_with_disability" class="form-label">Personas con Discapacidad</label>
+                    <input type="number" class="form-control" id="person_with_disability" name="person_with_disability" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="mobility" class="form-label">Movilidad</label>
+                <select class="form-select" id="mobility" name="mobility" required>
+                    <option value="" selected disabled>Seleccionar tipo de movilidad</option>
+                    <option value="Auto">Auto</option>
+                    <option value="Bicicleta">Bicicleta</option>
+                    <option value="Micro">Micro</option>
+                    <option value="Remis o Taxi">Remis o Taxi</option>
+                    <option value="Moto">Moto</option>
+                    <option value="App de transporte (Uber, Cabify, etc)">App de transporte (Uber, Cabify, etc)</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" id="btnCancelAdd" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Formulario flotante editar -->
+<div class="floating-form d-none" id="editFormContainer">
+    <div class="card p-4 shadow-lg rounded-4">
+        <h4 class="text-warning mb-3">Editar Información Turística</h4>
+        <form id="formEditTourist">
+            <input type="hidden" id="editId">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="editNationality" class="form-label">Nacionalidad</label>
+                    <input type="text" class="form-control" id="editNationality" name="editNationality" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="editProvince" class="form-label">Provincia</label>
+                    <input type="text" class="form-control" id="editProvince" name="editProvince" required>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="editQuantity" class="form-label">Cantidad de Personas</label>
+                    <input type="number" class="form-control" id="editQuantity" name="editQuantity" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="editDisability" class="form-label">Personas con Discapacidad</label>
+                    <input type="number" class="form-control" id="editDisability" name="editDisability" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="editMobility" class="form-label">Movilidad</label>
+                <select type="text" class="form-select" id="editMobility" name="editMobility" required>
+                    <option value="" selected disabled>Seleccionar tipo de movilidad</option>
+                    <option value="Auto">Auto</option>
+                    <option value="Bicicleta">Bicicleta</option>
+                    <option value="Micro">Micro</option>
+                    <option value="Remis o Taxi">Remis o Taxi</option>
+                    <option value="Moto">Moto</option>
+                    <option value="App de transporte (Uber, Cabify, etc)">App de transporte (Uber, Cabify, etc)</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" id="btnCancelEdit" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.floating-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 90%;
+    z-index: 1050;
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    padding: 20px;
+}
+.floating-form .card {
+    margin: 0;
+    border: none;
+    box-shadow: none;
+}
+</style>
+
+<script>
+const addForm = document.getElementById('addFormContainer');
+const editForm = document.getElementById('editFormContainer');
+
+document.getElementById('btnShowAdd').addEventListener('click', () => {
+    addForm.classList.remove('d-none');
+});
+document.getElementById('btnCancelAdd').addEventListener('click', () => {
+    addForm.classList.add('d-none');
+});
+
+document.querySelectorAll('.btnEdit').forEach(btn => {
+    btn.addEventListener('click', e => {
+        const row = e.target.closest('tr');
+        const id = row.dataset.id;
+
+        document.getElementById('editId').value = id;
+        document.getElementById('editNationality').value = row.children[0].innerText;
+        document.getElementById('editProvince').value = row.children[1].innerText;
+        document.getElementById('editQuantity').value = row.children[2].innerText;
+        document.getElementById('editDisability').value = row.children[4].innerText;
+        document.getElementById('editMobility').value = row.children[3].innerText;
+
+        editForm.classList.remove('d-none');
+    });
+});
+document.getElementById('btnCancelEdit').addEventListener('click', () => {
+    editForm.classList.add('d-none');
+});
+</script>
+<!-- Toast container -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+  <div id="liveToast" class="toast align-items-center border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Mensaje</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showToast(message, duration = 5000) {
+  const toastEl = document.getElementById('liveToast');
+  const toastMessage = document.getElementById('toastMessage');
+  toastMessage.textContent = message;
+  const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: duration });
+  toast.show();
+}
+
+function showToastReload(message, redirectUrl = null) {
+  const toastEl = document.getElementById('liveToast');
+  const toastMessage = document.getElementById('toastMessage');
+  toastMessage.innerHTML = `
+    ${message}
+    <div class="mt-2 text-center">
+      <button id="toastAccept" class="btn btn-sm btn-primary">Aceptar</button>
+    </div>
+  `;
+  const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+  toast.show();
+  document.getElementById('toastAccept').onclick = () => {
+    toast.hide();
+    if (redirectUrl) window.location.href = redirectUrl;
+  };
+}
+
+function showToastConfirm(message) {
+  return new Promise((resolve) => {
+    const toastEl = document.getElementById('liveToast');
+    const toastMessage = document.getElementById('toastMessage');
+    toastMessage.innerHTML = `
+      ${message}
+      <div class="mt-2 text-center">
+        <button id="toastYes" class="btn btn-sm btn-success me-2">Sí</button>
+        <button id="toastNo" class="btn btn-sm btn-secondary">No</button>
+      </div>
+    `;
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+    toast.show();
+    document.getElementById('toastYes').onclick = () => { toast.hide(); resolve(true); };
+    document.getElementById('toastNo').onclick = () => { toast.hide(); resolve(false); };
+  });
+}
+</script>
+
+<!-- Scripts -->
+<script src="/static/touristinfo_js/add_touristinfo.js"></script>
+<script src="/static/touristinfo_js/touristinfo.js"></script>
+<script src="/static/touristinfo_js/edit_touristinfo.js"></script>
+<script src="/static/touristinfo_js/admin_toggle_touristinfo.js"></script>
+
+{% include "scripts.html" %}
+
+</body>

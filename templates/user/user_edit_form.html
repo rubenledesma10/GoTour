@@ -1,0 +1,217 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<div class="container mt-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4">
+      <h2 class="mb-4 text-center text-primary fw-bold">✏️ Editar tu perfil</h2>
+
+      <form id="editUserForm" enctype="multipart/form-data">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="first_name" class="form-label">Nombre</label>
+            <input type="text" class="form-control rounded-3 shadow-sm" id="first_name" name="first_name" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="last_name" class="form-label">Apellido</label>
+            <input type="text" class="form-control rounded-3 shadow-sm" id="last_name" name="last_name" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Correo</label>
+          <input type="email" class="form-control rounded-3 shadow-sm" id="email" name="email" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="username" class="form-label">Usuario</label>
+          <input type="text" class="form-control rounded-3 shadow-sm" id="username" name="username" required>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="dni" class="form-label">DNI</label>
+            <input type="text" class="form-control rounded-3 shadow-sm" id="dni" name="dni" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="birthdate" class="form-label">Fecha de nacimiento</label>
+            <input type="date" class="form-control rounded-3 shadow-sm" id="birthdate" name="birthdate" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="age" class="form-label">Edad</label>
+          <input type="text" id="age" class="form-control rounded-3 shadow-sm" value="0" disabled>
+        </div>
+
+        <div class="mb-3">
+          <label for="phone" class="form-label">Teléfono</label>
+          <input type="text" class="form-control rounded-3 shadow-sm" id="phone" name="phone" required>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="nationality" class="form-label">Nacionalidad</label>
+            <select id="nationality" name="nationality" class="form-select rounded-3 shadow-sm" required>
+              <option value="">Seleccione un país</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="province" class="form-label">Provincia</label>
+            <select id="province" name="province" class="form-select rounded-3 shadow-sm" required>
+              <option value="">Seleccione una provincia</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="gender" class="form-label">Género</label>
+          <select id="gender" name="gender" class="form-select rounded-3 shadow-sm" required>
+            <option value="">Seleccione...</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="prefiero no decirlo">Prefiero no decirlo</option>
+          </select>
+        </div>
+
+        <!-- Campos de contraseña -->
+        <div class="mb-3">
+          <label for="current_password" class="form-label">Contraseña actual</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="current_password" name="current_password">
+            <button type="button" id="toggleCurrentPassword" class="btn btn-outline-secondary">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Nueva contraseña</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" name="password" minlength="6">
+            <button type="button" id="toggleNewPassword" class="btn btn-outline-secondary">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="repeat_password" class="form-label">Repetir nueva contraseña</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="repeat_password" name="repeat_password" minlength="6">
+            <button type="button" id="toggleRepeatPassword" class="btn btn-outline-secondary">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div id="passwordMatchMsg" class="text-danger d-none">Las contraseñas no coinciden</div>
+        </div>
+
+         <!-- Foto de perfil -->
+            <div class="mb-4 text-center">
+              <label for="photo" class="form-label">Foto de perfil (opcional)</label><br>
+
+              <!-- Botón para usar cámara -->
+              <button type="button" id="openCameraBtn"
+                class="form-control rounded-3 shadow-sm w-75 mx-auto mb-3 text-secondary border"
+                style="background-color: #e9ecef;">
+                📷 Tomar foto 
+              </button>
+
+              <!-- Vista previa -->
+              <img id="preview" src="" class="d-none rounded-3 shadow" width="220">
+
+              <!-- Input tradicional -->
+              <input class="form-control rounded-3 shadow-sm w-75 mx-auto mt-3" type="file" id="photoInput" name="photo" accept="image/*">
+
+              <!-- Cámara -->
+              <div id="cameraContainer" class="d-none mt-3">
+                <video id="camera" width="250" height="200" autoplay class="border rounded"></video><br>
+
+                <button type="button" id="takePhotoBtn"
+                  class="btn btn-success rounded-3 shadow-sm px-4 mt-2 me-2">
+                  📸 Capturar Foto
+                </button>
+
+                <button type="button" id="cancelCameraBtn"
+                  class="btn btn-outline-danger rounded-3 shadow-sm px-4 mt-2">
+                  ❌ Cancelar
+                </button>
+              </div>
+            </div>
+
+            <!-- Canvas oculto -->
+            <canvas id="photoCanvas" width="250" height="200" class="d-none"></canvas>
+
+        <div class="d-flex justify-content-center gap-3">
+          <button type="submit" class="btn btn-success px-4 shadow-sm">Guardar cambios</button>
+          <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMessage">Mensaje</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/user_edit.js" defer></script>
+{% include "scripts.html" %}
+
+<script>
+const openCameraBtn = document.getElementById('openCameraBtn');
+const cameraContainer = document.getElementById('cameraContainer');
+const video = document.getElementById('camera');
+const canvas = document.getElementById('photoCanvas');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+const preview = document.getElementById('preview');
+const photoInput = document.getElementById('photoInput');
+
+let stream = null;
+
+// Abrir cámara
+openCameraBtn.addEventListener('click', async () => {
+  cameraContainer.classList.remove("d-none");
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+  } catch (err) {
+    alert("No se pudo acceder a la cámara.");
+  }
+});
+
+// Capturar foto
+takePhotoBtn.addEventListener('click', () => {
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const dataURL = canvas.toDataURL("image/png");
+  preview.src = dataURL;
+  preview.classList.remove("d-none");
+
+  fetch(dataURL)
+    .then(res => res.blob())
+    .then(blob => {
+      const file = new File([blob], "photo.png", { type: "image/png" });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      photoInput.files = dataTransfer.files;
+    });
+
+  cameraContainer.classList.add("d-none");
+  if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+});
+
+// Cancelar cámara
+cancelCameraBtn.addEventListener('click', () => {
+  cameraContainer.classList.add("d-none");
+  if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+});
+</script>

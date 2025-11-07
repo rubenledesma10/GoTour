@@ -1,0 +1,94 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<!-- Sección principal sobre GoTour -->
+<div id="aboutGoTourContainer" class="container text-center mt-5 p-5">
+    <h1 class="mb-4" style="color: #ff9800; font-weight: 700;">Explora Maipú, Mendoza con GoTour 📲</h1>
+    <p class="lead mb-3">Los turistas a veces enfrentan desafíos como señalización deficiente, falta de información digital y dificultades para planificar rutas o encontrar lugares seguros. ❌</p>
+    <p class="mb-3">GoTour te ayuda usando <strong>códigos QR</strong> en los Centros de Información Turística, que te dan acceso a un <strong>mapa digital interactivo</strong> con:</p>
+    <p class="mb-3 fs-5">
+        🍷 Bodegas &nbsp; 🍴 Restaurantes &nbsp; 🏛️ Museos &nbsp; 🏨 Alojamientos &nbsp;
+        🎭 Actividades culturales &nbsp; 🕒 Horarios &nbsp; 🚍 Transporte &nbsp; ⭐ Reseñas
+    </p>
+    <p class="mb-4">Con GoTour ahorrarás tiempo ⏱️, aumentarás tu seguridad 🛡️ y podrás planificar rutas personalizadas 🗺️.</p>
+    <p class="fw-bold" style="color: #ff9800; font-size: 1.25rem;">Descubre Maipú de manera fácil, segura y divertida con GoTour!</p>
+    <a href="/" class="btn btn-warning btn-lg mt-3 px-4" style="border-radius: 25px; font-weight: 600;">
+        Explorar Mapa 📍
+    </a>
+</div>
+
+
+<!-- Sección Creadores -->
+<div class="container text-center mt-5">
+    <h2 class="mb-4" style="color: #ff9800;">Creadores de GoTour 👨‍💻</h2>
+    <div class="row justify-content-center" id="creatorsContainer">
+        <!-- Rubén Ledesma -->
+        <div class="col-6 col-md-3 mb-4">
+            <div class="card p-3 shadow-sm creator-card">
+                <img src="{{ url_for('static', filename='profile/ledesma.jpeg') }}" 
+                     alt="Rubén Ledesma" class="img-fluid rounded-circle mb-2 creator-img">
+                <h5 class="card-title mb-1">Rubén Ledesma</h5>
+                <p class="card-text text-muted">Desarrollador FullStack</p>
+            </div>
+        </div>
+
+        <!-- Rodrigo Espinosa -->
+        <div class="col-6 col-md-3 mb-4">
+            <div class="card p-3 shadow-sm creator-card">
+                <img src="{{ url_for('static', filename='profile/espinosa.jpeg') }}" 
+                     alt="Rodrigo Espinosa" class="img-fluid rounded-circle mb-2 creator-img">
+                <h5 class="card-title mb-1">Rodrigo Espinosa</h5>
+                <p class="card-text text-muted">Desarrollador FullStack</p>
+            </div>
+        </div>
+
+        <!-- Santiago Romano -->
+        <div class="col-6 col-md-3 mb-4">
+            <div class="card p-3 shadow-sm creator-card">
+                <img src="{{ url_for('static', filename='profile/romano.jpeg') }}" 
+                     alt="Santiago Romano" class="img-fluid rounded-circle mb-2 creator-img">
+                <h5 class="card-title mb-1">Santiago Romano</h5>
+                <p class="card-text text-muted">Desarrollador FullStack</p>
+            </div>
+        </div>
+
+        <!-- Santiago Puebla -->
+        <div class="col-6 col-md-3 mb-4">
+            <div class="card p-3 shadow-sm creator-card">
+                <img src="{{ url_for('static', filename='profile/puebla.jpeg') }}" 
+                     alt="Santiago Puebla" class="img-fluid rounded-circle mb-2 creator-img">
+                <h5 class="card-title mb-1">Santiago Puebla</h5>
+                <p class="card-text text-muted">Desarrollador FullStack</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos -->
+<style>
+.container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+/* Cards de creadores */
+.creator-card {
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.creator-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+
+.creator-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+</style>
+
+{% include "scripts.html"%}

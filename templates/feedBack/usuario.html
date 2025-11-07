@@ -1,0 +1,452 @@
+{% include "head.html" %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+
+<body>
+  {% include "partials/navbar.html" %}
+
+  <div class="container mt-4">
+    <h1 class="text-center mb-4">Feedback</h1>
+
+    <!-- Formulario de Feedback -->
+    <div id="feedbackFormCard" class="feedback-card shadow-sm mb-4 d-none">
+      <div class="card-body">
+        <h5 class="mb-3">Dejá tu comentario</h5>
+        <form id="feedbackForm">
+          
+          {% if site_name %}
+          <div class="mb-3">
+            <label for="site_name" class="form-label">Lugar Turístico</label>
+            <input type="text" id="site_name" class="form-control" value="{{ site_name }}" readonly>
+            <input type="hidden" id="touristSiteId" name="id_tourist_site" value="{{ site_id }}">
+          </div>
+          {% else %}
+          <div class="mb-3">
+            <label for="siteSelect" class="form-label">Lugar Turístico</label>
+            <select id="siteSelect" class="form-select" name="id_tourist_site" required>
+              <option value="">-- Seleccioná un sitio --</option>
+              {% for s in sites %}
+                <option value="{{ s.id_tourist_site }}" {% if site_id and site_id == s.id_tourist_site|string %}selected{% endif %}>
+                  {{ s.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="qualification" class="form-label">Calificación (1-5)</label>
+            <input type="number" id="qualification" class="form-control" min="1" max="5" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="comment" class="form-label">Comentario</label>
+            <textarea id="comment" class="form-control" required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="photos" class="form-label">Subí tus fotos</label>
+            <input type="file" id="photos" class="form-control" accept="image/*" multiple>
+            <small class="text-muted">Podés seleccionar hasta 10 imágenes.</small>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Ultimos Comentarios -->
+    <h2 class="mb-3">Últimos comentarios</h2>
+    <div class="row row-cols-1 row-cols-md-2 g-4" id="latestFeedbacks"></div>
+  </div>
+
+  <!-- Modal edición -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Feedback</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm">
+            <input type="hidden" id="editId">
+            <div class="mb-3">
+              <label for="editComment" class="form-label">Comentario</label>
+              <textarea id="editComment" class="form-control"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editQualification" class="form-label">Calificación</label>
+              <input type="number" id="editQualification" min="1" max="5" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal respuesta -->
+  <div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Responder al Comentario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="replyForm">
+            <input type="hidden" id="replyId">
+            <div class="mb-3">
+              <label class="form-label">Comentario del Usuario</label>
+              <textarea id="replyOriginalComment" class="form-control" readonly></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="adminResponse" class="form-label">Tu Respuesta</label>
+              <textarea id="adminResponse" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar Respuesta</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para ampliar imágenes -->
+  <div class="modal fade" id="feedbackImageModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content border-0 bg-transparent position-relative">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button type="button" id="prevImage" class="btn btn-dark position-absolute top-50 start-0 translate-middle-y ms-3">‹</button>
+        <img id="modalImage" src="" alt="Foto feedback ampliada" class="w-100 rounded">
+        <button type="button" id="nextImage" class="btn btn-dark position-absolute top-50 end-0 translate-middle-y me-3">›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+    <div id="liveToast" class="toast align-items-center border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMessage">Mensaje</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  {% include "scripts.html" %}
+
+  <script>
+    const API_URL = "/api/feedback";
+    const userRole = localStorage.getItem("role");
+    const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
+    const role = (userRole || "").toUpperCase();
+
+    // ================== FUNCIONES TOAST ==================
+    function showToast(message, duration = 5000) {
+      const toastEl = document.getElementById('liveToast');
+      const toastMessage = document.getElementById('toastMessage');
+      toastMessage.textContent = message;
+
+      const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: duration });
+      toast.show();
+    }
+
+    function showToastReload(message, redirectUrl = null) {
+      const toastEl = document.getElementById('liveToast');
+      const toastMessage = document.getElementById('toastMessage');
+      toastMessage.innerHTML = `
+        ${message}
+        <div class="mt-2 text-center">
+          <button id="toastAccept" class="btn btn-sm btn-primary">Aceptar</button>
+        </div>
+      `;
+      const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+      toast.show();
+
+      document.getElementById('toastAccept').onclick = () => {
+        toast.hide();
+        if (redirectUrl) window.location.href = redirectUrl;
+      };
+    }
+
+    function showToastConfirm(message) {
+      return new Promise((resolve) => {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+        toastMessage.innerHTML = `
+          ${message}
+          <div class="mt-2 text-center">
+            <button id="toastYes" class="btn btn-sm btn-success me-2">Sí</button>
+            <button id="toastNo" class="btn btn-sm btn-secondary">No</button>
+          </div>
+        `;
+        const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { autohide: false });
+        toast.show();
+
+        document.getElementById('toastYes').onclick = () => { toast.hide(); resolve(true); };
+        document.getElementById('toastNo').onclick = () => { toast.hide(); resolve(false); };
+      });
+    }
+
+    // ================== LÓGICA PRINCIPAL ==================
+    document.addEventListener("DOMContentLoaded", () => {
+      const siteSelect = document.getElementById("siteSelect");
+      const touristSiteIdInput = document.getElementById("touristSiteId");
+      const preselected = touristSiteIdInput?.value;
+      if (preselected && siteSelect) siteSelect.value = preselected;
+      siteSelect?.addEventListener("change", () => {
+        touristSiteIdInput.value = siteSelect.value || "";
+      });
+
+      loadFeedbacks();
+
+      if (token && !localStorage.getItem("id_user")) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.id_user) localStorage.setItem("id_user", payload.id_user);
+        } catch (err) { console.warn("No se pudo decodificar token:", err); }
+      }
+
+      if (token && role !== "ADMIN") {
+        document.getElementById("feedbackFormCard").classList.remove("d-none");
+      }
+
+      const authButton = document.getElementById("authButton");
+      if (username && token) {
+        authButton.textContent = `Cerrar Sesión (${username})`;
+        authButton.classList.add("btn-danger");
+        authButton.href = "#";
+        authButton.onclick = () => { localStorage.clear(); window.location.href = "/"; };
+      } else {
+        authButton.textContent = "Registrarse/Iniciar Sesión";
+        authButton.classList.add("btn-warning");
+        authButton.href = "/api/gotour/login";
+      }
+    });
+
+    function renderStars(qualification) {
+      return "⭐".repeat(qualification) + "☆".repeat(5 - qualification);
+    }
+
+    // ================== CARGA DE FEEDBACKS ==================
+    async function loadFeedbacks() {
+      try {
+        const endpoint = `${API_URL}`;
+        const res = await fetch(endpoint, { headers: token ? { "Authorization": "Bearer " + token } : {} });
+        const data = await res.json();
+
+        const container = document.getElementById("latestFeedbacks");
+        container.innerHTML = "";
+
+        data.forEach(f => {
+          const card = document.createElement("div");
+          card.className = "col";
+          card.setAttribute("data-feedback-id", f.id_feedback);
+
+          card.innerHTML = `
+            <div class="feedback-card shadow-sm border-0 ${f.is_deleted ? 'opacity-50 bg-light' : ''}">
+              <div class="card-body">
+                ${f.is_deleted ? `<div class="alert alert-secondary text-center p-2 mb-2">🗑️ Este comentario fue eliminado por un administrador.</div>` : ''}
+                <div class="feedback-header">
+                  <img src="${f.user?.photo ? `/static/uploads/${f.user.photo}` : '/static/uploads/default_user.png'}" alt="usuario" class="feedback-profile-photo">
+                  <div><strong>${f.user?.username || "Usuario"}</strong><br><small class="text-muted">📍 ${f.tourist_site?.name || "Sitio"}</small></div>
+                </div>
+
+                ${(() => {
+                  const currentUserId = localStorage.getItem("id_user");
+                  const isOwner = currentUserId && f.user && f.user.id == currentUserId;
+                  const isAdmin = role === "ADMIN";
+                  if (isAdmin) {
+                    return `<h5 class="card-title mt-2">${renderStars(f.qualification)}</h5>
+                            <p class="feedback-text">${f.comment}</p>
+                            ${!f.is_approved ? `<div class="alert alert-warning d-flex align-items-center mt-2 py-2 px-3 small"><i class="bi bi-exclamation-triangle-fill me-2"></i><div>Comentario pendiente de revisión.</div></div>` : ''}`;
+                  }
+                  if (f.is_approved) {
+                    return `<h5 class="card-title mt-2">${renderStars(f.qualification)}</h5><p class="feedback-text">${f.comment}</p>`;
+                  }
+                  if (!f.is_approved && isOwner) {
+                    return `<div class="alert alert-warning d-flex align-items-center mt-2 py-2 px-3 small"><i class="bi bi-exclamation-triangle-fill me-2"></i><div>🕓 Tu comentario está pendiente de revisión por el administrador.</div></div>`;
+                  }
+                  return '';
+                })()}
+
+                ${f.photos && f.photos.length ? (() => {
+                  const safePhotos = f.photos.filter(ph => ph && ph.url);
+                  if (!safePhotos.length) return '';
+                  return `<div class="feedback-photos mb-3 d-flex flex-wrap gap-2">
+                    ${safePhotos.map(p => `<img src="${p.url}" class="rounded shadow-sm" alt="foto feedback" data-photos='${JSON.stringify(safePhotos.map(ph => ph.url))}' onclick="openImageModal('${p.url}', this)">`).join('')}
+                  </div>`;
+                })() : ''}
+
+                <div class="text-end text-muted small mb-2">
+                  <span>📅 ${f.date_hour ? new Date(f.date_hour).toLocaleDateString() : ""}</span>
+                </div>
+
+                ${f.admin_response ? `<div class="feedback-admin-reply"><div class="feedback-header"><img src="${f.admin_photo ? `/static/uploads/${f.admin_photo}` : '/static/uploads/default_user.png'}" alt="admin" class="feedback-profile-photo"><div><strong>${f.admin_name || "Administrador"}</strong><br><small class="text-muted">${f.response_date ? new Date(f.response_date).toLocaleString() : ""}</small></div></div><p class="mb-0">${f.admin_response}</p></div>` : ''}
+
+                ${role === "ADMIN" ? `<div class="mt-2"><button class="btn feedback-btn-sm btn-success me-2" onclick="moderateFeedback('${f.id_feedback}', true)">Confirmar</button><button class="btn feedback-btn-sm btn-danger me-2" onclick="deleteFeedback('${f.id_feedback}')">Eliminar</button><button class="btn feedback-btn-sm btn-primary" onclick="openReplyModal('${f.id_feedback}', \`${f.comment}\`)">Responder</button></div>` : ''}
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Error cargando feedbacks:", err);
+        showToast("Error al cargar comentarios.");
+      }
+    }
+
+    // ================== MODALES ==================
+    function openImageModal(url, imgEl) {
+      const img = document.getElementById("modalImage");
+      const modalEl = document.getElementById("feedbackImageModal");
+
+      let photosArray = [];
+      if (imgEl && imgEl.dataset.photos) {
+        try { photosArray = JSON.parse(imgEl.dataset.photos); } 
+        catch (e) { console.warn("Error leyendo fotos:", e); photosArray = []; }
+      }
+
+      modalEl.dataset.photos = JSON.stringify(photosArray);
+      modalEl.dataset.current = url;
+      img.src = url;
+
+      new bootstrap.Modal(modalEl).show();
+    }
+
+    document.getElementById("prevImage").addEventListener("click", () => changeModalImage(-1));
+    document.getElementById("nextImage").addEventListener("click", () => changeModalImage(1));
+
+    function changeModalImage(direction) {
+      const modalEl = document.getElementById("feedbackImageModal");
+      const img = document.getElementById("modalImage");
+      const photos = JSON.parse(modalEl.dataset.photos || "[]");
+      let index = photos.indexOf(modalEl.dataset.current);
+      if (index === -1) index = 0;
+      let nextIndex = (index + direction + photos.length) % photos.length;
+      modalEl.dataset.current = photos[nextIndex];
+      img.src = photos[nextIndex];
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const modalEl = document.getElementById("feedbackImageModal");
+      if (!modalEl.classList.contains("show")) return;
+      if (e.key === "ArrowLeft") changeModalImage(-1);
+      else if (e.key === "ArrowRight") changeModalImage(1);
+    });
+
+    window.openEditModal = function(id, comment, qualification) {
+      document.getElementById("editId").value = id;
+      document.getElementById("editComment").value = comment;
+      document.getElementById("editQualification").value = qualification;
+      new bootstrap.Modal(document.getElementById("editModal")).show();
+    };
+
+    window.openReplyModal = function(id, comment) {
+      document.getElementById("replyId").value = id;
+      document.getElementById("replyOriginalComment").value = comment;
+      document.getElementById("adminResponse").value = "";
+      new bootstrap.Modal(document.getElementById("replyModal")).show();
+    };
+
+    // ================== FORMULARIOS ==================
+    document.getElementById("editForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("editId").value;
+      const payload = {
+        comment: document.getElementById("editComment").value.trim(),
+        qualification: Number(document.getElementById("editQualification").value)
+      };
+      try {
+        const res = await fetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...(token ? { "Authorization": "Bearer " + token } : {}) },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+          showToast("Feedback actualizado correctamente.");
+          loadFeedbacks();
+        } else {
+          const err = await res.json();
+          showToast("Error: " + (err.error || "No se pudo actualizar"));
+        }
+      } catch (err) { console.error(err); showToast("Error al conectar con el servidor."); }
+    });
+
+    document.getElementById("replyForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("replyId").value;
+      const response = document.getElementById("adminResponse").value.trim();
+      if (!response) return showToast("La respuesta no puede estar vacía.");
+      try {
+        const res = await fetch(`${API_URL}/${id}/reply`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(token ? { "Authorization": "Bearer " + token } : {}) },
+          body: JSON.stringify({ response })
+        });
+        if (res.ok) {
+          bootstrap.Modal.getInstance(document.getElementById("replyModal")).hide();
+          showToast("Respuesta enviada correctamente.");
+          loadFeedbacks();
+        } else {
+          const err = await res.json();
+          showToast("Error: " + (err.error || "No se pudo responder"));
+        }
+      } catch (err) { console.error(err); showToast("Error al conectar con el servidor."); }
+    });
+
+    document.getElementById("feedbackForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("comment", document.getElementById("comment").value.trim());
+      formData.append("qualification", Number(document.getElementById("qualification").value));
+
+      const siteInput = document.getElementById("touristSiteId") || document.getElementById("siteSelect");
+      formData.append("id_tourist_site", siteInput ? siteInput.value : "");
+
+      const files = document.getElementById("photos").files;
+      if (files.length > 10) return showToast("Podés subir como máximo 10 fotos.");
+      for (let i = 0; i < files.length; i++) formData.append("photos", files[i]);
+
+      try {
+        const res = await fetch(API_URL, { method: "POST", headers: token ? { "Authorization": "Bearer " + token } : {}, body: formData });
+        const data = await res.json();
+        if (res.ok) {
+          e.target.reset();
+          showToast(data.message || "Comentario enviado correctamente.");
+          loadFeedbacks();
+        } else showToast("Error: " + (data.error || "No se pudo enviar el comentario."));
+      } catch (err) { console.error(err); showToast("Error al conectar con el servidor."); }
+    });
+
+    // ================== MODERACIÓN ==================
+    async function moderateFeedback(id, approve = true) {
+      const ok = await showToastConfirm("¿Deseas aprobar este comentario?");
+      if (!ok) return;
+
+      try {
+        const res = await fetch(`${API_URL}/${id}/moderate`, { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { "Authorization": "Bearer " + token } : {}) }, body: JSON.stringify({ approve: true }) });
+        const data = await res.json();
+        showToast(data.message || "Acción realizada.");
+        loadFeedbacks();
+      } catch (err) { console.error(err); showToast("Error al conectar con el servidor."); }
+    }
+
+    async function deleteFeedback(id) {
+      const ok = await showToastConfirm("¿Seguro que querés eliminar este comentario?");
+      if (!ok) return;
+
+      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE", headers: token ? { "Authorization": "Bearer " + token } : {} });
+      if (res.ok) {
+        showToast("Comentario eliminado correctamente.");
+        loadFeedbacks();
+      } else {
+        const err = await res.json();
+        showToast("Error al eliminar: " + (err.error || res.statusText));
+      }
+    }
+  </script>
+</body>
+</html>

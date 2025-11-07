@@ -1,0 +1,75 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<div class="container mt-4" id="adminSection">
+    <h3>¿Qué deseas hacer <span id="username"></span>?</h3>
+
+
+
+    <a href="{{ url_for('admin_bp.new_user_page') }}" class="btn btn-primary mb-3">Nuevo Usuario</a>
+
+     <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar usuario...">
+                </div>
+                <div class="col-md-3">
+                    <select id="roleFilter" class="form-select">
+                        <option value="">Todos los roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="tourist">Tourist</option>
+                        <option value="receptionist">Receptionist</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="true">Activos</option>
+                        <option value="false">Desactivados</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de cards -->
+    <div class="row" id="usersCardsContainer"></div>
+</div>
+<!-- Contenedor de toasts en la esquina superior derecha -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <!-- Toast normal / éxito -->
+    <div id="liveToastNormal" class="toast align-items-center border border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body" id="toastMessageNormal"></div>
+    </div>
+
+    <!-- Toast de confirmación -->
+    <div id="liveToastConfirm" class="toast align-items-center border border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body" id="toastMessageConfirm"></div>
+    </div>
+</div>
+<!-- Contenedor de toast arriba derecha -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <div id="liveToast" class="toast align-items-center border border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+<!-- Modal de sesión expirada -->
+<div class="modal fade" id="sessionExpiredModal" tabindex="-1" aria-labelledby="sessionExpiredLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="sessionExpiredLabel">Sesión expirada</h5>
+      </div>
+      <div class="modal-body">
+        Tu sesión ha expirado. Por favor, inicia sesión nuevamente.
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="sessionExpiredBtn" class="btn btn-primary">Ir al login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/admin.js"></script>
+{% include "scripts.html"%}

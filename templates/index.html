@@ -1,0 +1,18 @@
+{% include "head.html" %}
+
+<!-- CARGA EL CSS AQUÍ, EN LA PÁGINA DEL MAPA -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/map_referencias.css') }}"
+/>
+
+{% include "partials/navbar.html" %}
+
+<div class="container-fluid mt-3">
+  <h1 class="text-center mb-3">Mapa GoTour</h1>
+  <div id="map"></div>
+  <div id="map-legend" class="map-legend"></div>
+</div>
+
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+{% include "scripts.html"%}

@@ -1,0 +1,134 @@
+/* ======== Card principal de Feedback ======== */
+.feedback-card {
+  border-radius: 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+/* ======== Cabecera del feedback ======== */
+.feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feedback-profile-photo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+/* ======== Comentario ======== */
+.feedback-text {
+  color: #333;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ======== Galería de fotos ======== */
+.feedback-photos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.feedback-photos img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-photos img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* ======== Respuesta del administrador ======== */
+.feedback-admin-reply {
+  background-color: #f9f9f9;
+  border-left: 4px solid #0d6efd;
+  padding: 10px 15px;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+
+.feedback-admin-reply p {
+  margin: 5px 0 0;
+  color: #333;
+}
+
+.feedback-admin-reply .feedback-header {
+  margin-bottom: 5px;
+}
+
+/* ======== Modal de imagen ======== */
+#feedbackImageModal img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+#feedbackImageModal .btn-close {
+  background-color: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  padding: 10px;
+}
+
+/* ======== Promedio general ======== */
+.feedback-avg-rating {
+  font-weight: bold;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* ======== Botones de acciones admin ======== */
+.feedback-card .feedback-btn-sm {
+  border-radius: 20px;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+}
+
+.feedback-card .feedback-btn-sm:hover {
+  opacity: 0.9;
+}
+
+
+.feedback-carousel img {
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* ======== carousel ======== */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(1);
+}
+
+#feedbackImageModal img {
+  max-width: 70%;
+  max-height: 70vh;
+  object-fit: contain;
+  margin: auto;
+  display: block;
+}
+
+.alert-warning {
+  background-color: #fff7e6;
+  border: 1px solid #ffe58f;
+  color: #8c6d1f;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}

@@ -1,0 +1,560 @@
+from sqlalchemy.exc import IntegrityError
+from flask import Blueprint, jsonify, request
+from models.db import db
+from models.feedBack import feedBack 
+from models.tourist_site import TouristSite
+from datetime import datetime, date
+from enums.roles_enums import RoleEnum
+from schemas.user_register_schema import user_schema, users_schema
+from marshmallow import Schema, fields, ValidationError
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from utils.decorators import role_required
+from flask import render_template, request, redirect, url_for, flash  
+import uuid, os
+from utils.decorators import role_required
+from flask import current_app
+from models.user import User
+from werkzeug.utils import secure_filename
+from utils.file_helpers import allowed_file
+from marshmallow import ValidationError
+from schemas.tourist_site_schema import tourist_site_schema
+from utils.utils import log_action
+from utils.geocode import geocode_address_free
+
+tourist_site = Blueprint('tourist_site', __name__)
+
+# ------------------------ GEOCODIFICACION ------------------------------ #
+
+
+@tourist_site.route("/api/geocode")
+def api_geocode():
+    address = (request.args.get("address") or "").strip()
+    lat, lng, note = geocode_address_free(address)
+    return jsonify({"lat": lat, "lng": lng, "note": note}), 200
+
+
+# -------------------- ENDPOINTS PARA TRAER LOS SITIOS TURISTICOS POR FILTRO ---------------------------- #
+    
+
+
+
+@tourist_site.route('/api/tourist_sites', methods=['GET'])
+def get_tourist_sites():
+    query = request.args.get('q', '').strip().lower()
+    category = request.args.get('category', '').strip().lower()
+    is_active = request.args.get('is_active', '').strip().lower()
+
+    sites_query = TouristSite.query
+
+    if query:
+        sites_query = sites_query.filter(
+            db.or_(
+                db.func.lower(TouristSite.name).like(f"%{query}%"),
+                db.func.lower(TouristSite.description).like(f"%{query}%"),
+                db.func.lower(TouristSite.address).like(f"%{query}%")
+            )
+        )
+
+    if category:
+        sites_query = sites_query.filter(TouristSite.category.ilike(f"%{category}%"))
+
+    if is_active:
+        if is_active == 'true':
+            sites_query = sites_query.filter_by(is_activate=True)
+        elif is_active == 'false':
+            sites_query = sites_query.filter_by(is_activate=False)
+
+    tourist_sites = sites_query.all()
+
+    serialized_sites = []
+    for site in tourist_sites:
+        # Forzamos la actualización del promedio y contador
+        site.update_average_rating()
+        db.session.flush()  # Nos asegura reflejar los nuevos valores sin commit
+
+        data = site.serialize()
+        if site.photo:
+            data["photo"] = url_for('static', filename=f"tourist_sites_images/{site.photo}", _external=False)
+        serialized_sites.append(data)
+
+    db.session.commit()  # guardamos todos los conteos actualizados
+
+    return jsonify(serialized_sites), 200
+
+
+
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['GET'])
+@role_required("admin")
+def get_tourist_site_id(current_user, id_tourist_site):
+    tourist_site = TouristSite.query.filter_by(id_tourist_site=id_tourist_site).first()
+    
+    if not tourist_site:
+        return jsonify({'message': 'Tourist site not found'}), 404
+    return jsonify(tourist_site.serialize()), 200
+
+# ----------------------- ENDPOINT PARA ELIMINAR UN SITIO TURISTICO (ELIMINADO LOGICO) -------------------------- #
+
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods = ['DELETE'])
+
+@role_required("admin")
+def delete_tourist_site(current_user, id_tourist_site):
+        tourist_site = TouristSite.query.get(id_tourist_site)
+
+        if not tourist_site: 
+            return jsonify ({'messagge' : 'Tourist not found'}), 404
+        
+        try: 
+            tourist_site.is_activate = False #Directamente mantenemos inactivo el sitio. Eliminado logico.
+            #Es decir, tenemos el espacio vacio, pero con la tabla creada.
+            #db.session.delete(tourist_site)
+            db.session.commit()
+            log_action(current_user.id_user, f"Deactivated tourist site {id_tourist_site}")
+            return jsonify({'message': 'Tourist Site delete successfully'})
+        
+        except Exception as e: 
+            db.session.rollback()
+            return jsonify ({'error': str(e)})
+        
+# ------------------------- ENDPOINT PARA AGREGAR SITIOS TURISTICOS --------------------------- #
+
+@tourist_site.route('/api/add_tourist_sites', methods=['POST'])
+@role_required("admin")
+def add_tourist_site(current_user):
+    data = request.form
+    file = request.files.get('photo')
+
+    # 1) Validación
+    try:
+        validated_data = tourist_site_schema.load(data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
+
+    # 2) Imagen
+    if not file or file.filename == '':
+        return jsonify({"errors": {"photo": ["Image is required."]}}), 400
+    if not allowed_file(file.filename):
+        return jsonify({"errors": {"photo": ["Invalid file type."]}}), 400
+
+    try:
+        id_user = current_user.id_user
+
+        # 3) Duplicados básicos
+        existing = TouristSite.query.filter(
+            (TouristSite.name == validated_data["name"]) |
+            (TouristSite.address == validated_data["address"]) |
+            (TouristSite.url == validated_data["url"])
+        ).first()
+        if existing:
+            return jsonify({"errors": {"duplicate": ["Name, address or URL already exists."]}}), 409
+
+        # 4) Guardar imagen
+        filename = secure_filename(file.filename)
+        save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        file.save(save_path)
+
+        # 5) Resolver lat/lng sin duplicar keys
+        from utils.geocode import geocode_address_free
+
+        def to_float_or_none(x):
+            try:
+                return float(x) if x not in (None, "", "null", "None") else None
+            except (TypeError, ValueError):
+                return None
+
+        # tomar lo que venga del form/schema
+        lat_form = to_float_or_none(validated_data.get("lat"))
+        lng_form = to_float_or_none(validated_data.get("lng"))
+
+        # si faltan, geocodificar por address
+        lat = lat_form
+        lng = lng_form
+        geo_note = None
+        if lat is None or lng is None:
+            lat, lng, geo_note = geocode_address_free(validated_data["address"])
+
+        # IMPORTANTE: quitar lat/lng de validated_data para no duplicar al instanciar
+        validated_data.pop("lat", None)
+        validated_data.pop("lng", None)
+
+        # 6) Crear modelo (ya sin duplicados)
+        new_site = TouristSite(
+            **validated_data,
+            id_user=id_user,
+            photo=filename,
+            lat=lat,
+            lng=lng
+        )
+
+        db.session.add(new_site)
+        db.session.commit()
+        log_action(current_user.id_user, f"Created tourist site {new_site.id_tourist_site}")
+
+        resp = {
+            "message": "Tourist site created successfully.",
+            "tourist_site": new_site.serialize()
+        }
+        if geo_note:
+            resp["geocode_note"] = geo_note
+        if lat is None or lng is None:
+            resp["warning"] = "Site created but coordinates could not be resolved."
+
+        return jsonify(resp), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"errors": {"server": [f"Error adding Tourist Site: {str(e)}"]}}), 500
+
+# ------------------ Endpoint para agregar un comentario con calificación a un sitio turístico ------------------------- #
+
+
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>/feedback', methods=['POST'])
+@role_required("tourist")
+def add_feedback(current_user, id_tourist_site):
+    data = request.get_json()
+
+    if not data or "comment" not in data or "qualification" not in data:
+        return jsonify({"error": "Se requieren los campos 'comment' y 'qualification'"}), 400
+
+    site = TouristSite.query.get(id_tourist_site)
+    if not site:
+        return jsonify({"error": "El sitio turístico no existe"}), 404
+
+    try:
+        # se aprueban automáticamente todos los comentarios normales
+        new_feedback = feedBack(
+            comment=data["comment"].strip(),
+            qualification=int(data["qualification"]),
+            id_user=current_user.id_user,
+            id_tourist_site=id_tourist_site,
+            is_approved=True  
+        )
+
+        db.session.add(new_feedback)
+        db.session.commit()
+
+        # Actualizamos el promedio automáticamente
+        site.update_average_rating()
+        log_action(current_user.id_user, f"Created feedback for site {site.name}")
+
+        return jsonify({
+            "message": "Comentario agregado y aprobado automáticamente.",
+            "feedback": new_feedback.serialize(),
+            "new_average_rating": site.average_rating
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Error al agregar comentario: {str(e)}"}), 500
+
+
+
+# ------------------------ENDPOINT PARA ACTUALIZAR ATRIBUTOS ------------------------------ #
+
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['PUT'])
+@role_required("admin")
+def edit_tourist_site(current_user, id_tourist_site):
+    
+    if not current_user or not current_user.id_user:
+        return jsonify({'error': 'User not found in token'}), 400
+
+    tourist_site = TouristSite.query.get(id_tourist_site)
+
+    if not tourist_site:
+        return jsonify({'error': 'Tourist Site not found'}), 404
+
+    # Soporta tanto JSON, como FormData
+    if request.content_type.startswith('multipart/form-data'):
+        data = request.form
+        file = request.files.get('photo')
+    else:
+        data = request.get_json()
+        file = None
+
+    required_fields = ['name', 'description', 'address', 'phone', 'category', 'url','opening_hours', 'closing_hours', 'average']
+
+    # Validamos el data 
+    if not data:
+        return jsonify({'error': 'No data received'}), 400
+
+    for field in required_fields:
+        value = data.get(field)
+        if value is None or str(value).strip() == '':
+            return jsonify({'error': f'{field.title()} is required and cannot be empty'}), 400
+
+    try:
+        # Guardamos la dirección previa para detectar cambios
+        old_address = tourist_site.address
+
+        # Actualizamos los campos obligatorios
+        tourist_site.name = data.get('name')
+        tourist_site.description = data.get('description')
+        tourist_site.address = data.get('address')
+        tourist_site.phone = data.get('phone')
+        tourist_site.category = data.get('category')
+        tourist_site.url = data.get('url')
+
+        # Parseamos los valores a los tipos correctos
+        tourist_site.opening_hours = datetime.strptime(data.get('opening_hours'), "%H:%M").time()
+        tourist_site.closing_hours = datetime.strptime(data.get('closing_hours'), "%H:%M").time()
+        tourist_site.average = float(data.get('average'))
+        tourist_site.is_activate = str(data.get('is_activate', 'true')).lower() in ('true', '1')
+
+        # Manejo de coordenadas: tomar del form o re-geocodificar si cambió address
+        def _to_float_or_none(x):
+            try:
+                return float(x)
+            except (TypeError, ValueError):
+                return None
+
+        lat_in = _to_float_or_none(data.get('lat'))
+        lng_in = _to_float_or_none(data.get('lng'))
+
+        if lat_in is not None and lng_in is not None:
+            tourist_site.lat = lat_in
+            tourist_site.lng = lng_in
+        else:
+            # si no mandan lat/lng pero la dirección cambió, re-geocodificar
+            if (data.get('address') or '') != (old_address or ''):
+                lat, lng, _note = geocode_address_free(tourist_site.address)
+                tourist_site.lat = lat
+                tourist_site.lng = lng
+            # si no cambió address y no mandaron lat/lng, dejamos las coords como estaban
+
+        # Imagen nueva 
+        if file and file.filename != '':
+            if not allowed_file(file.filename):
+                return jsonify({'error': 'Invalid file type'}), 400
+
+            filename = secure_filename(file.filename)
+
+            # fallback si no está definido en la config
+            upload_folder = current_app.config.get(
+                'UPLOAD_FOLDER',
+                os.path.join(current_app.root_path, 'static', 'tourist_sites_images')
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+            save_path = os.path.join(upload_folder, filename)
+            file.save(save_path)
+
+            tourist_site.photo = filename  # reemplaza la imagen anterior
+
+        db.session.commit()
+        log_action(current_user.id_user, f"Edited tourist site {id_tourist_site}")
+        return jsonify({
+            'message': 'Tourist site updated successfully',
+            'tourist_site': tourist_site.serialize()
+        }), 200
+
+    except IntegrityError as e:
+        db.session.rollback()
+        error_msg = str(e.orig).lower()
+        if 'name' in error_msg:
+            return jsonify({'error': 'The name is already registered'}), 400
+        elif 'url' in error_msg:
+            return jsonify({'error': 'The URL is already registered'}), 400
+        elif 'address' in error_msg:
+            return jsonify({'error': 'The address is already registered'}), 400
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error updating Tourist Site: {str(e)}'}), 500
+
+
+# ------------------------- ENDPOINT PARA ACTUALIZAR UN ATRIBUTO ------------------------------- #
+
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>', methods=['PATCH'])
+@role_required("admin")
+def update_tourist_site(current_user, id_tourist_site):
+    
+    if not current_user or not current_user.id_user:
+        return jsonify({'error': 'User not found in token'}), 400
+
+    tourist_site = TouristSite.query.get(id_tourist_site)
+
+    if not tourist_site:
+        return jsonify({'error': 'Tourist Site not found'}), 404
+
+    # Soporta tanto JSON como multipart/form-data
+    if request.content_type.startswith('multipart/form-data'):
+        data = request.form
+        file = request.files.get('photo')
+    else:
+        data = request.get_json()
+        file = None
+
+    if not data and not file:
+        return jsonify({'error': 'No data received'}), 400
+
+    updated = False
+
+    try:
+        # recordamos la dirección previa para saber si cambió
+        old_address = tourist_site.address
+
+        if 'name' in data and str(data['name']).strip():
+            tourist_site.name = data['name']
+            updated = True
+
+        if 'description' in data and str(data['description']).strip():
+            tourist_site.description = data['description']
+            updated = True
+
+        if 'address' in data and str(data['address']).strip():
+            tourist_site.address = data['address']
+            updated = True
+
+        if 'phone' in data and str(data['phone']).strip():
+            tourist_site.phone = data['phone']
+            updated = True
+
+        if 'category' in data and str(data['category']).strip():
+            tourist_site.category = data['category']
+            updated = True
+
+        if 'url' in data and str(data['url']).strip():
+            tourist_site.url = data['url']
+            updated = True
+
+        if 'average' in data and str(data['average']).strip():
+            tourist_site.average = float(data['average'])
+            updated = True
+
+        if 'opening_hours' in data and str(data['opening_hours']).strip():
+            tourist_site.opening_hours = datetime.strptime(data['opening_hours'], "%H:%M").time()
+            updated = True
+
+        if 'closing_hours' in data and str(data['closing_hours']).strip():
+            tourist_site.closing_hours = datetime.strptime(data['closing_hours'], "%H:%M").time()
+            updated = True
+
+        if 'is_activate' in data:
+            tourist_site.is_activate = str(data['is_activate']).lower() in ('true', '1')
+            updated = True
+
+        # coordenadas, acepta lat/lng del form o re-geocodifica si cambió address
+        def _to_float_or_none(x):
+            try:
+                return float(x)
+            except (TypeError, ValueError):
+                return None
+
+        lat_in = _to_float_or_none(data.get('lat'))
+        lng_in = _to_float_or_none(data.get('lng'))
+
+        if lat_in is not None and lng_in is not None:
+            tourist_site.lat = lat_in
+            tourist_site.lng = lng_in
+            updated = True
+        else:
+            # si NO mandaron lat/lng pero SÍ cambió la dirección, re-geocodificamos
+            if ('address' in data and str(data['address']).strip()) and ((data.get('address') or '') != (old_address or '')):
+                lat, lng, _note = geocode_address_free(tourist_site.address)
+                tourist_site.lat = lat
+                tourist_site.lng = lng
+                updated = True
+
+        # Imagen nueva 
+        if file and file.filename != '':
+            if not allowed_file(file.filename):
+                return jsonify({'error': 'Invalid file type'}), 400
+
+            filename = secure_filename(file.filename)
+            save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            file.save(save_path)
+
+            tourist_site.photo = filename  # reemplazamos la foto anterior
+            updated = True
+
+        if updated:
+            db.session.commit()
+            log_action(current_user.id_user, f"Updated tourist site {id_tourist_site}")
+            return jsonify({
+                'message': 'Tourist site updated successfully',
+                'tourist_site': tourist_site.serialize()
+            }), 200
+        else:
+            return jsonify({'message': 'No valid fields provided for update'}), 400
+
+    except IntegrityError as e:
+        db.session.rollback()
+        error_msg = str(e.orig).lower()
+        if 'name' in error_msg:
+            return jsonify({'error': 'The name is already registered'}), 400
+        elif 'url' in error_msg:
+            return jsonify({'error': 'The URL is already registered'}), 400
+        elif 'address' in error_msg:
+            return jsonify({'error': 'The address is already registered'}), 400
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error updating Tourist Site: {str(e)}'}), 500
+
+
+# ------------------ Endpoint para reactivar un sitio turistico ------------------------- #
+@tourist_site.route('/api/tourist_sites/<id_tourist_site>/reactivate', methods=['PUT']) 
+@role_required("admin")
+def reactivate_tourist_site(current_user, id_tourist_site):
+    tourist_site = TouristSite.query.get(id_tourist_site)
+
+    if not tourist_site:
+        return jsonify({'error': 'Tourist Site not found'}), 404
+
+    if tourist_site.is_activate:
+        return jsonify({'message': 'Tourist site is already active'}), 400
+
+    try:
+        tourist_site.is_activate = True
+        db.session.commit()
+        log_action(current_user.id_user, f"Reactivated tourist site {id_tourist_site}")
+        return jsonify({
+            'message': 'Tourist site reactivated successfully',
+            'tourist_site': tourist_site.serialize()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error reactivating Tourist Site: {str(e)}'}), 500
+
+# -------------------------------------------------------------------------------- #
+
+        # Rutas para renderizar las plantillas de los sitios turísticos.
+
+@tourist_site.route('/tourist_sites/view', methods=['GET'])
+def tourist_sites_view():
+    sites = TouristSite.query.all()
+
+    # Actualiza los promedios y contadores antes de mostrar
+    for site in sites:
+        site.update_average_rating()
+
+    db.session.commit()
+
+    return render_template('tourist_site/tourist_sites.html', sites=sites)
+
+
+
+
+    #Ruta para acceder a traves del boton al formulario de agregar sitio turistico. 
+@tourist_site.route('/tourist_sites/add', methods=['GET', 'POST'])
+
+def add_tourist_site_form():
+    return render_template('tourist_site/add_tourist_sites.html')
+
+    #Ruta para acceder al formulario a traves del boton, asi podemos editar la informacion del sitio turistico. 
+@tourist_site.route('/tourist_sites/edit', methods=['GET'])
+
+def edit_tourist_site_form():
+    sites = TouristSite.query.all()
+    return render_template('tourist_site/edit_tourist_sites.html', sites=sites)
+
+    #Ruta para acceder al formulario a traves del boton, asi podemos eliminar de manera logica el sitio turistico. 
+@tourist_site.route('/tourist_sites/delete', methods=['GET'])
+
+def delete_tourist_site_form():
+    sites = TouristSite.query.all()
+    return render_template('tourist_site/delete_tourist_sites.html', sites=sites)
+
+

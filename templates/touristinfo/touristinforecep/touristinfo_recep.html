@@ -1,0 +1,408 @@
+{% include "head.html" %}
+
+<body>
+    {% include "partials/navbar.html" %}
+
+    <div id="protectedBody" style="display: none;">
+        <div class="container mt-4">
+            <h2 class="mb-4">Información Turística - Receptionist</h2>
+
+            <!-- Botón agregar -->
+            <div class="mb-3">
+                <button id="btnShowAdd" class="btn btn-primary d-none" data-role="receptionist">Agregar</button>
+            </div>
+
+            <!-- Tabla información -->
+            <table class="table table-striped table-bordered mt-3">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>Nacionalidad</th>
+                        <th>Provincia</th>
+                        <th>Cantidad</th>
+                        <th>Movilidad</th>
+                        <th>Personas con discapacidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tourist in tourists %}
+                    <tr data-id="{{ tourist.id_turist }}" class="{{ 'table-danger' if not tourist.is_active else '' }}">
+                        <td>{{ tourist.nationality }}</td>
+                        <td>{{ tourist.province }}</td>
+                        <td>{{ tourist.quantity }}</td>
+                        <td>{{ tourist.mobility }}</td>
+                        <td>{{ tourist.person_with_disability }}</td>
+                        <td class="text-center">
+                            {% if tourist.is_active %}
+                            <button class="btn btn-sm btn-warning btnEdit d-none" data-role="receptionist">Editar</button>
+                            <button class="btn btn-sm btn-danger btnDelete d-none" data-role="receptionist">Eliminar</button>
+                            {% else %}
+                            <button class="btn btn-sm btn-success btnReactivate d-none" data-role="receptionist">Reactivar</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No hay turistas cargados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Formulario flotante agregar -->
+    <div class="floating-form d-none" id="addFormContainer" data-role="receptionist">
+        <div class="card p-4 shadow-lg rounded-4">
+            <h4 class="text-primary mb-3">Agregar Información Turística</h4>
+            <form id="formAddTourist">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="nationality" class="form-label">Nacionalidad</label>
+                        <input type="text" class="form-control" id="nationality" name="nationality" placeholder="Ej: Argentina" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="province" class="form-label">Provincia</label>
+                        <input type="text" class="form-control" id="province" name="province" placeholder="Ej: Mendoza" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="quantity" class="form-label">Cantidad de Personas</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="person_with_disability" class="form-label">Personas con Discapacidad</label>
+                        <input type="number" class="form-control" id="person_with_disability" name="person_with_disability" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="mobility" class="form-label">Movilidad</label>
+                    <select class="form-select" id="mobility" name="mobility" required>
+                        <option value="" selected disabled>Seleccionar tipo de movilidad</option>
+                        <option value="Auto">Auto</option>
+                        <option value="Bicicleta">Bicicleta</option>
+                        <option value="Micro">Micro</option>
+                        <option value="Remis o Taxi">Remis o Taxi</option>
+                        <option value="Moto">Moto</option>
+                        <option value="App de transporte (Uber, Cabify, etc)">App de transporte (Uber, Cabify, etc)</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" id="btnCancelAdd" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Formulario flotante editar -->
+    <div class="floating-form d-none" id="editFormContainer" data-role="receptionist">
+        <div class="card p-4 shadow-lg rounded-4">
+            <h4 class="text-warning mb-3">Editar Información Turística</h4>
+            <form id="formEditTourist">
+                <input type="hidden" id="editId">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="editNationality" class="form-label">Nacionalidad</label>
+                        <input type="text" class="form-control" id="editNationality" name="editNationality" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="editProvince" class="form-label">Provincia</label>
+                        <input type="text" class="form-control" id="editProvince" name="editProvince" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="editQuantity" class="form-label">Cantidad de Personas</label>
+                        <input type="number" class="form-control" id="editQuantity" name="editQuantity" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="editDisability" class="form-label">Personas con Discapacidad</label>
+                        <input type="number" class="form-control" id="editDisability" name="editDisability" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="editMobility" class="form-label">Movilidad</label>
+                    <select class="form-select" id="editMobility" name="editMobility" required>
+                        <option value="" selected disabled>Seleccionar tipo de movilidad</option>
+                        <option value="Auto">Auto</option>
+                        <option value="Bicicleta">Bicicleta</option>
+                        <option value="Micro">Micro</option>
+                        <option value="Remis o Taxi">Remis o Taxi</option>
+                        <option value="Moto">Moto</option>
+                        <option value="App de transporte (Uber, Cabify, etc)">App de transporte (Uber, Cabify, etc)</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" id="btnCancelEdit" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1200;"></div>
+
+    <style>
+        .floating-form {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            max-width: 90%;
+            z-index: 1050;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+        }
+        .floating-form .card {
+            margin: 0;
+            border: none;
+            box-shadow: none;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const protectedBody = document.getElementById('protectedBody');
+            const token = localStorage.getItem('token');
+            const role = (localStorage.getItem('role') || '').toLowerCase();
+            const baseUrl = '/api/touristinfo_recep';
+
+            const addForm = document.getElementById('addFormContainer');
+            const editForm = document.getElementById('editFormContainer');
+            const btnShowAdd = document.getElementById('btnShowAdd');
+            const btnCancelAdd = document.getElementById('btnCancelAdd');
+            const btnCancelEdit = document.getElementById('btnCancelEdit');
+
+            addForm.style.display = 'none';
+            editForm.style.display = 'none';
+
+            if (!token || role !== 'receptionist') {
+                protectedBody.innerHTML = '<div class="container mt-5"><h3>No tenés permisos para ver esta página.</h3></div>';
+                protectedBody.style.display = 'block';
+                return;
+            }
+            protectedBody.style.display = 'block';
+
+            btnShowAdd?.classList.remove('d-none');
+            document.querySelectorAll('.btnEdit, .btnDelete, .btnReactivate')?.forEach(btn => btn.classList.remove('d-none'));
+
+            btnShowAdd?.addEventListener('click', () => addForm.style.display = 'block');
+            btnCancelAdd?.addEventListener('click', () => addForm.style.display = 'none');
+            btnCancelEdit?.addEventListener('click', () => editForm.style.display = 'none');
+
+            const tbody = document.querySelector('tbody');
+
+            tbody?.addEventListener('click', async e => {
+                const row = e.target.closest('tr');
+                if (!row) return;
+                const id = row.dataset.id;
+
+                // EDITAR
+                if (e.target.classList.contains('btnEdit')) {
+                    document.getElementById('editId').value = id;
+                    document.getElementById('editNationality').value = row.children[0].innerText;
+                    document.getElementById('editProvince').value = row.children[1].innerText;
+                    document.getElementById('editQuantity').value = row.children[2].innerText;
+                    document.getElementById('editDisability').value = row.children[4].innerText;
+                    document.getElementById('editMobility').value = row.children[3].innerText;
+                    editForm.style.display = 'block';
+                    return;
+                }
+
+                // ELIMINAR
+                if (e.target.classList.contains('btnDelete')) {
+                    if (!await showToastConfirm('¿Seguro que querés eliminar este turista?')) return;
+                    try {
+                        const res = await fetch(`${baseUrl}/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                        });
+                        const result = await res.json();
+                        if (res.ok) {
+                            showToast(result.message || 'Turista eliminado correctamente.', 'success');
+                            row.classList.add('table-danger');
+                            row.querySelector('.btnEdit')?.classList.add('d-none');
+                            e.target.remove();
+                            const td = row.querySelector('td:last-child');
+                            const btnReact = document.createElement('button');
+                            btnReact.className = 'btn btn-sm btn-success btnReactivate';
+                            btnReact.textContent = 'Reactivar';
+                            td.appendChild(btnReact);
+                        } else showToast(result.error || 'Error al eliminar.', 'danger');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Error de conexión al eliminar.', 'danger');
+                    }
+                }
+
+                // REACTIVAR
+                if (e.target.classList.contains('btnReactivate')) {
+                    if (!await showToastConfirm('¿Seguro que querés reactivar este turista?')) return;
+                    try {
+                        const res = await fetch(`${baseUrl}/${id}/reactivate`, {
+                            method: 'PUT',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                        });
+                        const result = await res.json();
+                        if (res.ok) {
+                            showToast(result.message || 'Turista reactivado correctamente.', 'success');
+                            row.classList.remove('table-danger');
+                            e.target.remove();
+                            const td = row.querySelector('td:last-child');
+                            const btnEdit = document.createElement('button');
+                            btnEdit.className = 'btn btn-sm btn-warning btnEdit';
+                            btnEdit.textContent = 'Editar';
+                            const btnDel = document.createElement('button');
+                            btnDel.className = 'btn btn-sm btn-danger btnDelete ms-2';
+                            btnDel.textContent = 'Eliminar';
+                            td.appendChild(btnEdit);
+                            td.appendChild(btnDel);
+                        } else showToast(result.error || 'Error al reactivar.', 'danger');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Error de conexión al reactivar.', 'danger');
+                    }
+                }
+            });
+
+            // SUBMIT AGREGAR
+            const formAdd = document.getElementById('formAddTourist');
+            formAdd?.addEventListener('submit', async e => {
+                e.preventDefault();
+                const data = {
+                    nationality: document.getElementById('nationality').value.trim(),
+                    province: document.getElementById('province').value.trim(),
+                    quantity: parseInt(document.getElementById('quantity').value),
+                    person_with_disability: parseInt(document.getElementById('person_with_disability').value),
+                    mobility: document.getElementById('mobility').value
+                };
+                try {
+                    const res = await fetch(`${baseUrl}/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (res.ok) {
+                        showToast(result.message || 'Turista agregado correctamente.', 'success');
+                        location.reload();
+                    } else showToast(result.error || 'Error al agregar', 'danger');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Error de conexión al agregar', 'danger');
+                }
+            });
+
+            // SUBMIT EDITAR
+            document.getElementById('formEditTourist')?.addEventListener('submit', async e => {
+                e.preventDefault();
+                const id = document.getElementById('editId').value;
+                if (!id) return showToast('No se pudo obtener el ID del turista.', 'danger');
+                const formData = new FormData();
+                formData.append('nationality', document.getElementById('editNationality').value.trim());
+                formData.append('province', document.getElementById('editProvince').value.trim());
+                formData.append('quantity', parseInt(document.getElementById('editQuantity').value));
+                formData.append('mobility', document.getElementById('editMobility').value.trim());
+                formData.append('person_with_disability', parseInt(document.getElementById('editDisability').value));
+
+                try {
+                    const res = await fetch(`${baseUrl}/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData
+                    });
+                    const result = await res.json();
+                    if (res.ok) {
+                        showToast(result.message || 'Turista actualizado correctamente.', 'success');
+                        location.reload();
+                    } else showToast(result.error || 'Error al actualizar', 'danger');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Error de conexión al actualizar', 'danger');
+                }
+            });
+        });
+
+        // ==========================
+        // FUNCIONES TOAST
+        // ==========================
+        let toastTimeout;
+
+        // Toast simple con mensaje + aceptar
+        function showToast(message, type='primary', duration=3000){
+            const container = document.getElementById('toastContainer');
+            const toastEl = document.createElement('div');
+            toastEl.className = 'toast align-items-center border-0 shadow-sm';
+            toastEl.style.backgroundColor = 'white';
+            toastEl.style.color = '#000';
+            toastEl.style.borderLeft = `5px solid ${
+                {
+                    success: '#198754',
+                    danger: '#dc3545',
+                    warning: '#ffc107',
+                    info: '#0dcaf0',
+                    primary: '#0d6efd'
+                }[type] || '#0d6efd'
+            }`;
+            toastEl.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div class="toast-body flex-grow-1">${message}</div>
+                    <button type="button" class="btn btn-sm btn-primary ms-2 toast-accept">Aceptar</button>
+                </div>
+            `;
+            container.appendChild(toastEl);
+            const bsToast = new bootstrap.Toast(toastEl, { autohide: false });
+            bsToast.show();
+
+            toastEl.querySelector('.toast-accept').addEventListener('click', () => {
+                bsToast.hide();
+                toastEl.remove();
+            });
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { bsToast.hide(); toastEl.remove(); }, duration);
+        }
+
+        // Toast de confirmación Sí/No
+        function showToastConfirm(message){
+            return new Promise((resolve) => {
+                const container = document.createElement('div');
+                container.className = 'position-fixed top-0 end-0 p-3';
+                container.style.zIndex = 1300;
+                container.innerHTML = `
+                    <div class="toast align-items-center border-0 shadow-sm" style="background:white; border-left:5px solid #0d6efd;">
+                        <div class="d-flex flex-column p-2">
+                            <div class="mb-2">${message}</div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button class="btn btn-sm btn-primary btn-yes">Sí</button>
+                                <button class="btn btn-sm btn-secondary btn-no">No</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(container);
+                const toastEl = container.querySelector('.toast');
+                const bsToast = new bootstrap.Toast(toastEl, { autohide: false });
+                bsToast.show();
+
+                container.querySelector('.btn-yes').addEventListener('click', () => {
+                    bsToast.hide(); container.remove(); resolve(true);
+                });
+                container.querySelector('.btn-no').addEventListener('click', () => {
+                    bsToast.hide(); container.remove(); resolve(false);
+                });
+            });
+        }
+    </script>
+
+    <script src="/static/recep_touristinfo.js/touristinfo_recep.js"></script>
+    {% include "scripts.html" %}
+</body>

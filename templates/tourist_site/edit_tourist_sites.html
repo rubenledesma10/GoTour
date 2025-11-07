@@ -1,0 +1,208 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<div class="container mt-4">
+	<h2 class="mb-4">Editar sitio turístico</h2>
+
+	<form id="editTouristSiteForm" method="POST" enctype="multipart/form-data">
+		<!-- Seleccionar el sitio -->
+		<div class="mb-3">
+			<label for="siteSelect" class="form-label">Selecciona un sitio a editar</label>
+			<select id="siteSelect" name="id_tourist_site" class="form-select" required>
+				<option value="" disabled selected>-- Selecciona un sitio --</option>
+				{% for sitio in sites %}
+					<option value="{{ sitio.id_tourist_site }}">{{ sitio.name }}</option>
+				{% endfor %}
+			</select>
+		</div>
+
+		<div class="mb-3">
+			<label for="name" class="form-label">Nombre</label>
+			<input
+				type="text"
+				class="form-control"
+				id="name"
+				name="name"
+				placeholder="Nombre del sitio"
+				required
+				minlength="2"
+				mdaxlength="50"
+			/>
+		</div>
+
+		<div class="mb-3">
+			<label for="description" class="form-label">Descripción</label>
+			<input
+				type="text"
+				class="form-control"
+				id="description"
+				name="description"
+				placeholder="Descripción del sitio"
+				required
+				minlength="2"
+				maxlength="200"
+			/>
+		</div>
+
+		<!-- Dirección -->
+		<div class="mb-3">
+			<label for="address" class="form-label">Dirección</label>
+			<input
+				type="text"
+				class="form-control"
+				id="address"
+				name="address"
+				placeholder="Dirección del sitio turístico"
+				required
+			/>
+		</div>
+
+		<!-- Coordenadas (se completan automáticamente) -->
+		<div class="row mt-2">
+			<div class="col-md-6">
+				<label for="lat" class="form-label">Latitud</label>
+				<input type="text" id="lat" name="lat" class="form-control" readonly />
+			</div>
+			<div class="col-md-6">
+				<label for="lng" class="form-label">Longitud</label>
+				<input type="text" id="lng" name="lng" class="form-control" readonly />
+			</div>
+		</div>
+
+		<!-- Mini-mapa -->
+		<div class="mt-3">
+			<div id="map-picker" style="height: 300px; width: 100%; border-radius: 8px;"></div>
+			<small id="geo-note" class="text-muted"></small>
+		</div>
+
+		<div class="mb-3">
+			<label for="phone" class="form-label">Contacto/s</label>
+			<input
+				type="text"
+				class="form-control"
+				id="phone"
+				name="phone"
+				placeholder="Ingrese el/los número/s de contacto del lugar"
+				required
+			/>
+		</div>
+
+		<div class="mb-3">
+			<label for="category" class="form-label">Categoría</label>
+			<select class="form-select" id="category" name="category" required>
+				<option value="">Seleccione una categoría</option>
+				<option value="Bodegas">Bodegas</option>
+				<option value="Olivícolas">Olivícolas</option>
+				<option value="Alojamiento/Hotelería">Alojamiento/Hotelería</option>
+				<option value="Gastronomía">Gastronomía</option>
+				<option value="Servicios Turísticos">Servicios Turísticos</option>
+				<option value="Turismo Rural">Turismo Rural</option>
+			</select>
+		</div>
+
+		<div class="mb-3">
+			<label for="url" class="form-label">Página Web</label>
+			<input
+				type="url"
+				class="form-control"
+				id="url"
+				name="url"
+				placeholder="Ingrese la URL"
+				required
+			/>
+		</div>
+
+		<div class="mb-3">
+			<label for="average" class="form-label">Promedio de visitas</label>
+			<input
+				type="number"
+				class="form-control"
+				id="average"
+				name="average"
+				placeholder="Ingrese el promedio de visitas"
+				required
+				step="0.01"
+				min="0"
+			/>
+		</div>
+
+		<div class="mb-3">
+			<label for="opening_hours" class="form-label">Horario de apertura</label>
+			<input type="time" class="form-control" id="opening_hours" name="opening_hours" required />
+		</div>
+
+		<div class="mb-3">
+			<label for="closing_hours" class="form-label">Horario de cierre</label>
+			<input type="time" class="form-control" id="closing_hours" name="closing_hours" required />
+		</div>
+
+		<div class="mb-3">
+			<label for="photo" class="form-label">Imagen del sitio turístico</label>
+			<input
+				type="file"
+				class="form-control"
+				id="photo"
+				name="photo"
+				accept=".jpg,.jpeg,.png,.gif"
+			/>
+			<div class="form-text">Si seleccionas una nueva imagen, reemplazará la actual.</div>
+		</div>
+
+		<div class="row mt-4 justify-content-center text-center align-items-center">
+			<!-- Imagen actual -->
+			<div class="col-md-5 d-flex flex-column align-items-center">
+				<h6 class="fw-bold mb-3">Imagen actual</h6>
+				<div class="d-flex justify-content-center align-items-center" style="min-height: 260px;">
+					<img
+						id="currentImage"
+						src="#"
+						alt="Imagen actual"
+						class="img-fluid rounded shadow-sm border"
+						style="max-height: 250px; display: none;"
+					/>
+					<p id="noImageText" class="text-muted fst-italic m-0">Sin imagen actual</p>
+				</div>
+			</div>
+
+			<!-- Nueva imagen -->
+			<div class="col-md-5 d-flex flex-column align-items-center">
+				<h6 class="fw-bold mb-3">Nueva imagen</h6>
+				<div class="d-flex justify-content-center align-items-center" style="min-height: 260px;">
+					<img
+						id="previewImage"
+						src="#"
+						alt="Vista previa"
+						class="img-fluid rounded shadow-sm border"
+						style="max-height: 250px; display: none;"
+					/>
+					<p class="text-muted fst-italic m-0" id="noNewImageText">No se ha seleccionado una nueva imagen</p>
+				</div>
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">Guardar Cambios</button>
+		<button type="button" class="btn btn-secondary ms-2" id="cancelButton">Cancelar</button>
+	</form>
+</div>
+
+<!-- Toast container -->
+<div
+	id="liveToast"
+	class="toast position-fixed top-0 end-0 m-3 border border-secondary"
+	role="alert"
+	aria-live="assertive"
+	aria-atomic="true"
+	style="z-index: 1100;"
+>
+	<div class="toast-body">
+		<span id="toastMessage"></span>
+		<div id="toastButtons" class="mt-2 text-center"></div>
+	</div>
+</div>
+
+<!-- Geocodificación + Leaflet -->
+<script src="{{ url_for('static', filename='js/form_geocode.js') }}"></script>
+<!-- Lógica de edición -->
+<script src="/static/tourist_sites/tourist_site_edit.js"></script>
+
+{% include "scripts.html"%}

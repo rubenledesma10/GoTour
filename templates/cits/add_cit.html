@@ -1,0 +1,56 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Agregar Centro de Información Turística (CIT)</h2>
+
+    <form id="create-cit-form" action="/api/add_cit" method="POST">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="number_cit" class="form-label">Número de CIT</label>
+                <input type="number" id="number_cit" name="number_cit" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+                <label for="district" class="form-label">Distrito</label>
+                <select id="district" name="district" class="form-select" required>
+                    <option value="">Seleccione un distrito</option>
+                    <option value="Maipú Centro">Maipú Centro</option>
+                    <option value="Coquimbito">Coquimbito</option>
+                    <option value="Luzuriaga">Luzuriaga</option>
+                    <option value="Russell">Russell</option>
+                    <option value="Lunlunta">Lunlunta</option>
+                    <option value="Cruz de Piedra">Cruz de Piedra</option>
+                    <option value="Fray Luis Beltrán">Fray Luis Beltrán</option>
+                    <option value="San Roque">San Roque</option>
+                    <option value="Barrancas">Barrancas</option>
+                    <option value="General Gutiérrez">General Gutiérrez</option>
+                    <option value="Rodeo del Medio">Rodeo del Medio</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="address" class="form-label">Dirección</label>
+                <input type="text" id="address" name="address" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input type="checkbox" id="is_activate_qr_map" name="is_activate_qr_map" class="form-check-input">
+            <label for="is_activate_qr_map" class="form-check-label">QR Mapa Activo</label>
+        </div> 
+        
+        <div class="form-check mb-4">
+            <input type="checkbox" id="is_activate_cit" name="is_activate_cit" class="form-check-input">
+            <label for="is_activate_cit" class="form-check-label">Activo</label>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="/cit/view" class="btn btn-secondary">Volver</a>
+            <button type="submit" class="btn btn-success">Guardar CIT</button>
+        </div>
+    </form>
+</div>
+
+<script src="/static/Cits/add_cit.js"></script>
+{% include "scripts.html" %}

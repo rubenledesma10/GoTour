@@ -1,0 +1,67 @@
+{% include "head.html" %}
+{% include "partials/navbar.html" %}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Editar Centro de Información Turística</h2>
+
+    <form id="editCitForm" data-id="{{ cit.id_cit }}">
+        <div class="mb-3">
+            <label for="district" class="form-label">Distrito</label>
+            <select id="district" name="district" class="form-select" required>
+                <option value="">Seleccione un distrito</option>
+                <option value="Maipú Centro" {% if cit.district=="Maipú Centro" %}selected{% endif %}>Maipú Centro
+                </option>
+                <option value="Coquimbito" {% if cit.district=="Coquimbito" %}selected{% endif %}>Coquimbito</option>
+                <option value="Luzuriaga" {% if cit.district=="Luzuriaga" %}selected{% endif %}>Luzuriaga</option>
+                <option value="Russell" {% if cit.district=="Russell" %}selected{% endif %}>Russell</option>
+                <option value="Lunlunta" {% if cit.district=="Lunlunta" %}selected{% endif %}>Lunlunta</option>
+                <option value="Cruz de Piedra" {% if cit.district=="Cruz de Piedra" %}selected{% endif %}>Cruz de Piedra
+                </option>
+                <option value="Fray Luis Beltrán" {% if cit.district=="Fray Luis Beltrán" %}selected{% endif %}>Fray
+                    Luis Beltrán</option>
+                <option value="San Roque" {% if cit.district=="San Roque" %}selected{% endif %}>San Roque</option>
+                <option value="Barrancas" {% if cit.district=="Barrancas" %}selected{% endif %}>Barrancas</option>
+                <option value="General Gutiérrez" {% if cit.district=="General Gutiérrez" %}selected{% endif %}>General
+                    Gutiérrez</option>
+                <option value="Rodeo del Medio" {% if cit.district=="Rodeo del Medio" %}selected{% endif %}>Rodeo del
+                    Medio</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="address" class="form-label">Dirección</label>
+            <input type="text" id="address" name="address" class="form-control" value="{{ cit.address }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="number_cit" class="form-label">Número CIT</label>
+            <input type="number" id="number_cit" name="number_cit" class="form-control" value="{{ cit.number_cit }}"
+                required>
+        </div>
+        <input type="hidden" id="is_activate" name="is_activate" value="true">
+
+
+        <div class="form-check mb-3">
+            <input type="checkbox" id="is_activate_qr_map" name="is_activate_qr_map" class="form-check-input" {% if
+                cit.is_activate_qr_map %}checked{% endif %}>
+            <label for="is_activate_qr_map" class="form-check-label">QR Map Activo</label>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="/cit/view" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+    </form>
+</div>
+<!-- Toast Container -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+    <div id="liveToast" class="toast text-white bg-dark border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">Mensaje...</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/Cits/edit_cit.js"></script>
+{% include "scripts.html" %}

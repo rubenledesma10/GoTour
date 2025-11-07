@@ -1,0 +1,74 @@
+/* Botones de navbar */
+.navbar .btn {
+    border-radius: 20px;          /* Bordes redondeados suaves */
+    transition: all 0.3s ease;    /* Efecto suave al hover */
+    font-weight: 500;             /* Más legible */
+}
+
+/* Botones públicos */
+.navbar .btn.btn-light {
+    background-color: #f8f9fa;   /* Color claro */
+    color: #333;                  /* Texto más oscuro */
+    border: 1px solid #ddd;       /* Delimitación sutil */
+}
+
+.navbar .btn.btn-light:hover {
+    background-color: #e2e6ea;
+    color: #000;
+    transform: translateY(-2px);  /* Pequeño levantamiento */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* Botones de acción (warning / naranja) */
+.navbar .btn-warning {
+    background-color: #ff9800;    /* Naranja más moderno */
+    color: #fff;
+    font-weight: 600;
+}
+
+.navbar .btn-warning:hover {
+    background-color: #e68900;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+/* Botón de auth principal */
+#authButton {
+    border-radius: 25px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+#authButton:hover {
+    background-color: #ff8c1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Separación entre botones */
+.navbar .navbar-nav .btn {
+    margin-right: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+/* Botón Bitácora (verde moderno) */
+.navbar .btn-success {
+    background-color: #28a745; /* Verde moderno */
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.navbar .btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+
+/* Ajuste en móviles: que los botones apilen verticalmente */
+@media (max-width: 991px) {
+    .navbar-nav {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
