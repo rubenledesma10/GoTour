@@ -23,7 +23,7 @@ from utils.geocode import geocode_address_free
 
 tourist_site = Blueprint('tourist_site', __name__)
 
-# ------------------------ GEOCODIFICACION PARA EL MAPA------------------------------ #
+# ------------------------ GEOCODIFICACION ------------------------------ #
 
 
 @tourist_site.route("/api/geocode")
