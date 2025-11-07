@@ -8,7 +8,7 @@
     "role": "admin",
     "dni": "30123456",
     "birthdate": "1989-05-14",
-    "photo": "https://example.com/photos/ruben.jpg",
+    "photo": "/static/uploads/ledesma.jpeg",
     "phone": "+54 9 261 1234567",
     "nationality": "Argentina",
     "province": "Mendoza",
@@ -24,7 +24,7 @@
     "role": "tourist",
     "dni": "40234567",
     "birthdate": "1995-11-20",
-    "photo": "https://example.com/photos/maria.jpg",
+    "photo": "/static/uploads/romano.jpeg",
     "phone": "+54 9 11 7654321",
     "nationality": "Argentina",
     "province": "Buenos Aires",
@@ -40,7 +40,7 @@
     "role": "receptionist",
     "dni": "35222333",
     "birthdate": "1990-03-08",
-    "photo": "https://example.com/photos/carlos.jpg",
+    "photo": "/static/uploads/puebla.jpeg",
     "phone": "+54 9 381 2233445",
     "nationality": "Argentina",
     "province": "Tucumán",
@@ -56,7 +56,7 @@
     "role": "tourist",
     "dni": "40236560",
     "birthdate": "1995-11-20",
-    "photo": "https://example.com/photos/maria.jpg",
+    "photo": "/static/uploads/espinosa.jpeg",
     "phone": "+54 9 12 7654321",
     "nationality": "Argentina",
     "province": "Buenos Aires",
@@ -64,4 +64,3 @@
     "gender": "masculino"
   }
 ]
-
